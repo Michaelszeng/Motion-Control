@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.BaseTrajectoryBuilder;
@@ -46,6 +47,7 @@ public class VuforiaTest extends LinearOpMode {
                 vLocalizer = VuforiaCamLocalizer.getSingle_instance(hardwareMap, VuforiaCameraChoice.PHONE_BACK, true);
             else
                 break;
+            FtcDashboard.getInstance().startCameraStream(vLocalizer.getVuforiaCameraSource(), 0);
             Pose2d poseEstimate;
             for (int i = 0; i < 10; i ++ ) {
                 if (opModeIsActive()) {
@@ -57,7 +59,7 @@ public class VuforiaTest extends LinearOpMode {
                     RobotLogger.dd(TAG, "vuforia localization: " + poseEstimate.toString());
                 }
                 if (opModeIsActive()) {
-                    //Path.sleep_millisec_opmode(200, this);
+                    SafeSleep.sleep_milliseconds(this,20000);
                 }
             }
             vLocalizer.stop();
@@ -77,7 +79,7 @@ public class VuforiaTest extends LinearOpMode {
                     RobotLogger.dd(TAG, "vuforia localization: " + poseEstimate.toString());
                 }
                 if (opModeIsActive()) {
-                    SafeSleep.sleep_milliseconds(this,5000);
+                    SafeSleep.sleep_milliseconds(this,20000);
                 }
             }
             vLocalizer.stop();
@@ -85,6 +87,7 @@ public class VuforiaTest extends LinearOpMode {
             count ++;
 
         }
+        FtcDashboard.getInstance().stopCameraStream();
 
         RobotLogger.dd(TAG, "----------done --------------------- unit test for vuforia localizer");
     }

@@ -349,8 +349,8 @@ public class AutoPath {
         SafeSleep.sleep_milliseconds(opMode, 400);
         DriveBuilderReset(true, false, "step" + Integer.toString(step_count) + coordinates[step_count].toString() +
                 ", after drop fundation,, to spline ");
-        builder.splineTo(new Pose2d(new Vector2d(_drive.getPoseEstimate().getX() - coordinates[step_count].getX(),
-                _drive.getPoseEstimate().getY() - coordinates[step_count].getY()), coordinates[step_count].getHeading()));
+        builder.splineToLinearHeading(new Pose2d(new Vector2d(_drive.getPoseEstimate().getX() - coordinates[step_count].getX(),
+                _drive.getPoseEstimate().getY() - coordinates[step_count].getY()), coordinates[step_count].getHeading()), 0);
         /*
         builder = builder.setReversed(false)
                 .splineTo(new Pose2d(new Vector2d(coordinates[step_count].getX(),
@@ -376,8 +376,8 @@ public class AutoPath {
                 ", spline, back to parking");
         //builder = new TrajectoryBuilder(_drive.getPoseEstimate(), DriveConstants.BASE_CONSTRAINTS);
         builder = builder
-                .splineTo(new Pose2d(new Vector2d(coordinates[step_count].getX(),
-                        coordinates[step_count].getY()), coordinates[step_count].getHeading()));
+                .splineToLinearHeading(new Pose2d(new Vector2d(coordinates[step_count].getX(),
+                        coordinates[step_count].getY()), coordinates[step_count].getHeading()), 0);
         trajectory = builder.build();   //x - 2.812, y + 7.984
         if (opMode.opModeIsActive())
             _drive.followTrajectory(trajectory);
@@ -519,7 +519,7 @@ public class AutoPath {
         _drive.getLocalizer().setPoseEstimate(new Pose2d(new Vector2d(68.144, 16.128), _drive.getExternalHeading()));
         _drive.getLocalizer().update();
         builder = new TrajectoryBuilder(_drive.getPoseEstimate(), DriveConstants.BASE_CONSTRAINTS);
-        builder = builder.splineTo(new Pose2d(new Vector2d(37.064, 58.72), Math.toRadians(140)))
+        builder = builder.splineToLinearHeading(new Pose2d(new Vector2d(37.064, 58.72), Math.toRadians(140)), 0)
                 .lineTo(new Vector2d(70.0, 58.72));
         trajectory = builder.build();
         if (opMode.opModeIsActive())

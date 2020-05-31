@@ -124,7 +124,9 @@ public class TensorflowDetector {
     {
 
     }
-
+    public VuforiaLocalizer getVuforiaCameraSource() {
+        return vuforia;
+    }
     synchronized  public static TensorflowDetector getSingle_instance(HardwareMap hardwareMap, VuforiaCameraChoice camera_choice)
     {
         TensorflowDetector obj = single_instance_per_camera[camera_choice.ordinal()];

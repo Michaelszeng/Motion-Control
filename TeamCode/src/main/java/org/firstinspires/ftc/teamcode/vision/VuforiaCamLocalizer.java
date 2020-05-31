@@ -154,7 +154,9 @@ public class VuforiaCamLocalizer implements Localizer {
     {
 
     }
-
+    public VuforiaLocalizer getVuforiaCameraSource() {
+        return vuforia;
+    }
     synchronized  public static VuforiaCamLocalizer getSingle_instance(HardwareMap hardwareMap, VuforiaCameraChoice camera_choice, boolean portrait)
     {
         VuforiaCamLocalizer obj = single_instance_per_camera[camera_choice.ordinal()];

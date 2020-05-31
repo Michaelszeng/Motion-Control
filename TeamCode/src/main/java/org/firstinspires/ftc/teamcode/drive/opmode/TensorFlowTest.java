@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.BaseTrajectoryBuilder;
@@ -12,6 +13,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.util.SafeSleep;
 import org.firstinspires.ftc.teamcode.vision.TensorflowDetector;
 import org.firstinspires.ftc.teamcode.vision.VuforiaCameraChoice;
 
@@ -46,11 +48,13 @@ public class TensorFlowTest extends LinearOpMode {
                 vTester = TensorflowDetector.getSingle_instance(hardwareMap, VuforiaCameraChoice.PHONE_BACK);
             else break;
 
+            //FtcDashboard.getInstance().startCameraStream(vTester.getVuforiaCameraSource(), 0);
+
             for (int i = 0; i < 10; i ++ ) {
                 if (opModeIsActive())
                     vTester.detectSkystone();
                 if (opModeIsActive()) {
-                    //Path.sleep_millisec_opmode(200, this);
+                    SafeSleep.sleep_milliseconds(this,20000);
                 }
             }
             count ++;
@@ -65,7 +69,7 @@ public class TensorFlowTest extends LinearOpMode {
                 if (opModeIsActive())
                     vTester.detectSkystone();
                 if (opModeIsActive()) {
-                    //Path.sleep_millisec_opmode(200, this);
+                    SafeSleep.sleep_milliseconds(this,20000);
                 }
             }
             count ++;
