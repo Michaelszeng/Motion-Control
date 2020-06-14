@@ -30,6 +30,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.teamcode.drive.virtual.DriveTrain;
+import org.firstinspires.ftc.teamcode.drive.virtual.VirtualLocalizer;
 import org.firstinspires.ftc.teamcode.drive.virtual.VirtualMotorEx;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
@@ -132,11 +133,11 @@ public class SampleMecanumDrive extends MecanumDrive {
             rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
             rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
         } else {
-            leftFront = new VirtualMotorEx("leftFront", this);
-            leftRear = new VirtualMotorEx("leftRear", this);
-            rightRear = new VirtualMotorEx("rightRear", this);
-            rightFront = new VirtualMotorEx("rightFront", this);
-            setLocalizer(new MecanumLocalizer(this, false));
+            leftFront = new VirtualMotorEx(this, "leftFront");
+            leftRear = new VirtualMotorEx(this, "leftRear");
+            rightRear = new VirtualMotorEx(this, "rightRear");
+            rightFront = new VirtualMotorEx(this, "rightFront");
+            setLocalizer(new VirtualLocalizer(this));
             RobotLogger.dd(TAG, "use default 4 wheel localizer");
         }
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);

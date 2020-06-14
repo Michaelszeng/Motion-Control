@@ -51,19 +51,20 @@ public class VirtualMotorEx implements DcMotorEx {
     private long last_get_wheel_position_time = 0;
     private double last_get_wheel_position_power = 0;
     private int last_wheel_position = 0;
-    /* hard code to be GoBILDA5202 type, need to be careful not to use the paramters from xml */
+    /* hard code to be GoBILDA5202 type, need to be careful not to use the parameters from xml */
     private MotorConfigurationType MOTOR_CONFIG =
             MotorConfigurationType.getMotorType(GoBILDA5202Series.class);
 
-    public VirtualMotorEx(String name, MecanumDrive drv)
+    public VirtualMotorEx(MecanumDrive drv, String name)
     {
         RobotLogger.dd(TAG, "create VirtualMotorEx", name);
         motor_name = name;
-        driveTrain = DriveTrain.getSingle_instance(drv, name);
-        driveTrain.AddWheel(this, name);
         last_get_wheel_position_time = SystemClock.elapsedRealtime();
         last_get_wheel_position_power = 0;
         last_wheel_position = 0;
+        motor_power = 0;
+        driveTrain = DriveTrain.getSingle_instance(drv, name);
+        driveTrain.AddWheel(this, name);
     }
     public void setPower(double power) {
         RobotLogger.dd(TAG, "%s: setPower %f", motor_name, power);

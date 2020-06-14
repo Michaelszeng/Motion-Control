@@ -10,11 +10,11 @@ public class SafeSleep
         long start_time = SystemClock.elapsedRealtime();
         int r = c, t = 0;
         while (r > 0) {
-            if (r > 200)
-                t = 200;
+            if (r > 100)
+                t = 100;
             else
                 t = r;
-            if (mode.opModeIsActive()) {
+            if (!mode.isStopRequested()) {
                 try {
                     Thread.sleep(t);
                 } catch (Exception e) {
@@ -23,8 +23,8 @@ public class SafeSleep
             }
             r = r - t;
         }
-        long sleep_duraiton = SystemClock.elapsedRealtime() - start_time;
-        RobotLogger.dd("SafeSleep", "actually slept for " + sleep_duraiton + " when requested to sleep " + c);
+        long sleep_duration = SystemClock.elapsedRealtime() - start_time;
+        RobotLogger.dd("SafeSleep", "actually slept for " + sleep_duration + " when requested to sleep " + c);
 
     }
 }

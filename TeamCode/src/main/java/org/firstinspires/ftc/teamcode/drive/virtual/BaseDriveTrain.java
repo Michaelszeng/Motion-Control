@@ -13,18 +13,17 @@ import java.util.List;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
 
 public abstract class BaseDriveTrain {
-    protected DcMotorEx leftFront, leftRear, rightRear, rightFront;
     protected List<DcMotorEx> drive_motors;
-    protected List<DcMotorEx> odom_motors;
-    protected DcMotor leftOdomEncoder, rightOdomEncoder, frontOdomEncoder;
     List<Double> lastWheelVelocities, lastWheelPositions;
     double lastExtHeading;
     MecanumDrive drive;
-    Pose2d currentPos;
-    private String TAG = "BaseDriveTrain";
-    private static final int DRIVE_WHEEL_NUM = 4;
+    protected List<DcMotorEx> odom_motors;
+    protected DcMotor leftOdomEncoder, rightOdomEncoder, frontOdomEncoder;
     boolean usingOdom;
     boolean usingIMU;
+    private String TAG = "BaseDriveTrain";
+
+    private static final int DRIVE_WHEEL_NUM = 4;
     private boolean driveTrainReady = false;
     protected Pose2d poseEstimate;
 
@@ -54,17 +53,23 @@ public abstract class BaseDriveTrain {
             RobotLogger.dd(TAG, "unexpected motor");
         return index;
     }
+    private void clear() {
+        drive_motors.clear();
+        lastWheelVelocities.clear();
+        lastWheelPositions.clear();
+    }
     public void AddWheel(DcMotorEx motor, String name) {
         RobotLogger.dd(TAG, "add wheel: " + name);
         if (getWheelCount() == DRIVE_WHEEL_NUM && name.equals("leftFront"))
         {
             RobotLogger.dd(TAG, "need to reset motors");
-            drive_motors.clear();
+            clear();
             driveTrainReady = false;
         }
         drive_motors.add(motor);
         if (getWheelCount() == DRIVE_WHEEL_NUM)
         {
+            poseEstimate = new Pose2d(0, 0, 0);
             driveTrainReady = true;
             RobotLogger.dd(TAG, "4 wheels are ready");
         }

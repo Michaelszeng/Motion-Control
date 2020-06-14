@@ -13,20 +13,17 @@ import java.util.List;
 public class DriveTrain extends BaseDriveTrain {
     private String TAG = "DriveTrain";
     private static DriveTrain driveTrain_singleInstance = null;
-    private ForwardKinematics kinematics;
-
-    public DriveTrain(MecanumDrive _drv) {
+    private DriveTrain(MecanumDrive _drv) {
         super(_drv);
     }
 
     synchronized  public static DriveTrain getSingle_instance(MecanumDrive drv, String name) {
-        if ((driveTrain_singleInstance == null) || (name.equals("frontLeft"))) {
+        if (driveTrain_singleInstance == null) {
             RobotLogger.dd("DriveTrain", "drive train created");
             driveTrain_singleInstance = new DriveTrain(drv);
             driveTrain_singleInstance.setPoseEstimate(new Pose2d(0, 0, 0));
         }
-        else
-            RobotLogger.dd("DriveTrain", "drive train already exists");
+
         return driveTrain_singleInstance;
     }
 
@@ -60,8 +57,7 @@ public class DriveTrain extends BaseDriveTrain {
     }
 
     public void finalize() throws Throwable{
-        RobotLogger.dd(TAG, "drive train finalize");
+        RobotLogger.callers(8, TAG, "finalize");
         driveTrain_singleInstance = null;
     }
-
 }

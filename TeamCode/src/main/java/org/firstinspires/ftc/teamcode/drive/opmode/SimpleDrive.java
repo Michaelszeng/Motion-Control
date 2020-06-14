@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /*
- * This is a simple routine to test translational drive capabilities.
+ * This is a simple routine to test simple drive capabilities with setPower and getWheelPositions
  */
 @Config
 @Autonomous(group = "drive")
