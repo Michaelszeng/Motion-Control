@@ -16,10 +16,10 @@ import org.firstinspires.ftc.teamcode.util.SafeSleep;
 @Autonomous(group = "drive")
 public class StraightTest extends LinearOpMode {
     public static double DISTANCE = 60; // in
+    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
     @Override
     public void runOpMode() throws InterruptedException {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         while (! isStopRequested()) {
             Trajectory trajectory = drive.trajectoryBuilder(drive.getLocalizer().getPoseEstimate())
