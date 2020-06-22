@@ -34,7 +34,8 @@ public class SimpleDrive extends LinearOpMode {
         double s = 0;
         while (! isStopRequested()) {
             while(s < 60) {
-                drive.setMotorPowers(0.8, 0.8, 0.8, 0.8);
+                //FL, BL, BR, FR
+                drive.setMotorPowers(0.8,0.0, 0.0, 0.0);
                 List<Double> wheelPositions = drive.getWheelPositions();
                 s = wheelPositions.get(0);
                 RobotLogger.dd(TAG, wheelPositions.toString());

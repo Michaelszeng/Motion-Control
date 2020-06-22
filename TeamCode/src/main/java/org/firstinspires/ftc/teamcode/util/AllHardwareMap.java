@@ -30,44 +30,6 @@ public class AllHardwareMap {
         //---------------------------------------------------------------------------
         //endregion
 
-        //region
-        //------------------------===Intake & Lift Motors===------------------------
-
-        leftIntake = (DcMotorEx) hwMap.get(DcMotor.class, "leftIntake");
-        rightIntake = (DcMotorEx) hwMap.get(DcMotor.class, "rightIntake");
-        liftOne = (DcMotorEx) hwMap.get(DcMotor.class, "liftOne");
-        liftTwo = (DcMotorEx) hwMap.get(DcMotor.class, "liftTwo");
-
-        //---------------------------------------------------------------------------
-        //endregion
-
-        //region
-        //------------------------===Servos===------------------------
-
-        clawServo1 = hwMap.get(Servo.class, "clawServo1");
-        clawServo2 = hwMap.get(Servo.class, "clawServo2");
-        foundationLock = hwMap.get(Servo.class, "foundationLock");
-        redAutoClawJoint1 = hwMap.get(Servo.class, "redAutoClawJoint1");
-        redAutoClawJoint2 = hwMap.get(Servo.class, "redAutoClawJoint2");
-        redAutoClawJoint3 = hwMap.get(Servo.class, "redAutoClawJoint3");
-        transferLock = hwMap.get(Servo.class, "transferLock");
-        transferHorn = hwMap.get(Servo.class, "transferHorn");
-        clawInit = hwMap.get(Servo.class, "clawInit");
-        innerTransfer = hwMap.get(Servo.class, "innerTransfer");
-        parkingServo = hwMap.get(Servo.class, "parkingServo");
-        //parkingServo = hwMap.get(Servo.class, "parkingServo");  //@TODO Configure intakeInit on the robot
-        liftOdometry = hwMap.get(Servo.class, "liftOdometry");
-
-        //---------------------------------------------------------------------------
-        //endregion
-
-        liftReset = hwMap.get(DigitalChannel.class, "liftReset");
-        //intakeDetect = hwMap.get(DigitalChannel.class, "intakeDetect");   //@TODO Configure intakeDetect on the robot
-        foundationDetectLeft = hwMap.get(DigitalChannel.class, "foundationDetectLeft");
-        foundationDetectRight = hwMap.get(DigitalChannel.class, "foundationDetectRight");
-
-        //---------------------------------------------------------------------------
-
         gyro = hwMap.get(BNO055IMU.class, "imu");
         imu = (IntegratingGyroscope) gyro;
 
