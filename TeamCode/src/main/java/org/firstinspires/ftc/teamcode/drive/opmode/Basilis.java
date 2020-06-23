@@ -28,6 +28,8 @@ public class Basilis<xFunction> extends LinearOpMode {
     List<Pose2d> poseHistory = new ArrayList<>();
     FtcDashboard dashboard;
     double currentVelocity = 5;
+    ArrayList<Double> Velocity = new ArrayList<Double>();
+
 
     final double frontToBackWheelSeparation = 18;
     final boolean mech = true;
@@ -38,11 +40,14 @@ public class Basilis<xFunction> extends LinearOpMode {
     final double maxAcceleration = 10;//in/sec/sec
     final double maxDeceleration = 10;//in/sec/sec
     final double maxLateralAcceleration = 150; //in/sec/sec
-    double [] endVCoordsX = new double[4];
-    double [] endVCoordsY = new double[4];
-    double [][] xFunction = new double [4][4];double [][] yFunction = new double [4][4];
+    double [] endVCoordsX = new double[2];
+    double [] endVCoordsY = new double[2];
+    double [][] xFunction = new double [2][4];double [][] yFunction = new double [2][4];
     double fidelity = 100;
+    double timeIncrament = 0.1;
+    double q = 0;
 
+    double w;
 
 
     public double[] redoFunction(double start, double startV, double end, double endV) {
@@ -86,7 +91,7 @@ public class Basilis<xFunction> extends LinearOpMode {
         double[] p1 = new double[2];
         double[] p2 = new double[2];
         double[] p3 = new double[2];
-        ArrayList<Double> Velocity = new ArrayList<Double>();
+        Velocity.clear();
         int size;
         double time = 0;
         for (int i = 0; i < xFunction.length; i ++) {
@@ -159,8 +164,9 @@ public class Basilis<xFunction> extends LinearOpMode {
         }
 
         Velocity.set(0, currentSpeed);
-        int w = 0;
+        //int w = 0;
         size = 0;
+
         for (int i = 0; i < xFunction.length; i ++) {
             for (int j = 1; j < fidelity; j++) {
                 size ++;
@@ -169,12 +175,13 @@ public class Basilis<xFunction> extends LinearOpMode {
                 if (Velocity.get(size-1) + (time * maxAcceleration) < Velocity.get(size)) {
                     Velocity.set(size , Velocity.get(size-1) + (time * maxAcceleration));
                     //System.out.print(size + " ");
-                    w ++;
+                    //w ++;
                 }
             }
         }
+
         //System.out.println(w);
-        w = 0;
+        //w = 0;
         //System.out.println(Velocity.size());
 
         size = Velocity.size();
@@ -188,7 +195,7 @@ public class Basilis<xFunction> extends LinearOpMode {
                     time = (1/Velocity.get(size)) * (graphDistance(xFunction[i],yFunction[i],j-1, j)/pixelToInch);
                     if (Velocity.get(size) + (time * maxDeceleration) < Velocity.get(size-1)) {
                         Velocity.set(size-1, (Velocity.get(size) + (time * maxDeceleration)));
-                        w ++;
+                        //w ++;
                         //System.out.print(size + " ");
                     }
                 }
@@ -202,20 +209,25 @@ public class Basilis<xFunction> extends LinearOpMode {
         double times = 0;
         double preTimes = 0;
         double k = 0;
-        for (int j = 0; j < fidelity - o || times <= 0.05; j++) {
+        double value = 0;
+        w = 0;
+
+        for (int j = 0; j < fidelity - o && times <= timeIncrament; j++) {
             preTimes = times;
             k ++;
             Coords1 = interpretFunction((double)(j + o)/(double)fidelity,xFunction[z],yFunction[z]);
             Coords2 = interpretFunction((double)(j + o + 1)/(double)fidelity,xFunction[z],yFunction[z]);
             double dist = distanceCalc(Coords1[0],Coords1[1],Coords2[0],Coords2[1]);
-            times += (double)(1/Velocity.get((int) (j + o))) * (double)((dist));
+            value = j + o + (fidelity*z);
+            if(value < Velocity.size()) {
+                times += (double) (1 / Velocity.get((int) (value)) * (double) dist);
+            }
+            w ++;
+
         }
-        if (k < 0.9) {
-            k--;
-            k += (0.05 - preTimes) / (times - preTimes);
-        }
-        else {
-            k = 1;
+        k += o;
+        if (k >= 90){
+            k = 100;
         }
         return k;
     }
@@ -248,9 +260,7 @@ public class Basilis<xFunction> extends LinearOpMode {
 
 
 
-        xFunction[ 0 ][0] = -16.0;xFunction[ 0 ][1] = 15.0;xFunction[ 0 ][2] = 69.0;xFunction[ 0 ][3] = -54.0;yFunction[ 0 ][0] = -162.5;yFunction[ 0 ][1] = 237.0;yFunction[ 0 ][2] = -37.5;yFunction[ 0 ][3] = -17.0;endVCoordsX[ 0 ] = 48;endVCoordsY[ 0 ] = -14;xFunction[ 1 ][0] = -68.0;xFunction[ 1 ][1] = 45.0;xFunction[ 1 ][2] = 51.0;xFunction[ 1 ][3] = 14.0;yFunction[ 1 ][0] = -25.5;yFunction[ 1 ][1] = 37.5;yFunction[ 1 ][2] = -51.0;yFunction[ 1 ][3] = 20.0;endVCoordsX[ 1 ] = 0;endVCoordsY[ 1 ] = -54;xFunction[ 2 ][0] = 62.5;xFunction[ 2 ][1] = -31.5;xFunction[ 2 ][2] = -63.0;xFunction[ 2 ][3] = 42.0;yFunction[ 2 ][0] = 28.0;yFunction[ 2 ][1] = 22.5;yFunction[ 2 ][2] = -52.5;yFunction[ 2 ][3] = -19.0;endVCoordsX[ 2 ] = 51;endVCoordsY[ 2 ] = 30;xFunction[ 3 ][0] = -4.5;xFunction[ 3 ][1] = -15.0;xFunction[ 3 ][2] = 61.5;xFunction[ 3 ][3] = 10.0;yFunction[ 3 ][0] = -102.5;yFunction[ 3 ][1] = 72.0;yFunction[ 3 ][2] = 76.5;yFunction[ 3 ][3] = -21.0;endVCoordsX[ 3 ] = 64;endVCoordsY[ 3 ] = -33;
-
-
+        xFunction[ 0 ][0] = 16.5;xFunction[ 0 ][1] = -40.5;xFunction[ 0 ][2] = 99.0;xFunction[ 0 ][3] = -58.0;yFunction[ 0 ][0] = -124.5;yFunction[ 0 ][1] = 195.0;yFunction[ 0 ][2] = -49.5;yFunction[ 0 ][3] = -7.0;endVCoordsX[ 0 ] = 62;endVCoordsY[ 0 ] = -8;xFunction[ 1 ][0] = -29.0;xFunction[ 1 ][1] = -10.5;xFunction[ 1 ][2] = 67.5;xFunction[ 1 ][3] = 17.0;yFunction[ 1 ][0] = 28.5;yFunction[ 1 ][1] = -40.5;yFunction[ 1 ][2] = -33.0;yFunction[ 1 ][3] = 14.0;endVCoordsX[ 1 ] = 18;endVCoordsY[ 1 ] = -50;
 
         double pixelToInch = 13.8888888889;
         double t = 0;
@@ -302,7 +312,7 @@ public class Basilis<xFunction> extends LinearOpMode {
                 maxHeadingDifference = Math.min(Math.abs(maxHeadingDifference), Math.abs(headingDifference));
                 maxHeadingDifference = Math.max(Math.PI/4,maxHeadingDifference);
                 double r = (headingDifference / maxHeadingDifference);
-                double k = dist/12;
+                double k = dist/8;
                 k = Math.min(1, k);
                 k *= powerRatio;
                 FR = (r) + k;
@@ -330,24 +340,36 @@ public class Basilis<xFunction> extends LinearOpMode {
                 currentPos[0] += deltaX;
                 currentPos[1] += deltaY;
 
-                double offset = 2;
+                double offset = 4;
                 if ((currentPos[0] > p2[0] - offset && currentPos[0] < p2[0] + offset) && (currentPos[1] > p2[1] - offset && currentPos[1] < p2[1] + offset)){
 
                     double finalX = (xFunction[l][0] + xFunction[l][1] + xFunction[l][2] + xFunction[l][3]);
                     double finalY = (yFunction[l][0] + yFunction[l][1] + yFunction[l][2] + yFunction[l][3]);
                     double magni = Math.sqrt(Math.pow(currentPos[0]-finalX,2) + Math.pow(currentPos[1]-finalY,2));
                     magni *= 0.25;
-                    xFunction[l] = redoFunction(currentPos[0],magni * Math.cos(headingAngleRadians), finalX, endVCoordsX[l]-finalX);
-                    yFunction[l] = redoFunction(currentPos[1],magni * Math.sin(headingAngleRadians), finalY, endVCoordsY[l]-finalY);
-                    t += generateVelocityCurve(l,t,currentVelocity);//currentVelocity needs to be added
+                    q ++;
+                    /*
+                    if (q == 50) {
+                        q = 0;
+                        t = 0;
+                        xFunction[l] = redoFunction(currentPos[0], magni * Math.cos(headingAngleRadians), finalX, endVCoordsX[l] - finalX);
+                        yFunction[l] = redoFunction(currentPos[1], magni * Math.sin(headingAngleRadians), finalY, endVCoordsY[l] - finalY);
+                    }
+
+                     */
+                    t = generateVelocityCurve(l,t,currentVelocity);//currentVelocity needs to be added
                     //magni * Math.sin(headingAngleRadians)
                     lastPoint[0] = p2[0];
                     lastPoint[1] = p2[0];
                     p2[0] = (xFunction[l][0]*Math.pow((t/100),3) + xFunction[l][1]*Math.pow((t/100),2) + xFunction[l][2]*(t/100) + xFunction[l][3]);
                     p2[1] = (yFunction[l][0]*Math.pow((t/100),3) + yFunction[l][1]*Math.pow((t/100),2) + yFunction[l][2]*(t/100) + yFunction[l][3]);
-                    powerRatio = Math.sqrt(Math.pow(lastPoint[0] - p2[0],2) + Math.pow(lastPoint[1] - p2[1],2)) / 0.05;
-                    currentVelocity = powerRatio;
-                    powerRatio = powerRatio/maxSpeed;
+                    if (l * fidelity + t < Velocity.size()) {
+                        currentVelocity = Velocity.get((int) (l * fidelity + t));
+                    }
+                    else {
+                        currentVelocity = Velocity.get(Velocity.size()-1);
+                    }
+                    powerRatio = currentVelocity/maxSpeed;
                     powerRatio = Math.min(powerRatio, 1);
                     powerRatio = Math.max(powerRatio, 0.5);
                     if (t >= 100){
@@ -370,24 +392,12 @@ public class Basilis<xFunction> extends LinearOpMode {
                 DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
                 DashboardUtil.drawRobot(fieldOverlay, currentPose);
                 packet.put("mode", SampleMecanumDrive.Mode.FOLLOW_TRAJECTORY);
-
-                packet.put("target Heading", targetHeading * 180 / Math.PI);
-                packet.put("heading Difference", headingDifference * 180 / Math.PI);
-
-                packet.put("X", currentPos[0]);
-                packet.put("Y", currentPos[1]);
-
-                packet.put("deltaX", deltaX);
-                packet.put("deltaY", deltaY);
-
-                packet.put("i", i);
-                packet.put("j", j);
-                packet.put("t things", generateVelocityCurve(l,t,currentVelocity));
-
-                packet.put("power", Math.max(Math.max(FL,FR),Math.max(BL,BR)));
+                packet.put("currentVelocity", currentVelocity);
+                packet.put("l", l);
+                packet.put("t", t);
+                packet.put("w", w);
+                packet.put("size", Velocity.size());
                 packet.put("powerRatio", powerRatio);
-                packet.put("average loop time Millis", (double)(System.currentTimeMillis() - startTime)/loops);
-
                 packet.put("heading", headingAngleRadians);
                 dashboard.sendTelemetryPacket(packet);
 
