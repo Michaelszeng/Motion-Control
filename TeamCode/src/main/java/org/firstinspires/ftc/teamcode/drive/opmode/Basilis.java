@@ -40,9 +40,9 @@ public class Basilis<xFunction> extends LinearOpMode {
     final double maxAcceleration = 10;//in/sec/sec
     final double maxDeceleration = 10;//in/sec/sec
     final double maxLateralAcceleration = 150; //in/sec/sec
-    double [] endVCoordsX = new double[2];
-    double [] endVCoordsY = new double[2];
-    double [][] xFunction = new double [2][4];double [][] yFunction = new double [2][4];
+    double [] endVCoordsX = new double[8];
+    double [] endVCoordsY = new double[8];
+    double [][] xFunction = new double [8][4];double [][] yFunction = new double [8][4];
     double fidelity = 100;
     double timeIncrament = 0.1;
     double q = 0;
@@ -231,7 +231,17 @@ public class Basilis<xFunction> extends LinearOpMode {
         }
         return k;
     }
-
+    public double headingDifference(double headingAngleRadians, double targetHeading){
+        double headingDifference = headingAngleRadians - targetHeading;
+        while (headingDifference >= Math.PI) {
+            headingDifference -= Math.PI * 2;
+        }// Think I found the issue; we used Math.PI and not -Math.PI
+        while (headingDifference <= Math.PI * -1) {
+            headingDifference += Math.PI * 2;
+        }
+        headingDifference *= -1;
+        return headingDifference;
+    }
     public void runOpMode() throws InterruptedException {
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(100);
@@ -249,6 +259,7 @@ public class Basilis<xFunction> extends LinearOpMode {
         double headingConstant = 0.017522383;
         double headingAngleRadians = 0;
         double headingDifference = 0;
+        double startHeadingDifference = 0;
         double deltaRelX;
         double deltaRelY;
         double deltaX;
@@ -260,7 +271,9 @@ public class Basilis<xFunction> extends LinearOpMode {
 
 
 
-        xFunction[ 0 ][0] = 16.5;xFunction[ 0 ][1] = -40.5;xFunction[ 0 ][2] = 99.0;xFunction[ 0 ][3] = -58.0;yFunction[ 0 ][0] = -124.5;yFunction[ 0 ][1] = 195.0;yFunction[ 0 ][2] = -49.5;yFunction[ 0 ][3] = -7.0;endVCoordsX[ 0 ] = 62;endVCoordsY[ 0 ] = -8;xFunction[ 1 ][0] = -29.0;xFunction[ 1 ][1] = -10.5;xFunction[ 1 ][2] = 67.5;xFunction[ 1 ][3] = 17.0;yFunction[ 1 ][0] = 28.5;yFunction[ 1 ][1] = -40.5;yFunction[ 1 ][2] = -33.0;yFunction[ 1 ][3] = 14.0;endVCoordsX[ 1 ] = 18;endVCoordsY[ 1 ] = -50;
+        xFunction[ 0 ][0] = -14.0;xFunction[ 0 ][1] = 1.5;xFunction[ 0 ][2] = 91.5;xFunction[ 0 ][3] = -60.0;yFunction[ 0 ][0] = -135.0;yFunction[ 0 ][1] = 199.5;yFunction[ 0 ][2] = -46.5;yFunction[ 0 ][3] = 7.0;endVCoordsX[ 0 ] = 54;endVCoordsY[ 0 ] = -10;xFunction[ 1 ][0] = -83.0;xFunction[ 1 ][1] = 64.5;xFunction[ 1 ][2] = 52.5;xFunction[ 1 ][3] = 19.0;yFunction[ 1 ][0] = -11.5;yFunction[ 1 ][1] = 24.0;yFunction[ 1 ][2] = -52.5;yFunction[ 1 ][3] = 25.0;endVCoordsX[ 1 ] = 8;endVCoordsY[ 1 ] = -41;xFunction[ 2 ][0] = 155.0;xFunction[ 2 ][1] = -157.5;xFunction[ 2 ][2] = -67.5;xFunction[ 2 ][3] = 53.0;yFunction[ 2 ][0] = 122.0;yFunction[ 2 ][1] = -102.0;yFunction[ 2 ][2] = -39.0;yFunction[ 2 ][3] = -15.0;endVCoordsX[ 2 ] = 38;endVCoordsY[ 2 ] = 48;xFunction[ 3 ][0] = -65.5;xFunction[ 3 ][1] = 60.0;xFunction[ 3 ][2] = 82.5;xFunction[ 3 ][3] = -17.0;yFunction[ 3 ][0] = -88.0;yFunction[ 3 ][1] = 24.0;yFunction[ 3 ][2] = 123.0;yFunction[ 3 ][3] = -34.0;endVCoordsX[ 3 ] = 64;endVCoordsY[ 3 ] = -37;xFunction[ 4 ][0] = -107.0;xFunction[ 4 ][1] = 90.0;xFunction[ 4 ][2] = 6.0;xFunction[ 4 ][3] = 60.0;yFunction[ 4 ][0] = 64.5;yFunction[ 4 ][1] = -34.5;yFunction[ 4 ][2] = -93.0;yFunction[ 4 ][3] = 25.0;endVCoordsX[ 4 ] = -41;endVCoordsY[ 4 ] = -17;xFunction[ 5 ][0] = 6.5;xFunction[ 5 ][1] = 76.5;xFunction[ 5 ][2] = -135.0;xFunction[ 5 ][3] = 49.0;yFunction[ 5 ][0] = -24.5;yFunction[ 5 ][1] = 3.0;yFunction[ 5 ][2] = 31.5;yFunction[ 5 ][3] = -38.0;endVCoordsX[ 5 ] = 22;endVCoordsY[ 5 ] = -52;xFunction[ 6 ][0] = -16.0;xFunction[ 6 ][1] = -28.5;xFunction[ 6 ][2] = 37.5;xFunction[ 6 ][3] = -3.0;yFunction[ 6 ][0] = 13.0;yFunction[ 6 ][1] = 6.0;yFunction[ 6 ][2] = -36.0;yFunction[ 6 ][3] = -28.0;endVCoordsX[ 6 ] = -55;endVCoordsY[ 6 ] = -35;xFunction[ 7 ][0] = -7.5;xFunction[ 7 ][1] = 48.0;xFunction[ 7 ][2] = -67.5;xFunction[ 7 ][3] = -10.0;yFunction[ 7 ][0] = 2.5;yFunction[ 7 ][1] = 13.5;yFunction[ 7 ][2] = 15.0;yFunction[ 7 ][3] = -45.0;endVCoordsX[ 7 ] = -33;endVCoordsY[ 7 ] = 19;
+
+
 
         double pixelToInch = 13.8888888889;
         double t = 0;
@@ -296,16 +309,7 @@ public class Basilis<xFunction> extends LinearOpMode {
                 targetHeading = Math.atan2(p2[1] - currentPos[1], p2[0] - currentPos[0]);
                 heading = ((wheelPositions.get(2) - wheelPositions.get(1)) + (wheelPositions.get(0) - wheelPositions.get(3)));
                 headingAngleRadians = heading * headingConstant + startingHeading;
-                headingDifference = headingAngleRadians - targetHeading;
-                while (headingDifference >= Math.PI) {
-                    headingDifference -= Math.PI * 2;
-                    i ++;
-                }// Think I found the issue; we used Math.PI and not -Math.PI
-                while (headingDifference <= Math.PI * -1) {
-                    headingDifference += Math.PI * 2;
-                    j ++;
-                }
-                headingDifference *= -1;
+                headingDifference = headingDifference(headingAngleRadians,targetHeading);
 
                 double dist = Math.sqrt(Math.pow(p2[0]-currentPos[0],2) + (Math.pow(p2[1]-currentPos[1],2)));
                 //maxDist = Math.max(maxDist,dist);
@@ -327,6 +331,20 @@ public class Basilis<xFunction> extends LinearOpMode {
                     BL = BL / power;
                 }
 
+                if (Math.abs(startHeadingDifference) + Math.PI/6 < Math.abs(headingDifference)) {
+                    double finalX = (xFunction[l][0] + xFunction[l][1] + xFunction[l][2] + xFunction[l][3]);
+                    double finalY = (yFunction[l][0] + yFunction[l][1] + yFunction[l][2] + yFunction[l][3]);
+                    double magni = Math.sqrt(Math.pow(currentPos[0] - finalX, 2) + Math.pow(currentPos[1] - finalY, 2));
+                    magni *= 0.25;
+                    xFunction[l] = redoFunction(currentPos[0], magni * Math.cos(headingAngleRadians), finalX, endVCoordsX[l] - finalX);
+                    yFunction[l] = redoFunction(currentPos[1], magni * Math.sin(headingAngleRadians), finalY, endVCoordsY[l] - finalY);
+                    t = 0;
+                    p2[0] = (xFunction[l][0]*Math.pow((t/100),3) + xFunction[l][1]*Math.pow((t/100),2) + xFunction[l][2]*(t/100) + xFunction[l][3]);
+                    p2[1] = (yFunction[l][0]*Math.pow((t/100),3) + yFunction[l][1]*Math.pow((t/100),2) + yFunction[l][2]*(t/100) + yFunction[l][3]);
+                    targetHeading = Math.atan2(p2[1] - currentPos[1], p2[0] - currentPos[0]);
+                    startHeadingDifference = headingDifference(headingAngleRadians,targetHeading);
+                }
+
 
                 double deltaFR = wheelPositions.get(0) - pastFR;
                 double deltaBR = wheelPositions.get(2) - pastBR;
@@ -340,14 +358,9 @@ public class Basilis<xFunction> extends LinearOpMode {
                 currentPos[0] += deltaX;
                 currentPos[1] += deltaY;
 
-                double offset = 4;
+                double offset = 2;
                 if ((currentPos[0] > p2[0] - offset && currentPos[0] < p2[0] + offset) && (currentPos[1] > p2[1] - offset && currentPos[1] < p2[1] + offset)){
 
-                    double finalX = (xFunction[l][0] + xFunction[l][1] + xFunction[l][2] + xFunction[l][3]);
-                    double finalY = (yFunction[l][0] + yFunction[l][1] + yFunction[l][2] + yFunction[l][3]);
-                    double magni = Math.sqrt(Math.pow(currentPos[0]-finalX,2) + Math.pow(currentPos[1]-finalY,2));
-                    magni *= 0.25;
-                    q ++;
                     /*
                     if (q == 50) {
                         q = 0;
@@ -363,6 +376,8 @@ public class Basilis<xFunction> extends LinearOpMode {
                     lastPoint[1] = p2[0];
                     p2[0] = (xFunction[l][0]*Math.pow((t/100),3) + xFunction[l][1]*Math.pow((t/100),2) + xFunction[l][2]*(t/100) + xFunction[l][3]);
                     p2[1] = (yFunction[l][0]*Math.pow((t/100),3) + yFunction[l][1]*Math.pow((t/100),2) + yFunction[l][2]*(t/100) + yFunction[l][3]);
+                    targetHeading = Math.atan2(p2[1] - currentPos[1], p2[0] - currentPos[0]);
+                    startHeadingDifference = headingDifference(headingAngleRadians,targetHeading);
                     if (l * fidelity + t < Velocity.size()) {
                         currentVelocity = Velocity.get((int) (l * fidelity + t));
                     }
@@ -385,7 +400,7 @@ public class Basilis<xFunction> extends LinearOpMode {
 
                 TelemetryPacket packet = new TelemetryPacket();
                 Canvas fieldOverlay = packet.fieldOverlay();
-                Pose2d currentPose = new Pose2d(currentPos[0], currentPos[1], headingAngleRadians);
+                Pose2d currentPose = new Pose2d(-1 * currentPos[1], -1 * currentPos[0], ((Math.PI*3)/2 - headingAngleRadians));
                 poseHistory.add(currentPose);
                 fieldOverlay.setStrokeWidth(1);
                 fieldOverlay.setStroke("#3F51B5");
