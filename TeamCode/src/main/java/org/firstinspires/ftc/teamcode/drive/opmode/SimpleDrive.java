@@ -24,11 +24,11 @@ import java.util.List;
 @Autonomous(group = "drive")
 public class SimpleDrive extends LinearOpMode {
     private String TAG = "SimpleDrive";
-    SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
     List<Pose2d> poseHistory = new ArrayList<>();
     FtcDashboard dashboard;
     public void runOpMode() throws InterruptedException {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);
         double s = 0;
