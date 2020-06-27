@@ -1,2 +1,5 @@
+include ':easyopencv'
 include ':FtcRobotController'
 include ':TeamCode'
+project(':easyopencv').projectDir = new File(rootDir, 'EasyOpeCVLib/easyopencv/')
+//project(':DogeCV').projectDir = new File(rootDir, 'DogeCVLib/DogeCV/')

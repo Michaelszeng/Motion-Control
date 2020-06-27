@@ -25,9 +25,9 @@ import java.util.List;
 @Autonomous(group = "drive")
 public class SimpleDrive2 extends LinearOpMode {
     private String TAG = "SimpleDrive2";
-    FieldDashboard fieldDashboard = new FieldDashboard(drive);
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        FieldDashboard fieldDashboard = new FieldDashboard(drive);
         double s = drive.getPoseEstimate().getX();
         while (! isStopRequested()) {
             while(s < 60) {
