@@ -33,7 +33,13 @@ for i in range(length-1):
     print(d[i])
 
 fig, ax = plt.subplots()
-plt.plot(d, s)
+ax.plot(d, s)
+
+ax.set(xlabel='time (s)', ylabel='leftFront power',
+        title='motor power vs. time')
+ax.grid()
+
+plt.show()
 
 print(len(s))
 print(len(d))
