@@ -1,5 +1,15 @@
+include ':DogeCV'
+include ':plugin'
+include ':custom-detekt-rules'
+include ':gui'
+include ':core'
 include ':easyopencv'
 include ':FtcRobotController'
 include ':TeamCode'
 project(':easyopencv').projectDir = new File(rootDir, 'EasyOpeCVLib/easyopencv/')
+project(':core').projectDir = new File(rootDir, 'road-runner-lib/core/')
+project(':gui').projectDir = new File(rootDir, 'road-runner-lib/gui/')
+project(':custom-detekt-rules').projectDir = new File(rootDir, 'road-runner-lib/custom-detekt-rules/')
+project(':plugin').projectDir = new File(rootDir, 'road-runner-lib/plugin/')
+project(':DogeCV').projectDir = new File(rootDir, 'DogeCVLib/DogeCV/')
 //project(':DogeCV').projectDir = new File(rootDir, 'DogeCVLib/DogeCV/')

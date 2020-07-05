@@ -5,6 +5,7 @@
 [submodule "road-runner-lib"]
 	path = road-runner-lib
 	url = https://github.com/wangxdflight/road-runner.git
+	branch = dev_sub
 [submodule "DogeCVLib"]
 	path = DogeCVLib
 	url = https://github.com/wangxdflight/DogeCV.git
