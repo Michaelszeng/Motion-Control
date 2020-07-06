@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 @TeleOp
 public class jniSquare extends LinearOpMode {
     public native String  stringFromJNI();
+    public native int  squared(int num);
     static{
         System.loadLibrary("hello-jni");
     }
@@ -22,6 +23,7 @@ public class jniSquare extends LinearOpMode {
         while (opModeIsActive()) {
             int time = (int)(System.currentTimeMillis() - start)/1000;
             telemetry.addData("count", time);
+            telemetry.addData("squared", squared(time));
             telemetry.update();
         }
     }

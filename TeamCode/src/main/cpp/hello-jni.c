@@ -60,3 +60,9 @@ Java_org_firstinspires_ftc_teamcode_drive_opmode_jniSquare_stringFromJNI( JNIEnv
 
     return (*env)->NewStringUTF(env, "Hello from JNI !  Compiled with ABI " ABI ".");
 }
+
+JNIEXPORT jint JNICALL
+Java_org_firstinspires_ftc_teamcode_drive_opmode_jniSquare_squared( JNIEnv* env, jobject thiz, jint num)
+{
+    return (num*num);
+}
