@@ -13,6 +13,14 @@
 
 // Include common definitions from above.
 apply from: '../build.common.gradle'
+
+android {
+    externalNativeBuild {
+        cmake {
+            path file('src/main/cpp/CMakeLists.txt')
+        }
+    }
+}
 dependencies {
     //NOTE: this is the correct version, the below screenshot is outdated
 }
