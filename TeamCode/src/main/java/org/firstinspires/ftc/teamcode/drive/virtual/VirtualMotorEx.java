@@ -129,6 +129,7 @@ public class VirtualMotorEx implements DcMotorEx {
     public double getVelocity() {
         double r = last_get_wheel_position_power / kV;
         r = inchesToTicks(r);
+        last_get_wheel_position_power = motor_power;
         //RobotLogger.dd(TAG, motor_name + ", getVelocity: " + Double.toString(r) + " last_get_wheel_position_power: " + Double.toString(last_get_wheel_position_power));
         return r;
     }
@@ -488,7 +489,6 @@ public class VirtualMotorEx implements DcMotorEx {
                 + Double.toString(rp) + ", last power: " + Double.toString(last_get_wheel_position_power)
                 + ", current power: " + Double.toString(motor_power));
         last_get_wheel_position_time = SystemClock.elapsedRealtime();
-        last_get_wheel_position_power = motor_power;
         last_wheel_position = rp;
         //RobotLogger.dd(TAG, "current velocity PID: %f, %f, %f", kP, kI, kD);
         //RobotLogger.dd(TAG, "current transitional PID: %f, %f, %f", txP, txI, txD);

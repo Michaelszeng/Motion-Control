@@ -426,5 +426,8 @@ public class SampleMecanumDrive extends MecanumDrive {
             }
         }
     }
+    public List<DcMotorEx> getMotors() {
+        return motors;
+    }
 
 }
