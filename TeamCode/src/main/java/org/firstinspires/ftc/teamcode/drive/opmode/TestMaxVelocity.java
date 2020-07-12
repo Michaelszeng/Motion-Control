@@ -11,6 +11,9 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
+import org.firstinspires.ftc.teamcode.drive.virtual.VirtualLocalizer;
+import org.firstinspires.ftc.teamcode.drive.virtual.VirtualMotorEx;
+import org.firstinspires.ftc.teamcode.util.RobotLogger;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,13 +36,20 @@ public class TestMaxVelocity extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         double currentVelocity;
-        SampleMecanumDrive drive = null;
-        drive = new SampleMecanumDrive(hardwareMap);
-
-        leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
-        leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
-        rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
-        rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        if (!DriveConstants.VirtualizeDrive) {
+            leftFront = hardwareMap.get(DcMotorEx.class, "leftFront");
+            leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
+            rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
+            rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+        }
+        else {
+            List<DcMotorEx> motors = drive.getMotors();
+            leftFront = motors.get(0);
+            leftRear = motors.get(1);
+            rightRear = motors.get(2);
+            rightFront = motors.get(3);
+        }
 
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
         for (DcMotorEx motor : motors) {
