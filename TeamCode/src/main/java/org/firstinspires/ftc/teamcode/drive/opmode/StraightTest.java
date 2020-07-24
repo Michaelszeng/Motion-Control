@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import org.firstinspires.ftc.teamcode.util.SafeSleep;
 
 /*
@@ -16,13 +17,15 @@ import org.firstinspires.ftc.teamcode.util.SafeSleep;
 @Autonomous(group = "drive")
 public class StraightTest extends LinearOpMode {
     public static double DISTANCE = 60; // in
-
+    public String TAG = "StraightTest";
     @Override
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
 
         while (! isStopRequested()) {
-            Trajectory trajectory = drive.trajectoryBuilder(drive.getLocalizer().getPoseEstimate())
+            Pose2d currentPos = drive.getPoseEstimate();
+            RobotLogger.dd(TAG, "current position: " + currentPos);
+            Trajectory trajectory = drive.trajectoryBuilder(currentPos)
                     .forward(DISTANCE)
                     .build();
 
@@ -30,11 +33,13 @@ public class StraightTest extends LinearOpMode {
 
             if (isStopRequested()) return;
 
+            drive.followTrajectory(trajectory);
             SafeSleep.sleep_milliseconds(this, 500);
 
-            drive.followTrajectory(trajectory);
+            currentPos = drive.getPoseEstimate();
+            RobotLogger.dd(TAG, "current position: " + currentPos);
 
-            trajectory = drive.trajectoryBuilder(drive.getLocalizer().getPoseEstimate())
+            trajectory = drive.trajectoryBuilder(currentPos)
                     .back(DISTANCE)
                     .build();
             drive.followTrajectory(trajectory);

@@ -1,9 +1,5 @@
 # robotDriver
 
-Drive control(everyone should read!) [slides](https://docs.google.com/presentation/d/1xjtQ5m3Ay4AYxS_SfloF2n_vWZnCU25aXZuu9A59xPY/pub?start=false&loop=false&delayms=3000&slide=id.p)
-
-Good video on [drive control](https://www.youtube.com/watch?v=8319J1BEHwM)
-
 Using git within Android studio [online slides](https://docs.google.com/presentation/d/1LqPM6QersylS3Qat3jKbnGSkmfw6Yn31QVBdmx-aKUw/edit?usp=sharing).
 
 Drive control training for Clueless team [summer of 2020, under development](https://docs.google.com/presentation/d/1zO_mQBujyA_bK-_M9h-GlggaW8oOwIQXXye-5kuiDGc/edit?usp=sharing).
