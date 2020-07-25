@@ -33,6 +33,7 @@ public class SimpleDrive2 extends LinearOpMode {
             while(s < 60) {
                 drive.setMotorPowers(0.8, 0.8, 0.8, 0.8);
                 List<Double> wheelPositions = drive.getWheelPositions();
+
                 RobotLogger.dd(TAG, "wheelPositions:" + wheelPositions.toString());
                 s = drive.getPoseEstimate().getX();
 

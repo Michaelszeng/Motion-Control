@@ -52,5 +52,5 @@ t = 0:0.01:2;
 step(T,t)
 title('P, I, and D');
 
-% pidTuner(P,C)
+pidTuner(P,C)
 

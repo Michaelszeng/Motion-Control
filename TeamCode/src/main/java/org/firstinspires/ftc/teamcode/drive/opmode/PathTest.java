@@ -55,7 +55,7 @@ public class PathTest extends LinearOpMode {
 
         RobotLogger.dd(TAG, "unit test for path (BLUE QUARY), ARM actions?" + Integer.toString(DriveConstants.ENABLE_ARM_ACTIONS?1:0));
         Pose2d startingPos = new Pose2d(new Vector2d(-34.752, -63.936), Math.toRadians(0));
-        hwMap = new AllHardwareMap(hardwareMap);
+        hwMap = new AllHardwareMap(hardwareMap, _drive);
         fieldPosition = FieldPosition.RED_QUARY;
 
         waitForStart();

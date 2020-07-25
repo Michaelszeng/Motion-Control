@@ -1,4 +1,15 @@
 clear
+Kc=6.84;
+Pc=75/120;
+Kp = 0.6*Kc
+Ki = 1.2*Kc/Pc
+Kd = 3*Kc*Pc/40;
+
+s = tf('s');
+C = Kp + Ki/s + Kd*s
+C1 = pid(Kp,Ki,Kd)
+tf(C1)
+return;
 x = 0:0.001:1;
 y0 = 2 * x;
 y1 = 2 * sqrt(x .* (1 -x));
