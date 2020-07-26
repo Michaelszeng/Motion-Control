@@ -57,14 +57,12 @@ public class VirtualMotorEx implements DcMotorEx {
 
     public VirtualMotorEx(MecanumDrive drv, String name)
     {
-        RobotLogger.dd(TAG, "create VirtualMotorEx", name);
         motor_name = name;
         last_get_wheel_position_time = SystemClock.elapsedRealtime();
+        RobotLogger.dd(TAG, "create VirtualMotorEx " + name + " " + last_get_wheel_position_time);
         last_get_wheel_position_power = 0;
         last_wheel_position = 0;
         motor_power = 0;
-        driveTrain = DriveTrain.getSingle_instance(drv, name);
-        driveTrain.AddWheel(this, name);
     }
     public void setPower(double power) {
         RobotLogger.dd(TAG, "%s: setPower %f", motor_name, power);
@@ -477,23 +475,21 @@ public class VirtualMotorEx implements DcMotorEx {
      * @see DcMotor.RunMode#STOP_AND_RESET_ENCODER
      */
     public int getCurrentPosition() {
-        long time_duration = SystemClock.elapsedRealtime() - last_get_wheel_position_time;
+        long current_time = SystemClock.elapsedRealtime();
+        long time_duration = current_time - last_get_wheel_position_time;
         double v = getVelocity();
-        double r = v * ((double)time_duration) / 1000.0;
-        RobotLogger.dd(TAG, "velocity: " + Double.toString(v) + " delta position: " + Double.toString(r));
+        double delta = v * ((double)time_duration) / 1000.0;
+        RobotLogger.dd(TAG, "current_time: " + current_time + " last_get_wheel_position_time: " + last_get_wheel_position_time + " velocity: " + Double.toString(v) + " delta position: " + Double.toString(delta));
 
-        int rp =  (int) (r + last_wheel_position);
+        int current_pos =  (int) (delta + last_wheel_position);
 
         RobotLogger.dd(TAG, motor_name + ", velocity: " + Double.toString(v)
                 + ", time duration: " + Double.toString(time_duration) + ", currPosition: "
-                + Double.toString(rp) + ", last power: " + Double.toString(last_get_wheel_position_power)
+                + Double.toString(current_pos) + ", last power: " + Double.toString(last_get_wheel_position_power)
                 + ", current power: " + Double.toString(motor_power));
-        last_get_wheel_position_time = SystemClock.elapsedRealtime();
-        last_wheel_position = rp;
-        //RobotLogger.dd(TAG, "current velocity PID: %f, %f, %f", kP, kI, kD);
-        //RobotLogger.dd(TAG, "current transitional PID: %f, %f, %f", txP, txI, txD);
-        //RobotLogger.dd(TAG, "current heading PID: %f, %f, %f", hP, hI, hD);
-        return rp;
+        last_get_wheel_position_time = current_time;
+        last_wheel_position = current_pos;
+        return current_pos;
     };
 
     /**

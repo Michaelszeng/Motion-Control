@@ -13,10 +13,14 @@ import java.util.List;
 public class DriveTrain extends BaseDriveTrain {
     private String TAG = "DriveTrain";
     private static DriveTrain driveTrain_singleInstance = null;
-    private DriveTrain(MecanumDrive _drv) {
+    public DriveTrain(MecanumDrive _drv)
+    {
         super(_drv);
+        setPoseEstimate(new Pose2d(0, 0, 0));
+        RobotLogger.dd("DriveTrain", "drive train created");
     }
 
+    /*
     synchronized  public static DriveTrain getSingle_instance(MecanumDrive drv, String name) {
         if (driveTrain_singleInstance == null) {
             RobotLogger.dd("DriveTrain", "drive train created");
@@ -26,7 +30,7 @@ public class DriveTrain extends BaseDriveTrain {
 
         return driveTrain_singleInstance;
     }
-
+    */
     public Pose2d getRobotPose() {
         RobotLogger.dd(TAG, "getRobotHeading, num of motors: " + drive_motors.size());
         double extHeading = 0;

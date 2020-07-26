@@ -14,9 +14,9 @@ public class VirtualLocalizer implements Localizer {
     DriveTrain _driveTrain;
     private String TAG = "VirtualLocalizer";
     MecanumDrive _drive;
-    public VirtualLocalizer(MecanumDrive drive) {
-        _drive = drive;
-        _driveTrain = DriveTrain.getSingle_instance(_drive, "any");
+    public VirtualLocalizer(DriveTrain _virtualDriveTrain) {
+        _drive = _virtualDriveTrain.drive;
+        _driveTrain = _virtualDriveTrain;
         RobotLogger.dd(TAG, "VirtualLocalizer created");
     }
 

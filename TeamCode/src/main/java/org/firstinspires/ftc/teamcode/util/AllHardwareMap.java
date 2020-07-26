@@ -44,7 +44,7 @@ public class AllHardwareMap {
             backLeft = new VirtualMotorEx(drive, "leftRear");
             backRight = new VirtualMotorEx(drive, "rightRear");
             frontRight = new VirtualMotorEx(drive, "rightFront");
- 
+
             this.hardwareMap = hwMap;
         }
     }

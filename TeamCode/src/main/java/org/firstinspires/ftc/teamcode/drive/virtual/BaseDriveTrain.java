@@ -53,16 +53,34 @@ public abstract class BaseDriveTrain {
             RobotLogger.dd(TAG, "unexpected motor");
         return index;
     }
+    private String getMotorNameFromIndex(int index) {
+        if (index == 0)
+            return "leftFront";
+        else if (index == 1)
+            return "leftRear";
+        else if (index == 2)
+            return "rightRear";
+        else if (index == 3)
+            return "rightFront";
+        else
+            RobotLogger.dd(TAG, "unexpected motor");
+        return null;
+    }
     private void clear() {
         drive_motors.clear();
         lastWheelVelocities.clear();
         lastWheelPositions.clear();
     }
+    public void AddMotors(List<DcMotorEx> motors) {
+        for (int i = 0; i < motors.size(); i ++) {
+            AddWheel(motors.get(i), getMotorNameFromIndex(i));
+        }
+    }
     public void AddWheel(DcMotorEx motor, String name) {
         RobotLogger.dd(TAG, "add wheel: " + name);
         if (getWheelCount() == DRIVE_WHEEL_NUM && name.equals("leftFront"))
         {
-            RobotLogger.dd(TAG, "need to reset motors");
+            RobotLogger.dd(TAG, "need to reset motors, SHOULD NOT HAPPEN!");
             clear();
             driveTrainReady = false;
         }

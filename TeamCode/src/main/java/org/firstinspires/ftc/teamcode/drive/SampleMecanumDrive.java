@@ -89,6 +89,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
+    private DriveTrain _virtualDriveTrain;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
         super(kV, kA, kStatic, TRACK_WIDTH);
@@ -132,16 +133,18 @@ public class SampleMecanumDrive extends MecanumDrive {
             leftRear = hardwareMap.get(DcMotorEx.class, "leftRear");
             rightRear = hardwareMap.get(DcMotorEx.class, "rightRear");
             rightFront = hardwareMap.get(DcMotorEx.class, "rightFront");
+            motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
         } else {
             leftFront = new VirtualMotorEx(this, "leftFront");
             leftRear = new VirtualMotorEx(this, "leftRear");
             rightRear = new VirtualMotorEx(this, "rightRear");
             rightFront = new VirtualMotorEx(this, "rightFront");
-            setLocalizer(new VirtualLocalizer(this));
+            motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
+            _virtualDriveTrain = new DriveTrain(this);
+            _virtualDriveTrain.AddMotors(motors);
+            setLocalizer(new VirtualLocalizer(_virtualDriveTrain));
             RobotLogger.dd(TAG, "use default 4 wheel localizer");
         }
-        motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
-
         for (DcMotorEx motor : motors) {
             MotorConfigurationType motorConfigurationType = motor.getMotorType().clone();
             motorConfigurationType.setAchieveableMaxRPMFraction(1.0);
@@ -379,8 +382,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         if (!DriveConstants.VirtualizeDrive) {
             return imu.getAngularOrientation().firstAngle;
         } else {
-            DriveTrain driveTrain = DriveTrain.getSingle_instance(this, "any");
-            Pose2d pose = driveTrain.getRobotPose();
+            Pose2d pose = _virtualDriveTrain.getRobotPose();
             RobotLogger.dd(TAG, "Simulated Pose (IMU ExternalHeading): " + pose.toString());
             return pose.getHeading();
         }

@@ -5,7 +5,6 @@ import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.constraints.DriveConstraints;
 import com.qualcomm.hardware.motors.GoBILDA5202Series;
-import com.qualcomm.hardware.motors.NeveRest20Gearmotor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 
@@ -17,6 +16,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.File;
+import java.lang.reflect.GenericArrayType;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +34,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
  */
 @Config
 public class DriveConstants {
+    public boolean READ_FROM_XML = true;
     private static String TAG = "DriveConstants";
     public static int TEST_SKY_STONE_POSITION = 1;
     public static boolean USE_VUFORIA_LOCALIZER = false;
@@ -53,7 +54,7 @@ public class DriveConstants {
     public static double hD = 0.00001;
 
     public static double ODOMETRY_TRACK_WIDTH = 14.8;
-    public static double ODOMERY_FORWARD_OFFSET = -5.5;
+    public static double ODOMETRY_FORWARD_OFFSET = -5.5;
     public static double HARDCODED_TICKS_PER_REV = 383.6; //MOTOR_CONFIG.getTicksPerRev();
     public static double MAX_RPM_FROM_SPEC = 435.0;
     public static double HARDCODED_RPM_RATIO = 0.683; //0.72215; // 0.666;///0.6514;//*MAX_RPM_FROM_SPEC; //283.4; //MOTOR_CONFIG.getMaxRPM();
@@ -64,7 +65,7 @@ public class DriveConstants {
     public static final double MAX_RPM = 1;
     private static final MotorConfigurationType MOTOR_CONFIG =
             MotorConfigurationType.getMotorType(GoBILDA5202Series.class);// NeveRest20Gearmotor
-            // Matrix12vMotor  GoBILDA5202Series MatrixLegacyMotor (757.12)
+    // Matrix12vMotor  GoBILDA5202Series MatrixLegacyMotor (757.12)
 
 
     /*
@@ -104,8 +105,8 @@ public class DriveConstants {
     public static double kA = 0;
     public static double kStatic = 0;
 
-	public static double maxVel = 75.0; //90.0
-	public static double maxAccel = 35.0;   //35.0
+    public static double maxVel = 75.0; //90.0
+    public static double maxAccel = 35.0;   //35.0
     public static double maxAngVel = 135.0;
     public static double maxAngAccel = 90.0;
     /*
@@ -116,6 +117,13 @@ public class DriveConstants {
      * acceleration values are required, and the jerk values are optional (setting a jerk of 0.0
      * forces acceleration-limited profiling). All distance units are inches.
      */
+
+    public DriveConstants(){
+        if(READ_FROM_XML){
+            updateDriveConstants("xmlDriveConstants.xml");
+        }
+    }
+
     public static DriveConstraints BASE_CONSTRAINTS = new DriveConstraints(
             maxVel, maxAccel, 0.0,
             Math.toRadians(maxAngVel), Math.toRadians(maxAngAccel), 0.0
@@ -127,7 +135,7 @@ public class DriveConstants {
         double s = WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / HARDCODED_TICKS_PER_REV; //MOTOR_CONFIG.getTicksPerRev();
         //RobotLog.dd(TAG, "encoderTicksToInches: " + "ticks: " + Double.toString(ticks) + " inches: " + Double.toString(s));
         return s;
-        }
+    }
 
     public static double rpmToVelocity(double rpm) {
         double s = rpm * GEAR_RATIO * 2 * Math.PI * WHEEL_RADIUS / 60.0;
@@ -208,6 +216,133 @@ public class DriveConstants {
             e.printStackTrace();
         }
         return coordinates;
+    }
+
+    public static void  updateDriveConstants(String filename){
+        String full_path = AppUtil.CONFIG_FILES_DIR + "/" + filename;
+        try{
+            File inputFile = new File(full_path);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document doc = db.parse(inputFile);
+            doc.getDocumentElement().normalize();
+            NodeList nList = doc.getElementsByTagName("variable");
+            for(int i=0; i<nList.getLength(); i++){
+                Node nNode = nList.item(i);
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+                    Element eElement = (Element) nNode;
+                    String name = eElement.getElementsByTagName("name").item(0).getTextContent();
+                    String value = eElement.getElementsByTagName("value").item(0).getTextContent();
+                    switch(name){
+                        case "TEST_SKY_STONE_POSITION":
+                            TEST_SKY_STONE_POSITION = Integer.valueOf(value);
+                            break;
+                        case "USE_VUFORIA_LOCALIZER":
+                            USE_VUFORIA_LOCALIZER = value.equals("true");
+                            break;
+                        case "ENABLE_ARM_ACTIONS":
+                            ENABLE_ARM_ACTIONS = value.equals("true");
+                            break;
+                        case "USING_STRAFE_DIAGONAL":
+                            USING_STRAFE_DIAGONAL = value.equals("true");
+                            break;
+                        case "TEST_PAUSE_TIME":
+                            TEST_PAUSE_TIME = Integer.valueOf(value);
+                            break;
+                        case "odoEncoderTicksPerRev":
+                            odoEncoderTicksPerRev = new Double(value);
+                            break;
+                        case "txP":
+                            txP = new Double(value);
+                            break;
+                        case "txI":
+                            txI = new Double(value);
+                            break;
+                        case "txD":
+                            txD = new Double(value);
+                            break;
+                        case "tyP":
+                            tyP = new Double(value);
+                            break;
+                        case "tyI":
+                            tyI = new Double(value);
+                            break;
+                        case "tyD":
+                            tyD = new Double(value);
+                            break;
+                        case "hP":
+                            hP = new Double(value);
+                            break;
+                        case "hI":
+                            hI = new Double(value);
+                            break;
+                        case "hD":
+                            hD = new Double(value);
+                            break;
+                        case "ODOMETRY_TRACK_WIDTH":
+                            ODOMETRY_TRACK_WIDTH = new Double(value);
+                            break;
+                        case "ODOMETRY_FORWARD_OFFSET":
+                            ODOMETRY_FORWARD_OFFSET = new Double(value);
+                            break;
+                        case "HARDCODED_TICKS_PER_REV":
+                            HARDCODED_TICKS_PER_REV = new Double(value);
+                            break;
+                        case "MAX_RPM_FROM_SPEC":
+                            MAX_RPM_FROM_SPEC = new Double(value);
+                            break;
+                        case "HARDCODED_RPM_RATIO":
+                            HARDCODED_RPM_RATIO = new Double(value);
+                            break;
+                        case "kP":
+                            kP = new Double(value);
+                            break;
+                        case "kI":
+                            kI = new Double(value);
+                            break;
+                        case "kD":
+                            kD = new Double(value);
+                            break;
+                        case "WHEEL_RADIUS":
+                            WHEEL_RADIUS = new Double(value);
+                            break;
+                        case "GEAR_RATIO":
+                            GEAR_RATIO = new Double(value);
+                            break;
+                        case "TRACK_WIDTH":
+                            TRACK_WIDTH = new Double(value);
+                            break;
+                        case "WHEEL_BASE":
+                            WHEEL_BASE = new Double(value);
+                            break;
+                        case "kV":
+                            kV = new Double(value);
+                            break;
+                        case "kA":
+                            kA = new Double(value);
+                            break;
+                        case "kStatic":
+                            kStatic = new Double(value);
+                            break;
+                        case "maxVel":
+                            maxVel = new Double(value);
+                            break;
+                        case "maxAccel":
+                            maxAccel = new Double(value);
+                            break;
+                        case "maxAngVel":
+                            maxAngVel = new Double(value);
+                            break;
+                        case "maxAngAccel":
+                            maxAngAccel = new Double(value);
+                            break;
+                    }
+                }
+            }
+            MOTOR_VELO_PID = new PIDCoefficients(kP, kI, kD);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static boolean ENABLE_LOGGING = true;
