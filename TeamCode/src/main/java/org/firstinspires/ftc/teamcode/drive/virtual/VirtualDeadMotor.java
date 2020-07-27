@@ -73,39 +73,51 @@ public class VirtualDeadMotor implements DcMotor {
         return 0;
     }
     private void calculateEncoderValues() {
+        // deltaX, deltaY are robot local X, Y delta;
+        // delta_x, delta_y are global x, y delta;
+        // delta_x, delta_y --> deltaX, deltaY --> rs, rt --> deltaB, deltaR, deltaL;
         long current_time = SystemClock.elapsedRealtime();
         Pose2d current_pos = drive.getRobotPose();
-        double deltaX = current_pos.getX() - VirtualDeadMotor.lastPose.getX();
-        double deltaY = current_pos.getY() - VirtualDeadMotor.lastPose.getY();
-        double deltaH = current_pos.getHeading() - VirtualDeadMotor.lastPose.getHeading();
-        double EPSILON = 1e-6;
-
-        double left = 0, right = 0, front = 0, right_plus_left = 0, right_minus_left = 0;  // in inches
+        double delta_x = current_pos.getX() - VirtualDeadMotor.lastPose.getX();
+        double delta_y = current_pos.getY() - VirtualDeadMotor.lastPose.getY();
+        double delta_h = current_pos.getHeading() - VirtualDeadMotor.lastPose.getHeading();
+        double theta = VirtualDeadMotor.lastPose.getHeading();
+        double EPSILON = 1e-6, deltaX = 0, deltaY = 0, rs = 0, rt = 0;
+        double deltaB = 0, deltaR = 0, deltaL = 0;
         double r = ODOMETRY_TRACK_WIDTH / 2;
         double rb = ODOMETRY_FORWARD_OFFSET;
-        if (Math.abs(deltaH) <= EPSILON) {
-            right_minus_left = 2 * r * deltaH;
-            right_plus_left = 2 * deltaY;
-            front = deltaY;
-            right = r * deltaH + deltaX;
-            left = deltaX - r * deltaH;
-            RobotLogger.dd(TAG, "no heading change, right " + right + " left " + left + " front " + front);
+
+        deltaY = (delta_y * Math.cos(theta - Math.PI/2)) - (delta_x * Math.sin(theta - Math.PI/2));
+        deltaY = deltaY / (Math.pow(Math.cos(theta - Math.PI/2), 2)  + Math.pow(Math.sin(theta - Math.PI/2), 2));
+
+        deltaX = delta_y  - deltaY * Math.cos(theta - Math.PI/2);
+        deltaX = deltaX / Math.sin(theta - Math.PI/2);
+
+        double diff_h = Math.abs(delta_h);
+        if (diff_h > Math.PI)
+            diff_h = Math.abs(diff_h - 2 * Math.PI);
+        RobotLogger.dd(TAG, "calculateEncoderValues deltaX: " + deltaX + " deltaY: " + deltaY + " delta_h: " + delta_h  + " diff_h: " + diff_h);
+
+        if (Math.abs(diff_h) <= EPSILON) {
+            deltaB = deltaX;
+            deltaR = deltaY + r * delta_h;
+            deltaL = deltaY - r * delta_h;
+            RobotLogger.dd(TAG, "calculateEncoderValues (no turn) deltaL: " + deltaR + " deltaL: " + deltaL + " deltaB: " + deltaB);
         }
         else {
-            right_minus_left = deltaH * 2 * r;
-            double rs = 0, rt = 0;
-            rs = ((deltaY * Math.sin(deltaH)) - deltaX * (Math.cos(deltaH) - 1)) /
-                    ( Math.sin(deltaH) * Math.sin(deltaH) + ((Math.cos(deltaH))-1) * ((Math.cos(deltaH))-1));
-            rt = (deltaX - rs * (1 - Math.cos(deltaH))) / Math.sin(deltaH);
-            front = (rs + rb) * deltaH;
-            right_plus_left = (right_minus_left * rt) / r;
-            right = (right_plus_left + right_minus_left) / 2;
-            left = (right_plus_left - right_minus_left) / 2;
-            RobotLogger.dd(TAG, "heading change, right " + right + " left " + left + " front " + front);
+            rs = deltaX * Math.sin(delta_h) - deltaY * (Math.cos(delta_h) -1);
+            rs = rs / (Math.pow(Math.cos(delta_h) - 1, 2) + Math.pow(Math.sin(delta_h), 2));
+            rt = (deltaX - rs * Math.sin(delta_h))/(Math.cos(delta_h) - 1);
+
+            deltaB = rs * delta_h + rb * delta_h;
+            deltaL = rt * delta_h - r * delta_h;
+            deltaR = 2 * r * delta_h + deltaL;
+            RobotLogger.dd(TAG, "calculateEncoderValues (turn) deltaL: " + deltaR + " deltaL: " + deltaL + " deltaB: " + deltaB);
         }
-        double new_left = left + VirtualDeadMotor.lastEncoderValues.get(0);
-        double new_right = right + VirtualDeadMotor.lastEncoderValues.get(1);
-        double new_front = front + VirtualDeadMotor.lastEncoderValues.get(2);
+
+        double new_left = deltaL + VirtualDeadMotor.lastEncoderValues.get(0);
+        double new_right = deltaR + VirtualDeadMotor.lastEncoderValues.get(1);
+        double new_front = deltaB + VirtualDeadMotor.lastEncoderValues.get(2);
 
         // in inches
         VirtualDeadMotor.newEncoderValues.clear();

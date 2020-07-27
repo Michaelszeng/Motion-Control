@@ -6,6 +6,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 @Config
 @Autonomous(group = "drive")
+@Disabled
 public class Basilis<xFunction> extends LinearOpMode {
     private String TAG = "Basilis";
     SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);

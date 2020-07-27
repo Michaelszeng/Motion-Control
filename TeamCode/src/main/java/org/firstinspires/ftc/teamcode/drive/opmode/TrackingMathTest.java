@@ -34,10 +34,12 @@ public class TrackingMathTest extends LinearOpMode {
     List<Pose2d> poseHistory = new ArrayList<>();
     FtcDashboard dashboard;
 
+    private List<Double> straightPowers = new ArrayList<>(Arrays.asList(0.3, 0.3, 0.3, 0.3));
     private List<Double> strafePowers = new ArrayList<>(Arrays.asList(0.3, -0.3, 0.3, -0.3));
-    private List<Double> straightPowers = new ArrayList<>(Arrays.asList(0.8, 0.8, 0.8, 0.8));
     private List<Double> leftTurnPowers = new ArrayList<>(Arrays.asList(0.1, 0.1, 0.3, 0.3));
-    private List<Double> rightTurnPowers = new ArrayList<>(Arrays.asList(0.3, 0.3, 0.1, 0.1));
+    private List<Double> rightTurnPowers = new ArrayList<>(Arrays.asList(0.3, 0.3, 0.2, 0.2));
+    public static int drive_choice = 0;
+
     double last_lf = 0, last_rf = 0, dRight = 0, dLeft = 0, rCenter = 0, lastX = 0, currentX = 0, lastY = 0, currentY = 0, lastHeading = 0, currentHeading = 0;
 
     public void runOpMode() throws InterruptedException {
@@ -48,7 +50,11 @@ public class TrackingMathTest extends LinearOpMode {
         double current_rf = 0;
         double phi = 0, Px = 0, Py = 0;
         double EPSILON = 1e-6;
-
+        List<Double>[] drive_list = new List[4];
+        drive_list[0] = straightPowers;
+        drive_list[1] = strafePowers;
+        drive_list[2] = leftTurnPowers;
+        drive_list[3] = rightTurnPowers;
         while (!isStopRequested()) {
             List<Double> wheelPositions = drive.getWheelPositions();
             current_lf = wheelPositions.get(1);
@@ -98,10 +104,10 @@ public class TrackingMathTest extends LinearOpMode {
             Pose2d myPose = new Pose2d(currentX, currentY, currentHeading);
             RobotLogger.dd(TAG, "My localizer pose " + myPose.toString());
 
-            Pose2d plotPose = myPose;
+            Pose2d plotPose = RRpose;
             //for appearances:
             RobotLogger.dd(TAG, wheelPositions.toString());
-            drive.setMotorPowers(leftTurnPowers.get(0), leftTurnPowers.get(1), leftTurnPowers.get(2), leftTurnPowers.get(3));
+            drive.setMotorPowers(drive_list[drive_choice].get(0), drive_list[drive_choice].get(1), drive_list[drive_choice].get(2), drive_list[drive_choice].get(3));
             SafeSleep.sleep_milliseconds(this, 40);
 
             TelemetryPacket packet = new TelemetryPacket();
