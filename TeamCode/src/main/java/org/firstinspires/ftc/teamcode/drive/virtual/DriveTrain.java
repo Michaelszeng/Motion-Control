@@ -13,9 +13,11 @@ import java.util.List;
 public class DriveTrain extends BaseDriveTrain {
     private String TAG = "DriveTrain";
     private static DriveTrain driveTrain_singleInstance = null;
+    public MecanumDrive drive;
     public DriveTrain(MecanumDrive _drv)
     {
         super(_drv);
+        drive = _drv;
         setPoseEstimate(new Pose2d(0, 0, 0));
         RobotLogger.dd("DriveTrain", "drive train created");
     }

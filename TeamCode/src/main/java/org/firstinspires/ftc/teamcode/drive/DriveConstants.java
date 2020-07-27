@@ -54,7 +54,7 @@ public class DriveConstants {
     public static double hD = 0.00001;
 
     public static double ODOMETRY_TRACK_WIDTH = 14.8;
-    public static double ODOMETRY_FORWARD_OFFSET = -5.5;
+    public static double ODOMETRY_FORWARD_OFFSET = 5.5;
     public static double HARDCODED_TICKS_PER_REV = 383.6; //MOTOR_CONFIG.getTicksPerRev();
     public static double MAX_RPM_FROM_SPEC = 435.0;
     public static double HARDCODED_RPM_RATIO = 0.683; //0.72215; // 0.666;///0.6514;//*MAX_RPM_FROM_SPEC; //283.4; //MOTOR_CONFIG.getMaxRPM();

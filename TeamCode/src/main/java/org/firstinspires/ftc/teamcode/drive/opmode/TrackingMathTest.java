@@ -29,14 +29,15 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksTo
  */
 @Config
 @Autonomous(group = "drive")
-public class SimpleDrive4 extends LinearOpMode {
-    private String TAG = "SimpleDrive4";
+public class TrackingMathTest extends LinearOpMode {
+    private String TAG = "TrackingMathTest";
     List<Pose2d> poseHistory = new ArrayList<>();
     FtcDashboard dashboard;
 
     private List<Double> strafePowers = new ArrayList<>(Arrays.asList(0.3, -0.3, 0.3, -0.3));
-    private List<Double> straightPowers = new ArrayList<>(Arrays.asList(0.3, 0.3, 0.3, 0.3));
+    private List<Double> straightPowers = new ArrayList<>(Arrays.asList(0.8, 0.8, 0.8, 0.8));
     private List<Double> leftTurnPowers = new ArrayList<>(Arrays.asList(0.1, 0.1, 0.3, 0.3));
+    private List<Double> rightTurnPowers = new ArrayList<>(Arrays.asList(0.3, 0.3, 0.1, 0.1));
     double last_lf = 0, last_rf = 0, dRight = 0, dLeft = 0, rCenter = 0, lastX = 0, currentX = 0, lastY = 0, currentY = 0, lastHeading = 0, currentHeading = 0;
 
     public void runOpMode() throws InterruptedException {
@@ -49,7 +50,6 @@ public class SimpleDrive4 extends LinearOpMode {
         double EPSILON = 1e-6;
 
         while (!isStopRequested()) {
-            drive.setMotorPowers(straightPowers.get(0), straightPowers.get(1), straightPowers.get(2), straightPowers.get(3));
             List<Double> wheelPositions = drive.getWheelPositions();
             current_lf = wheelPositions.get(1);
             current_rf = wheelPositions.get(2);
@@ -86,8 +86,6 @@ public class SimpleDrive4 extends LinearOpMode {
                 RobotLogger.dd(TAG, "Px: " + Double.toString(Px));
                 RobotLogger.dd(TAG, "Py: " + Double.toString(Py));
                 RobotLogger.dd(TAG, "rCenter: " + Double.toString(rCenter));
-
-
             }
             last_lf = current_lf;
             last_rf = current_rf;
@@ -97,13 +95,14 @@ public class SimpleDrive4 extends LinearOpMode {
 
             Pose2d RRpose = drive.getPoseEstimate();
             RobotLogger.dd(TAG, "Road Runner Pose " + RRpose.toString());
-            Pose2d currentPose = new Pose2d(currentX, currentY, currentHeading);
-            RobotLogger.dd(TAG, "My localizer pose " + currentPose.toString());
+            Pose2d myPose = new Pose2d(currentX, currentY, currentHeading);
+            RobotLogger.dd(TAG, "My localizer pose " + myPose.toString());
 
-            Pose2d plotPose = currentPose;
+            Pose2d plotPose = myPose;
             //for appearances:
             RobotLogger.dd(TAG, wheelPositions.toString());
-            SafeSleep.sleep_milliseconds(this, 10);
+            drive.setMotorPowers(leftTurnPowers.get(0), leftTurnPowers.get(1), leftTurnPowers.get(2), leftTurnPowers.get(3));
+            SafeSleep.sleep_milliseconds(this, 40);
 
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();

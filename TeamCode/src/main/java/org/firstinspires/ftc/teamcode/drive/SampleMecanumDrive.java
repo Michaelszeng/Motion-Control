@@ -89,6 +89,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
+
+    // added for drive simulator
     private DriveTrain _virtualDriveTrain;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
@@ -143,6 +145,7 @@ public class SampleMecanumDrive extends MecanumDrive {
             _virtualDriveTrain = new DriveTrain(this);
             _virtualDriveTrain.AddMotors(motors);
             setLocalizer(new VirtualLocalizer(_virtualDriveTrain));
+            //setLocalizer(new MecanumLocalizer(this, false));
             RobotLogger.dd(TAG, "use default 4 wheel localizer");
         }
         for (DcMotorEx motor : motors) {
@@ -160,10 +163,16 @@ public class SampleMecanumDrive extends MecanumDrive {
         if (RUN_USING_ENCODER && MOTOR_VELO_PID != null) {
             setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
         }
-    // TODO: reverse any motors using DcMotor.setDirection()
+        // TODO: reverse any motors using DcMotor.setDirection()
 
         // TODO: if desired, use setLocalizer() to change the localization method
         // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
+        if (!DriveConstants.VirtualizeDrive) {
+            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
+        }
+        else {
+            //setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, _virtualDriveTrain));
+        }
     }
 
     public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
