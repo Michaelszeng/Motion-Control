@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.Teleop;
 
+import android.content.Context;
+
 public class TeleopConstants {
     public static double liftSpeedSlow = 0.3;
     public static double drivePowerNormal = 0.8;
@@ -76,4 +78,6 @@ public class TeleopConstants {
     public static double liftOdometryUp = 1;
 
     public static int[] stoneEncoderValues = new int[] {0, -681, -1120, -1428, -1806};
+
+    public static Context cxt = null;
 }
