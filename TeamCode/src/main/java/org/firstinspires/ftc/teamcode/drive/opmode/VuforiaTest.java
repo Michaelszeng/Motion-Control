@@ -23,7 +23,7 @@ import org.firstinspires.ftc.teamcode.vision.VuforiaCameraChoice;
  */
 @Config
 @Autonomous(group = "drive")
-@Disabled
+//@Disabled
 public class VuforiaTest extends LinearOpMode {
     private Trajectory trajectory;
     private BaseTrajectoryBuilder builder, strafe_builder;
