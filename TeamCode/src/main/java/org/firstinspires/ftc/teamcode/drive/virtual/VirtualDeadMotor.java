@@ -82,7 +82,7 @@ public class VirtualDeadMotor implements DcMotor {
         double delta_y = current_pos.getY() - VirtualDeadMotor.lastPose.getY();
         double delta_h = current_pos.getHeading() - VirtualDeadMotor.lastPose.getHeading();
         double theta = VirtualDeadMotor.lastPose.getHeading();
-        double EPSILON = 1e-6, deltaX = 0, deltaY = 0, rs = 0, rt = 0;
+        double EPSILON = 1e-3, deltaX = 0, deltaY = 0, rs = 0, rt = 0;
         double deltaB = 0, deltaR = 0, deltaL = 0;
         double r = ODOMETRY_TRACK_WIDTH / 2;
         double rb = ODOMETRY_FORWARD_OFFSET;
@@ -94,10 +94,14 @@ public class VirtualDeadMotor implements DcMotor {
         deltaX = deltaX / Math.sin(theta - Math.PI/2);
 
         double diff_h = Math.abs(delta_h);
+
+        diff_h = delta_h % (2 * Math.PI);
+        diff_h = (diff_h + 2 * Math.PI) % (2 * Math.PI);
         if (diff_h > Math.PI)
             diff_h = Math.abs(diff_h - 2 * Math.PI);
         RobotLogger.dd(TAG, "calculateEncoderValues deltaX: " + deltaX + " deltaY: " + deltaY + " delta_h: " + delta_h  + " diff_h: " + diff_h);
 
+        delta_h = diff_h;
         if (Math.abs(diff_h) <= EPSILON) {
             deltaB = deltaX;
             deltaR = deltaY + r * delta_h;

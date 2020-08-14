@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.ML_Auto.Algorithms.CNN.CNN;
 import org.firstinspires.ftc.teamcode.ML_Auto.Algorithms.KNN.KNN;
 import org.firstinspires.ftc.teamcode.ML_Auto.MLConstants;
 import org.firstinspires.ftc.teamcode.ML_Auto.Utils.FileWriter;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.AllHardwareMap;
 
 import java.util.ArrayList;
@@ -28,9 +29,12 @@ public class RunModel extends LinearOpMode {
     //TODO Tune robot movement constraints here
     private static final double ACCEPTABLE_MOVEMENT_PERCENT_ERROR = 0.1;
     private static final double[] CORRECTION_POWER_CONSTRAINTS = new double[] { 0.3, 0.7 };
+    SampleMecanumDrive _drive;
 
     public void runOpMode(){
-        hm = new AllHardwareMap(hardwareMap);
+        _drive = new SampleMecanumDrive(hardwareMap);
+
+        hm = new AllHardwareMap(hardwareMap, _drive);
         hm.frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hm.frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         hm.backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

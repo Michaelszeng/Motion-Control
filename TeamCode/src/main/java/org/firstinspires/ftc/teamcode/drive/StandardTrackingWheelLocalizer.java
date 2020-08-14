@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.ThreeTrackingWheelLocalizer;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.drive.virtual.DriveTrain;
@@ -48,6 +49,7 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
 
     private DcMotor leftEncoder, rightEncoder, frontEncoder;
     private DriveTrain driveTrain;
+    private List<DcMotor> motors;
     public StandardTrackingWheelLocalizer(HardwareMap hardwareMap) {
         super(Arrays.asList(
                 new Pose2d(0, LATERAL_DISTANCE / 2, 0), // left
@@ -71,6 +73,8 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         leftEncoder = new VirtualDeadMotor(driveTrain, "leftEncoder");
         rightEncoder = new VirtualDeadMotor(driveTrain, "rightEncoder");
         frontEncoder = new VirtualDeadMotor(driveTrain, "frontEncoder");
+        motors = Arrays.asList(leftEncoder, rightEncoder, frontEncoder);
+        driveTrain.AddDeadMotors(motors);
     }
 
     public static double encoderTicksToInches(int ticks) {

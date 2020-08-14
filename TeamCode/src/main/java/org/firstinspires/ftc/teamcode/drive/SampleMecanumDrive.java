@@ -171,7 +171,7 @@ public class SampleMecanumDrive extends MecanumDrive {
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
         }
         else {
-            //setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, _virtualDriveTrain));
+            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, _virtualDriveTrain));
         }
     }
 
@@ -439,6 +439,18 @@ public class SampleMecanumDrive extends MecanumDrive {
     }
     public List<DcMotorEx> getMotors() {
         return motors;
+    }
+    public List<Double> getOdomWheelPositions() {
+        RobotLogger.dd(TAG, "getOdomWheelPositions");
+        List<Double> wheelPositions = new ArrayList<>();
+        List<DcMotor> motors = _virtualDriveTrain.getOdomMotors();
+        for (DcMotor motor : motors) {
+            int pos = motor.getCurrentPosition();
+            double t = StandardTrackingWheelLocalizer.encoderTicksToInches(pos);
+            RobotLogger.dd(TAG, "getOdomWheelPositions, motor position(ticks): " + pos + "  ticks to inches: " + t);
+            wheelPositions.add(t);
+        }
+        return wheelPositions;
     }
 
 }

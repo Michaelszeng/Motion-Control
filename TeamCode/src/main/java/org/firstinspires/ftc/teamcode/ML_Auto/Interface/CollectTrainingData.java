@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.teamcode.ML_Auto.MLConstants;
 import org.firstinspires.ftc.teamcode.ML_Auto.Utils.FileWriter;
 import org.firstinspires.ftc.teamcode.ML_Auto.Utils.FourWheelMecanumDrivetrain;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.util.AllHardwareMap;
 
 import java.util.ArrayList;
@@ -25,9 +26,11 @@ public class CollectTrainingData extends LinearOpMode {
     private ArrayList<Double> data = new ArrayList<>();
     private AllHardwareMap hm;
     private FourWheelMecanumDrivetrain drivetrain;
-
+    SampleMecanumDrive _drive;
     public void runOpMode() {
-        hm = new AllHardwareMap(hardwareMap);
+        _drive = new SampleMecanumDrive(hardwareMap);
+
+        hm = new AllHardwareMap(hardwareMap, _drive);
         drivetrain = new FourWheelMecanumDrivetrain(hm);
 
         boolean append = true;

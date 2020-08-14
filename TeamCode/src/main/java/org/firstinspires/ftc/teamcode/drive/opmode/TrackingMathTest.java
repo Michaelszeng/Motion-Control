@@ -46,8 +46,8 @@ public class TrackingMathTest extends LinearOpMode {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);
-        double current_lf = 0;
-        double current_rf = 0;
+        double current_lf = 0, current_rf = 0;
+        double current_odom_lf = 0, current_odom_rf = 0;
         double phi = 0, Px = 0, Py = 0;
         double EPSILON = 1e-6;
         List<Double>[] drive_list = new List[4];
@@ -60,6 +60,13 @@ public class TrackingMathTest extends LinearOpMode {
             current_lf = wheelPositions.get(1);
             current_rf = wheelPositions.get(2);
             RobotLogger.dd(TAG, "current front wheel positions: " + Double.toString(current_lf) + ", " + Double.toString(current_rf));
+
+
+            List<Double> odom_wheelPositions = drive.getOdomWheelPositions();
+            current_odom_lf = odom_wheelPositions.get(0);
+            current_odom_rf = odom_wheelPositions.get(1);
+            RobotLogger.dd(TAG, "current odom wheel positions: " + Double.toString(current_odom_lf) + ", " + Double.toString(current_odom_rf));
+
             //in cases where it's a straight line:
             dLeft = current_lf - last_lf;
             dRight = current_rf - last_rf;
