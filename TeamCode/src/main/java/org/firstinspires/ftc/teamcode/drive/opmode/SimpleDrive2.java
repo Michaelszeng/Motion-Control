@@ -47,8 +47,8 @@ public class SimpleDrive2 extends LinearOpMode {
             List<Double> wheelPositions = drive.getWheelPositions();
 
             currentPose = drive.getPoseEstimate();
-            currentX = currentPose.getX();
-            currentY = currentPose.getY();
+            currentX = -currentPose.getY();
+            currentY = currentPose.getX();
 
             RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ")");
             fieldDashboard.updateDashboard();

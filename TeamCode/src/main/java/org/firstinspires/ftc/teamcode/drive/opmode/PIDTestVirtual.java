@@ -17,29 +17,15 @@ import org.firstinspires.ftc.teamcode.util.SafeSleep;
 import java.util.ArrayList;
 import java.util.Date;
 
-/*
-            +X
-            |
-            |
-            |
-            |
-+Y---------------------- -Y
-            |
-            |
-            |
-            |
-            -X
- */
-
 @TeleOp(name = "PIDTestVirtual")
 public class PIDTestVirtual extends LinearOpMode {
-    private String TAG = "PID Test Virtual";
+    private String TAG = "PIDTestVirtual";
 
     Date datePrev = new Date();
     Date dateNew = new Date();
     double dateDiff;
 
-    final double testAngle = 0.0;     //0 degrees = north
+    final double testAngle = -Math.PI/2;     //0 degrees = East (Left)
     final double testDistance = 24; //look ahead distance
     double globalAngle;
     double xDistance;
@@ -74,10 +60,8 @@ public class PIDTestVirtual extends LinearOpMode {
             yDistance = testDistance * Math.sin(testAngle);
 
             currentTarget = new Pose2d(xDistance, yDistance, 0.0);
-//            currentX = -robot.getPoseEstimate().getY();
-//            currentY = robot.getPoseEstimate().getX();
-            currentX = robot.getPoseEstimate().getX();
-            currentY = robot.getPoseEstimate().getY();
+            currentX = -robot.getPoseEstimate().getY();
+            currentY = robot.getPoseEstimate().getX();
             currentHeading = robot.getPoseEstimate().getHeading();
 
             currentPose = new Pose2d(currentX, currentY, currentHeading);

@@ -87,11 +87,13 @@ public class PIDController {
         currentErrorPercentHeading = currentErrorHeading / startingErrorHeading;
         errorHistoryPercents.add(new Pose2d(currentErrorPercentX, currentErrorPercentY, currentErrorPercentHeading));
 
+        RobotLogger.dd(TAG, "xPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX());
+        RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
+
 
 
         //proportional calculator: outputs present error * xP
         double pXOutput;
-        RobotLogger.dd(TAG, "errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX(): " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX());
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
         jerkControlMultiplier = 0.75 + 2 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX()));
         if (jerkControlMultiplier > 1) {
@@ -213,20 +215,6 @@ public class PIDController {
         powers.add(powerFR / scaleFactor);
         return powers;
     }
-
-//    public ArrayList<Double> vectorToPowersV2(double vectorX, double vectorY, double rotationVelocity) {
-//        double FLPower;
-//        double BLPower;
-//        double BRPower;
-//        double FRPower;
-//
-//        ArrayList<Double> powers = new ArrayList<>();
-//        powers.add(powerFL / scaleFactor);
-//        powers.add(powerBL / scaleFactor);
-//        powers.add(powerBR / scaleFactor);
-//        powers.add(powerFR / scaleFactor);
-//        return null;
-//    }
 
     public ArrayList<Double> vectorGlobalToLocal(double vectorX, double vectorY, double globalHeading) {
         double localVectorX = vectorX * Math.cos(-globalHeading) + vectorY * Math.sin(-globalHeading);
