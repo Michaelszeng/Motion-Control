@@ -25,24 +25,35 @@ import java.util.List;
 @Autonomous(group = "drive")
 public class SimpleDrive2 extends LinearOpMode {
     private String TAG = "SimpleDrive2";
+
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         FieldDashboard fieldDashboard = new FieldDashboard(drive);
-        double s = drive.getPoseEstimate().getX();
-        while (! isStopRequested()) {
-            while(s < 60) {
-                drive.setMotorPowers(0.8, 0.8, 0.8, 0.8);
-                List<Double> wheelPositions = drive.getWheelPositions();
+        Pose2d currentPose = drive.getPoseEstimate();
+        double currentX = -currentPose.getY();
+        double currentY = currentPose.getX();
 
-                RobotLogger.dd(TAG, "wheelPositions:" + wheelPositions.toString());
-                s = drive.getPoseEstimate().getX();
+        waitForStart();
 
-                RobotLogger.dd(TAG, "localizer:" + drive.getLocalizer().getPoseEstimate().toString());
-                fieldDashboard.updateDashboard();
+        while (opModeIsActive()) {
+            //FL, BL, BR, FR
 
-                SafeSleep.sleep_milliseconds(this, 10);
-                s = drive.getPoseEstimate().getX();
-            }
+            //These do the same thing:
+
+            //FR, BR, BL, FL
+//            drive.setMotorPowers(0.0, 0.0, 0.8, 0.8);
+            drive.setMotorPowers(0.8, 0.8, 0.0, 0.0);
+
+            List<Double> wheelPositions = drive.getWheelPositions();
+
+            currentPose = drive.getPoseEstimate();
+            currentX = currentPose.getX();
+            currentY = currentPose.getY();
+
+            RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ")");
+            fieldDashboard.updateDashboard();
+
+            SafeSleep.sleep_milliseconds(this, 50);
         }
     }
 }

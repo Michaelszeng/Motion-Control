@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.ODOMETRY_FORWARD_OFFSET;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.ODOMETRY_HORIZONTAL_TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.ODOMETRY_TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VirtualizeDrive;
@@ -43,7 +43,7 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
     public static double LATERAL_DISTANCE = ODOMETRY_TRACK_WIDTH; // in; distance between the left and right wheels
-    public static double FORWARD_OFFSET = ODOMETRY_FORWARD_OFFSET; // in; offset of the lateral wheel
+    public static double FORWARD_OFFSET = ODOMETRY_HORIZONTAL_TRACK_WIDTH; // in; offset of the lateral wheel
 
     private String TAG = "StandardTrackingWheelLocalizer";
 
@@ -66,7 +66,7 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
                 new Pose2d(0, -LATERAL_DISTANCE / 2, 0), // right
                 new Pose2d(FORWARD_OFFSET, 0, Math.toRadians(90)) // front
         ));
-        RobotLogger.dd(TAG, "StandardTrackingWheelLocalizer created for virtual odometry wheels");
+//        RobotLogger.dd(TAG, "StandardTrackingWheelLocalizer created for virtual odometry wheels");
 
         driveTrain = _drive;
         VirtualDeadMotor.resetDeadMotors();
@@ -83,19 +83,19 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
     @NotNull
     @Override
     public Pose2d getPoseEstimate() {
-        RobotLogger.dd(TAG, "getPoseEstimate");
+//        RobotLogger.dd(TAG, "getPoseEstimate");
         update();
         return super.getPoseEstimate();
     }
     @Override
     public void update() {
         super.update();
-        RobotLogger.dd(TAG, "pose updated " +  super.getPoseEstimate().toString());
+//        RobotLogger.dd(TAG, "pose updated " +  super.getPoseEstimate().toString());
     }
     @NonNull
     @Override
     public List<Double> getWheelPositions() {
-        RobotLogger.dd(TAG, "getWheelPositions");
+//        RobotLogger.dd(TAG, "getWheelPositions");
         return Arrays.asList(
                 encoderTicksToInches(leftEncoder.getCurrentPosition()),
                 encoderTicksToInches(rightEncoder.getCurrentPosition()),

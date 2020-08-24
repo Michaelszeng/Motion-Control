@@ -41,7 +41,7 @@ public class PathTest extends LinearOpMode {
         //hwMap.liftOne.setDirection(DcMotorSimple.Direction.REVERSE);
         //
         int[] skystonePositions = new int[2];
-        skystonePositions[0] = (int) DriveConstants.TEST_SKY_STONE_POSITION;
+//        skystonePositions[0] = (int) DriveConstants.TEST_SKY_STONE_POSITION;
         RobotLogger.dd(TAG, "xml file %d", skystonePositions[0]);
         String filename = "path_blue_.xml";
         int tindex = filename.indexOf(".xml");
@@ -53,9 +53,8 @@ public class PathTest extends LinearOpMode {
 
         _drive = new SampleMecanumDrive(hardwareMap);
 
-        RobotLogger.dd(TAG, "unit test for path (BLUE QUARY), ARM actions?" + Integer.toString(DriveConstants.ENABLE_ARM_ACTIONS?1:0));
         Pose2d startingPos = new Pose2d(new Vector2d(-34.752, -63.936), Math.toRadians(0));
-        hwMap = new AllHardwareMap(hardwareMap, _drive);
+//        hwMap = new AllHardwareMap(hardwareMap, _drive);
         fieldPosition = FieldPosition.RED_QUARY;
 
         waitForStart();
@@ -64,11 +63,10 @@ public class PathTest extends LinearOpMode {
 
         if (DriveConstants.USE_VUFORIA_LOCALIZER) {
             vuLocalizer = VuforiaCamLocalizer.getSingle_instance(hardwareMap,
-                VuforiaCameraChoice.PHONE_BACK, true);
+                    VuforiaCameraChoice.PHONE_BACK, true);
         }
         path = new AutoPath(hwMap, this, _drive, hardwareMap, null, telemetry);
-        path.BlueQuary(skystonePositions, vuLocalizer);
-        //path.BlueQuary(skystonePositions, vuLocalizer);
+//        path.BlueQuary(skystonePositions, vuLocalizer);
         RobotLogger.dd(TAG, "----------done --------------------- unit test for path (BLUE QUARY)");
     }
 }

@@ -171,7 +171,7 @@ public class SampleMecanumDrive extends MecanumDrive {
             setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
         }
         else {
-            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, _virtualDriveTrain));
+//            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, _virtualDriveTrain));
         }
     }
 
