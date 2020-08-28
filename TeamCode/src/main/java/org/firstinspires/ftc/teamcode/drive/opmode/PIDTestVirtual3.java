@@ -17,16 +17,16 @@ import org.firstinspires.ftc.teamcode.util.SafeSleep;
 import java.util.ArrayList;
 import java.util.Date;
 
-@TeleOp(name = "PIDTestVirtual")
-public class PIDTestVirtual extends LinearOpMode {
-    private String TAG = "PIDTestVirtual";
+@TeleOp(name = "PIDTestVirtual3")
+public class PIDTestVirtual3 extends LinearOpMode {
+    private String TAG = "PIDTestVirtual3";
 
     Date datePrev = new Date();
     Date dateNew = new Date();
     double dateDiff;
 
-    final double testAngle = 0;     //0 degrees = West (Right)
-//    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
+    final double testAngle = 3.4 * Math.PI/4;     //0 degrees = West (Right)
+    //    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
 //    final double testAngle = Math.PI;     //0 degrees = West (Right)
     final double testDistance = 24; //look ahead distance
     double globalAngle;

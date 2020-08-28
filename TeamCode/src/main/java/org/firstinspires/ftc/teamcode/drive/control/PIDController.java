@@ -81,12 +81,14 @@ public class PIDController {
 //        currentErrorPercentY = errorHistory.get(errorHistory.size() - 1).getY() / startingErrorY;
 //        currentErrorPercentHeading = errorHistory.get(errorHistory.size() - 1).getHeading() / startingErrorHeading;
 
-        //(Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) * startingErrorX / Math.abs(startingErrorX)) = the larger of the two errors, with the sign added back after
-        currentErrorPercentX = currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) * startingErrorX / Math.abs(startingErrorX));
-        currentErrorPercentY = currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) * startingErrorY / Math.abs(startingErrorY));
+        //(Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) = the larger of the two errors
+        currentErrorPercentX = Math.abs(currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
+        currentErrorPercentY = Math.abs(currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         currentErrorPercentHeading = currentErrorHeading / startingErrorHeading;
         errorHistoryPercents.add(new Pose2d(currentErrorPercentX, currentErrorPercentY, currentErrorPercentHeading));
 
+        RobotLogger.dd(TAG, "xCurrentError: " + errorHistory.get(errorHistory.size() - 1).getX());
+        RobotLogger.dd(TAG, "yCurrentError: " + errorHistory.get(errorHistory.size() - 1).getY());
         RobotLogger.dd(TAG, "xPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX());
         RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
 
@@ -100,11 +102,19 @@ public class PIDController {
             jerkControlMultiplier = 1;
         }
         if (errorHistory.get(errorHistory.size() - 1).getX() >= 0) {
-            pXOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() * xP);
-        }
-        else {
             pXOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() * xP);
         }
+        else {
+            pXOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() * xP);
+        }
+
+//        if (errorHistory.get(errorHistory.size() - 1).getX() >= 0) {
+//            pXOutput = -xP * errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX();
+//        }
+//        else {
+//            pXOutput = xP * errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX();
+//        }
+
 
         //integral calculator: outputs integral of all previous xErrors * xI
         Double iXOutput = 0.0;
@@ -176,11 +186,14 @@ public class PIDController {
 
         double xNetOutput = pXOutput + iXOutput + dXOutput;
         double yNetOutput = pYOutput + iYOutput + dYOutput;
+
         ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
         double localVectorX = localVector.get(0);
         double localVectorY = localVector.get(1);
+
         //vectorX and vectorY are local to X and Y of robot
-        ArrayList<Double> powers = vectorToPowersV1(localVectorX, localVectorY, 0.0);
+//        ArrayList<Double> powers = vectorToPowersV1(localVectorX, localVectorY, 0.0);
+        ArrayList<Double> powers = vectorToPowersV1(xNetOutput, yNetOutput, 0.0);
         return powers;
     }
 
