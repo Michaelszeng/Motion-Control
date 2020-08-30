@@ -253,7 +253,7 @@ public class PIDController {
 
         //vectorX and vectorY are local to X and Y of robot
 //        ArrayList<Double> powers = vectorToPowersV1(localVectorX, localVectorY, 0.0);
-        ArrayList<Double> powers = vectorToPowersV1(xNetOutput, yNetOutput, hNetOutput);
+        ArrayList<Double> powers = vectorToPowersV2(xNetOutput, yNetOutput, hNetOutput);
         return powers;
     }
 
@@ -277,6 +277,38 @@ public class PIDController {
         double powerFR = magnitude * cos - rotationVelocity;
         double powerBR = magnitude * sin - rotationVelocity;
         double powerBL = magnitude * cos + rotationVelocity;
+
+        double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
+
+        ArrayList<Double> powers = new ArrayList<>();
+        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+        powers.add(powerFL / scaleFactor);
+        powers.add(powerBL / scaleFactor);
+        powers.add(powerBR / scaleFactor);
+        powers.add(powerFR / scaleFactor);
+        return powers;
+    }
+
+    public ArrayList<Double> vectorToPowersV2(double vectorX, double vectorY, double rotationVelocity) {
+        double yPowerFL = vectorY;
+        double yPowerFR = vectorY;
+        double yPowerBR = vectorY;
+        double yPowerBL = vectorY;
+
+        double xPowerFL = vectorX;
+        double xPowerFR = -vectorX;
+        double xPowerBR = vectorX;
+        double xPowerBL = -vectorX;
+
+        double hPowerFL = rotationVelocity;
+        double hPowerFR = -rotationVelocity;
+        double hPowerBR = -rotationVelocity;
+        double hPowerBL = rotationVelocity;
+
+        double powerFL = xPowerFL + yPowerFL + hPowerFL;
+        double powerFR = xPowerFR + yPowerFR + hPowerFR;
+        double powerBR = xPowerBR + yPowerBR + hPowerBR;
+        double powerBL = xPowerBL + yPowerBL + hPowerBL;
 
         double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
 

@@ -26,7 +26,7 @@ public class PIDTestVirtual2 extends LinearOpMode {
     double dateDiff;
 
     final double testAngle = Math.PI/2;     //0 degrees = West (Right)
-    final double testFinalAngle = 3*Math.PI/4;
+    final double testFinalAngle = Math.PI/2 + 0.5;
     //    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
 //    final double testAngle = Math.PI;     //0 degrees = West (Right)
     final double testDistance = 24; //look ahead distance
