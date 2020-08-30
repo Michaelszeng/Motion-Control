@@ -32,16 +32,12 @@ public class SimpleDrive2 extends LinearOpMode {
         Pose2d currentPose = drive.getPoseEstimate();
         double currentX = -currentPose.getY();
         double currentY = currentPose.getX();
+        double currentHeading = currentPose.getHeading();
 
         waitForStart();
 
         while (opModeIsActive()) {
             //FL, BL, BR, FR
-
-            //These do the same thing:
-
-            //FR, BR, BL, FL
-//            drive.setMotorPowers(0.0, 0.0, 0.8, 0.8);
             drive.setMotorPowers(0.8, 0.8, 0.0, 0.0);
 
             List<Double> wheelPositions = drive.getWheelPositions();
@@ -49,8 +45,9 @@ public class SimpleDrive2 extends LinearOpMode {
             currentPose = drive.getPoseEstimate();
             currentX = -currentPose.getY();
             currentY = currentPose.getX();
+            currentHeading = currentPose.getHeading();
 
-            RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ")");
+            RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ", " + currentHeading + ")");
             fieldDashboard.updateDashboard();
 
             SafeSleep.sleep_milliseconds(this, 50);

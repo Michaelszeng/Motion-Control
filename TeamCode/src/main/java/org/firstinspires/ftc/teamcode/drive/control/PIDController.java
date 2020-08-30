@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drive.control;
 import android.util.Log;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 
@@ -58,9 +59,7 @@ public class PIDController {
         startingErrorY = startPose.getY() - target.getY();
         startingErrorHeading = startPose.getHeading() - target.getHeading();
         //Must ensure starting errors are not 0 to avoid NaN
-        RobotLogger.dd(TAG, "startingErrorX start" + startingErrorX);
         startingErrorX = ensureNonZero(startingErrorX);
-        RobotLogger.dd(TAG, "startingErrorX after ensure nonzero" + startingErrorX);
         startingErrorY = ensureNonZero(startingErrorY);
         startingErrorHeading = ensureNonZero(startingErrorHeading);
         RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
@@ -71,26 +70,31 @@ public class PIDController {
         outputs = new ArrayList<>();
         outputs.clear();
 //        RobotLogger.dd(TAG, "robotPose: " + robotPose.toString());
-        RobotLogger.dd(TAG, "target: " + target.toString());
+        RobotLogger.dd(TAG, "target: " + "(" + target.getX() + ", " + target.getY() + ", " + target.getHeading() + ")");
         currentErrorX = robotPose.getX() - target.getX();
         currentErrorY = robotPose.getY() - target.getY();
         currentErrorHeading = robotPose.getHeading() - target.getHeading();
         errorHistory.add(new Pose2d(currentErrorX, currentErrorY, currentErrorHeading));
 
-//        currentErrorPercentX = errorHistory.get(errorHistory.size() - 1).getX() / startingErrorX;
-//        currentErrorPercentY = errorHistory.get(errorHistory.size() - 1).getY() / startingErrorY;
-//        currentErrorPercentHeading = errorHistory.get(errorHistory.size() - 1).getHeading() / startingErrorHeading;
-
+        //Percent errors always positive! Sign is checked later.
         //(Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) = the larger of the two errors
         currentErrorPercentX = Math.abs(currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         currentErrorPercentY = Math.abs(currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
-        currentErrorPercentHeading = currentErrorHeading / startingErrorHeading;
+        //Ensure that startingErrorHeading isn't close to 0, or currentErrorPercentHeading can easily exceed 1.0
+        startingErrorHeading = Math.abs(startingErrorHeading);
+        if (startingErrorHeading < 0.2618) {    //15 degrees
+            startingErrorHeading = Math.toRadians(15.5 - ((1 * 7)/((0.6 * Math.toDegrees(startingErrorHeading)) + 1)));
+        }
+        RobotLogger.dd(TAG, "Startingerrorheading: " + startingErrorHeading);
+        currentErrorPercentHeading = Math.abs(currentErrorHeading) / startingErrorHeading;
         errorHistoryPercents.add(new Pose2d(currentErrorPercentX, currentErrorPercentY, currentErrorPercentHeading));
 
         RobotLogger.dd(TAG, "xCurrentError: " + errorHistory.get(errorHistory.size() - 1).getX());
         RobotLogger.dd(TAG, "yCurrentError: " + errorHistory.get(errorHistory.size() - 1).getY());
+        RobotLogger.dd(TAG, "hCurrentError: " + errorHistory.get(errorHistory.size() - 1).getHeading());
         RobotLogger.dd(TAG, "xPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX());
         RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
+        RobotLogger.dd(TAG, "hPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading());
 
 
 
@@ -161,7 +165,7 @@ public class PIDController {
             pYOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() * yP);
         }
 
-        //integral calculator: outputs integral of all previous xErrors * xKi
+        //integral calculator: outputs integral of all previous yErrors * yi
         double iYOutput = 0.0;
         for (Pose2d errorVector : errorHistoryPercents) {
             iYOutput += errorVector.getY();
@@ -174,7 +178,7 @@ public class PIDController {
         }
 
 
-        //derivative calculator: outputs approximate derivative (using difference quotient) * yKd
+        //derivative calculator: outputs approximate derivative (using difference quotient) * yd
         double dYOutput;
         if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
             dYOutput = 0.0;
@@ -191,16 +195,65 @@ public class PIDController {
         }
         RobotLogger.dd(TAG, "yPID: " + pYOutput + ", " + iYOutput + ", " + dYOutput);
 
+
+
+        //proportional calculator: outputs present error * hP
+        double pHOutput;
+        //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
+        jerkControlMultiplier = 0.3 + 6 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading()));
+        RobotLogger.dd(TAG, "jerkControlMultiplier: " + jerkControlMultiplier);
+        if (jerkControlMultiplier > 0.5) {    //Set max value
+            jerkControlMultiplier = 0.5;
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
+        }
+        else {
+            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
+        }
+
+        //integral calculator: outputs integral of all previous hErrors * hi
+        double iHOutput = 0.0;
+        for (Pose2d errorVector : errorHistoryPercents) {
+            iHOutput += errorVector.getHeading();
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+            iHOutput = iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
+        }
+        else {
+            iHOutput = -iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
+        }
+
+        //derivative calculator: outputs approximate derivative (using difference quotient) * hd
+        double dHOutput;
+        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+            dHOutput = 0.0;
+        }
+        else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
+            if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+                //Multiplying by a constant so the inputted yD value can be around 1.0
+                dHOutput = (hD * 15) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+            }
+            else {
+                //Multiplying by a constant so the inputted yD value can be around 1.0
+                dHOutput = -(hD * 15) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+            }
+        }
+        RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
+
+
+
         double xNetOutput = pXOutput + iXOutput + dXOutput;
         double yNetOutput = pYOutput + iYOutput + dYOutput;
+        double hNetOutput = pHOutput + iHOutput + dHOutput;
 
-        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
-        double localVectorX = localVector.get(0);
-        double localVectorY = localVector.get(1);
+//        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
+//        double localVectorX = localVector.get(0);
+//        double localVectorY = localVector.get(1);
 
         //vectorX and vectorY are local to X and Y of robot
 //        ArrayList<Double> powers = vectorToPowersV1(localVectorX, localVectorY, 0.0);
-        ArrayList<Double> powers = vectorToPowersV1(xNetOutput, yNetOutput, 0.0);
+        ArrayList<Double> powers = vectorToPowersV1(xNetOutput, yNetOutput, hNetOutput);
         return powers;
     }
 
@@ -236,6 +289,7 @@ public class PIDController {
         return powers;
     }
 
+    //This Method is potentially useless and due to an incorrect thought experiment
     public ArrayList<Double> vectorGlobalToLocal(double vectorX, double vectorY, double globalHeading) {
         double localVectorX = vectorX * Math.cos(-globalHeading) + vectorY * Math.sin(-globalHeading);
         double localVectorY = - vectorX * Math.sin(-globalHeading) + vectorY * Math.cos(-globalHeading);

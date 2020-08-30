@@ -181,6 +181,7 @@ public class Robot extends MecanumDrive {
 
     //Virtual Robot
     public ArrayList<Double> update(Pose2d currentPose, Pose2d targetPose, int loopTime) {
+        //The old pose's heading sometimes has an extra 2Pi added
         poseHistory.add(currentPose);
         targetHistory.add(targetPose);
 
@@ -198,7 +199,7 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0);
+            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }

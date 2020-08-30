@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.virtual.FieldDashboard;
@@ -25,7 +26,8 @@ public class PIDTestVirtual extends LinearOpMode {
     Date dateNew = new Date();
     double dateDiff;
 
-    final double testAngle = 0;     //0 degrees = West (Right)
+    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
+    final double testFinalAngle = Math.PI/2;
 //    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
 //    final double testAngle = Math.PI;     //0 degrees = West (Right)
     final double testDistance = 24; //look ahead distance
@@ -61,16 +63,14 @@ public class PIDTestVirtual extends LinearOpMode {
             xDistance = testDistance * Math.cos(testAngle);
             yDistance = testDistance * Math.sin(testAngle);
 
-            RobotLogger.dd(TAG, "pi/2: (" + testDistance * Math.cos(Math.PI/2) + ", " + testDistance * Math.sin(Math.PI/2) + ")");
-            RobotLogger.dd(TAG, "0: (" + testDistance * Math.cos(0) + ", " + testDistance * Math.sin(0) + ")");
-            RobotLogger.dd(TAG, "pi: (" + testDistance * Math.cos(Math.PI) + ", " + testDistance * Math.sin(Math.PI) + ")");
-            RobotLogger.dd(TAG, "3pi/4: (" + testDistance * Math.cos(3 * Math.PI/4) + ", " + testDistance * Math.sin(3 * Math.PI/4) + ")");
-
-
-            currentTarget = new Pose2d(xDistance, yDistance, 0.0);
+            currentTarget = new Pose2d(xDistance, yDistance, testFinalAngle-testAngle);
             currentX = -robot.getPoseEstimate().getY();
             currentY = robot.getPoseEstimate().getX();
             currentHeading = robot.getPoseEstimate().getHeading();
+            RobotLogger.dd(TAG, "CurrentHeading: " + currentHeading);
+            if (currentHeading > Math.PI) {
+                currentHeading = currentHeading - (2 * Math.PI);
+            }
 
             currentPose = new Pose2d(currentX, currentY, currentHeading);
             motorPowers = robot.update(currentPose, currentTarget, (int) dateDiff);
