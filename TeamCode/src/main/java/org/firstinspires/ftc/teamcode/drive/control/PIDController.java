@@ -325,12 +325,59 @@ public class PIDController {
     public ArrayList<Double> vectorToPowersV3(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
         double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
         RobotLogger.dd(TAG, "currentHeading: " + currentHeading);
-        double directionOfMotion = Math.atan2(target.getY() - startPose.getX(), target.getX() - startPose.getY());
-        RobotLogger.dd(TAG, "directionOfMotion: " + directionOfMotion);
-        double headingMotionDifference = currentHeading - directionOfMotion;
-        RobotLogger.dd(TAG, "headingMotionDifference: " + headingMotionDifference);
+//        double directionOfMotion = Math.atan2(target.getY() - startPose.getX(), target.getX() - startPose.getY());
+//        RobotLogger.dd(TAG, "directionOfMotion: " + directionOfMotion);
+//        double headingMotionDifference = currentHeading - directionOfMotion;
+//        RobotLogger.dd(TAG, "headingMotionDifference: " + headingMotionDifference);
+        double heading90Difference = (Math.PI/2) - currentHeading;
+        RobotLogger.dd(TAG, "heading90Difference: " + heading90Difference);
 
-        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, -headingMotionDifference);
+        RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
+        RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
+//        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, -headingMotionDifference);
+        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, heading90Difference);
+        double vectorX = localVector.get(0);
+        double vectorY = localVector.get(1);
+        RobotLogger.dd(TAG, "vectorX: " + vectorX);
+        RobotLogger.dd(TAG, "vectorY: " + vectorY);
+
+        //vectorX and vectorY are local to X and Y of robot
+        double magnitude = Math.sqrt(Math.pow(vectorY, 2) + Math.pow(vectorX, 2));
+        //                              opp      adj
+        double direction = Math.atan2(vectorX, vectorY);
+
+        double sin = Math.sin(direction + Math.PI / 4.0);
+        double cos = Math.cos(direction + Math.PI / 4.0);
+
+        double largerComponent = Math.max(Math.abs(sin), Math.abs(cos));
+        sin /= largerComponent;
+        cos /= largerComponent;
+
+        double powerFL = magnitude * sin + rotationVelocity;
+        double powerFR = magnitude * cos - rotationVelocity;
+        double powerBR = magnitude * sin - rotationVelocity;
+        double powerBL = magnitude * cos + rotationVelocity;
+
+        double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
+
+        ArrayList<Double> powers = new ArrayList<>();
+        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+        powers.add(powerFL / scaleFactor);
+        powers.add(powerBL / scaleFactor);
+        powers.add(powerBR / scaleFactor);
+        powers.add(powerFR / scaleFactor);
+        return powers;
+    }
+
+    public ArrayList<Double> vectorToPowersV4(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
+        double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
+        RobotLogger.dd(TAG, "currentHeading: " + currentHeading);
+        double heading90Difference = (Math.PI/2) - currentHeading;
+        RobotLogger.dd(TAG, "heading90Difference: " + heading90Difference);
+
+        RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
+        RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
+        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, heading90Difference);
         double vectorX = localVector.get(0);
         double vectorY = localVector.get(1);
         RobotLogger.dd(TAG, "vectorX: " + vectorX);
@@ -345,40 +392,6 @@ public class PIDController {
         double xPowerFR = -vectorX;
         double xPowerBR = vectorX;
         double xPowerBL = -vectorX;
-
-        double hPowerFL = rotationVelocity;
-        double hPowerFR = -rotationVelocity;
-        double hPowerBR = -rotationVelocity;
-        double hPowerBL = rotationVelocity;
-
-        double powerFL = xPowerFL + yPowerFL + hPowerFL;
-        double powerFR = xPowerFR + yPowerFR + hPowerFR;
-        double powerBR = xPowerBR + yPowerBR + hPowerBR;
-        double powerBL = xPowerBL + yPowerBL + hPowerBL;
-
-        double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
-
-        ArrayList<Double> powers = new ArrayList<>();
-        Log.d(TAG, "ScaleFactor: " + scaleFactor);
-        powers.add(powerFL / scaleFactor);
-        powers.add(powerBL / scaleFactor);
-        powers.add(powerBR / scaleFactor);
-        powers.add(powerFR / scaleFactor);
-        return powers;
-    }
-
-    public ArrayList<Double> vectorToPowersV4(double vectorX, double vectorY, double rotationVelocity) {
-        double robotHeading = errorHistory.get(errorHistory.size() - 1).getHeading();
-
-        double yPowerFL = vectorX + vectorY * Math.cos(robotHeading);
-        double yPowerFR = vectorX + vectorY * Math.cos(robotHeading);
-        double yPowerBR = vectorX + vectorY * Math.cos(robotHeading);
-        double yPowerBL = vectorX + vectorY * Math.cos(robotHeading);
-
-        double xPowerFL = vectorX + vectorY * Math.sin(-robotHeading);
-        double xPowerFR = -vectorX - vectorY * Math.sin(-robotHeading);
-        double xPowerBR = vectorX + vectorY * Math.sin(-robotHeading);
-        double xPowerBL = -vectorX - vectorY * Math.sin(-robotHeading);
 
         double hPowerFL = rotationVelocity;
         double hPowerFR = -rotationVelocity;

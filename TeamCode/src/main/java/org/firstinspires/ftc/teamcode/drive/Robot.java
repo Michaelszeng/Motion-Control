@@ -199,7 +199,7 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 1.0, 1.2);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
