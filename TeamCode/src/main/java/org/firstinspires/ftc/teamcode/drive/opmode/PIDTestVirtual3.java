@@ -26,7 +26,7 @@ public class PIDTestVirtual3 extends LinearOpMode {
     double dateDiff;
 
     final double testAngle = Math.PI/2;     //0 degrees = West (Right)
-    final double testFinalAngle = Math.PI/2 + 1;
+    final double testFinalAngle = -Math.PI/2;
     //    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
 //    final double testAngle = Math.PI;     //0 degrees = West (Right)
     final double testDistance = 24; //look ahead distance
@@ -37,7 +37,7 @@ public class PIDTestVirtual3 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-        Robot robot = new Robot(hardwareMap, true,0.0, 0.0, 0.0);
+        Robot robot = new Robot(hardwareMap, true,0.0, 0.0, Math.PI/2);
         ArrayList<Double> motorPowers;
         Pose2d currentTarget;
 
@@ -62,10 +62,10 @@ public class PIDTestVirtual3 extends LinearOpMode {
             xDistance = testDistance * Math.cos(testAngle);
             yDistance = testDistance * Math.sin(testAngle);
 
-            currentTarget = new Pose2d(xDistance, yDistance, testFinalAngle-testAngle);
+            currentTarget = new Pose2d(xDistance, yDistance, testFinalAngle);
             currentX = -robot.getPoseEstimate().getY();
             currentY = robot.getPoseEstimate().getX();
-            currentHeading = robot.getPoseEstimate().getHeading();
+            currentHeading = robot.getPoseEstimate().getHeading() + (0.5*Math.PI);
             if (currentHeading > Math.PI) {
                 currentHeading = currentHeading - (2 * Math.PI);
             }
