@@ -86,13 +86,12 @@ public class PIDController {
         if (startingErrorHeading < 0.2618) {    //15 degrees
             startingErrorHeading = Math.toRadians(15.5 - ((1 * 7)/((0.6 * Math.toDegrees(startingErrorHeading)) + 1)));
         }
-        RobotLogger.dd(TAG, "Startingerrorheading: " + startingErrorHeading);
         currentErrorPercentHeading = Math.abs(currentErrorHeading) / startingErrorHeading;
         errorHistoryPercents.add(new Pose2d(currentErrorPercentX, currentErrorPercentY, currentErrorPercentHeading));
 
-        RobotLogger.dd(TAG, "xCurrentError: " + errorHistory.get(errorHistory.size() - 1).getX());
-        RobotLogger.dd(TAG, "yCurrentError: " + errorHistory.get(errorHistory.size() - 1).getY());
-        RobotLogger.dd(TAG, "hCurrentError: " + errorHistory.get(errorHistory.size() - 1).getHeading());
+//        RobotLogger.dd(TAG, "xCurrentError: " + errorHistory.get(errorHistory.size() - 1).getX());
+//        RobotLogger.dd(TAG, "yCurrentError: " + errorHistory.get(errorHistory.size() - 1).getY());
+//        RobotLogger.dd(TAG, "hCurrentError: " + errorHistory.get(errorHistory.size() - 1).getHeading());
         RobotLogger.dd(TAG, "xPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX());
         RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
         RobotLogger.dd(TAG, "hPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading());
@@ -202,7 +201,6 @@ public class PIDController {
         double pHOutput;
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
         jerkControlMultiplier = 0.3 + 6 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading()));
-        RobotLogger.dd(TAG, "jerkControlMultiplier: " + jerkControlMultiplier);
         if (jerkControlMultiplier > 0.5) {    //Set max value
             jerkControlMultiplier = 0.5;
         }
@@ -282,7 +280,7 @@ public class PIDController {
         double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
 
         ArrayList<Double> powers = new ArrayList<>();
-        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+//        Log.d(TAG, "ScaleFactor: " + scaleFactor);
         powers.add(powerFL / scaleFactor);
         powers.add(powerBL / scaleFactor);
         powers.add(powerBR / scaleFactor);
@@ -314,7 +312,7 @@ public class PIDController {
         double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
 
         ArrayList<Double> powers = new ArrayList<>();
-        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+//        Log.d(TAG, "ScaleFactor: " + scaleFactor);
         powers.add(powerFL / scaleFactor);
         powers.add(powerBL / scaleFactor);
         powers.add(powerBR / scaleFactor);
@@ -324,13 +322,13 @@ public class PIDController {
 
     public ArrayList<Double> vectorToPowersV3(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
         double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
-        RobotLogger.dd(TAG, "currentHeading: " + currentHeading);
+//        RobotLogger.dd(TAG, "currentHeading: " + currentHeading);
 //        double directionOfMotion = Math.atan2(target.getY() - startPose.getX(), target.getX() - startPose.getY());
 //        RobotLogger.dd(TAG, "directionOfMotion: " + directionOfMotion);
 //        double headingMotionDifference = currentHeading - directionOfMotion;
 //        RobotLogger.dd(TAG, "headingMotionDifference: " + headingMotionDifference);
         double heading90Difference = (Math.PI/2) - currentHeading;
-        RobotLogger.dd(TAG, "heading90Difference: " + heading90Difference);
+//        RobotLogger.dd(TAG, "heading90Difference: " + heading90Difference);
 
         RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
         RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
@@ -361,7 +359,7 @@ public class PIDController {
         double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
 
         ArrayList<Double> powers = new ArrayList<>();
-        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+//        Log.d(TAG, "ScaleFactor: " + scaleFactor);
         powers.add(powerFL / scaleFactor);
         powers.add(powerBL / scaleFactor);
         powers.add(powerBR / scaleFactor);
@@ -452,5 +450,16 @@ public class PIDController {
         else {
             return error;
         }
+    }
+
+    public static double AngleWrap(double angle) {
+        //Ensures angle turn is between 180 and -180
+        while(angle < -Math.PI) {
+            angle += 2 * Math.PI;
+        }
+        while (angle > Math.PI) {
+            angle -= 2 * Math.PI;
+        }
+        return angle;
     }
 }

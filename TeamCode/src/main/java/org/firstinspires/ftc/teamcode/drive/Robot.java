@@ -194,6 +194,10 @@ public class Robot extends MecanumDrive {
         else {
             prevTargetPose = targetPose;
         }
+
+        RobotLogger.dd(TAG, "prevTargetPose: (" + prevTargetPose.getX() + ", " + prevTargetPose.getY() + ", " + prevTargetPose.getHeading() + ")");
+        RobotLogger.dd(TAG, "targetPose: (" + targetPose.getX() + ", " + targetPose.getY() + ", " + targetPose.getHeading() + ")");
+
         if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
             PIDController latestController = pidControllers.get(pidControllers.size() - 1);
             motorPowers = latestController.update(currentPose, loopTime);
@@ -203,7 +207,7 @@ public class Robot extends MecanumDrive {
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
-
+        RobotLogger.dd(TAG, "pidControllers.size(): " + pidControllers.size());
         return motorPowers;
     }
 
