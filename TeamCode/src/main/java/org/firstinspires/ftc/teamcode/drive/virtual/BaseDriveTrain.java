@@ -14,7 +14,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksTo
 
 public abstract class BaseDriveTrain {
     protected List<DcMotorEx> drive_motors;
-    protected List<DcMotor> dead_motors;
+    protected List<DcMotorEx> dead_motors;
     List<Double> lastWheelVelocities, lastWheelPositions;
     double lastExtHeading;
     MecanumDrive drive;
@@ -36,7 +36,7 @@ public abstract class BaseDriveTrain {
         lastWheelVelocities = new ArrayList<>();
         lastWheelPositions = new ArrayList<>();
     }
-    public List<DcMotor> getOdomMotors()
+    public List<DcMotorEx> getOdomMotors()
     {
         return dead_motors;
     }
@@ -77,7 +77,7 @@ public abstract class BaseDriveTrain {
         lastWheelVelocities.clear();
         lastWheelPositions.clear();
     }
-    public void AddDeadMotors(List<DcMotor> motors) {
+    public void AddDeadMotors(List<DcMotorEx> motors) {
         for (int i = 0; i < motors.size(); i ++) {
             dead_motors.add(motors.get(i));
         }

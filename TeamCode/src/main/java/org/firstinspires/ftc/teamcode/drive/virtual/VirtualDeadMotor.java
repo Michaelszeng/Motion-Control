@@ -7,8 +7,11 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.hardware.motors.GoBILDA5202Series;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorController;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -27,7 +30,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.WHEEL_BASE;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.WHEEL_RADIUS;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.odoEncoderTicksPerRev;
 
-public class VirtualDeadMotor implements DcMotor {
+public class VirtualDeadMotor implements DcMotorEx {
     private String TAG = "VirtualDeadMotor";
     private String motor_name;
     private MotorConfigurationType motorType;
@@ -598,4 +601,19 @@ public class VirtualDeadMotor implements DcMotor {
 
     };
 
+    public PIDCoefficients getPIDCoefficients(DcMotor.RunMode mode) {
+        PIDCoefficients t = new PIDCoefficients();
+        return t;
+    };
+    public PIDFCoefficients getPIDFCoefficients(DcMotor.RunMode mode) {
+        PIDFCoefficients t = new PIDFCoefficients();
+        return t;
+    };
+    public void setPositionPIDFCoefficients(double p) {};
+    public void setPIDFCoefficients(DcMotor.RunMode mode, PIDFCoefficients pidfCoefficients) throws UnsupportedOperationException {};
+    public void setVelocityPIDFCoefficients(double p, double i, double d, double f) {};
+    public void setPIDCoefficients(DcMotor.RunMode mode, PIDCoefficients pidCoefficients) {};
+    public boolean isMotorEnabled() {return true;};
+    public void setMotorDisable() {};
+    public void setMotorEnable() {};
 }
