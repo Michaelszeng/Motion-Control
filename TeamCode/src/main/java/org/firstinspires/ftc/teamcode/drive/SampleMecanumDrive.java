@@ -1,6 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
@@ -64,7 +64,9 @@ public class SampleMecanumDrive extends MecanumDrive {
     public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(txP, txI, txD);
     public static PIDCoefficients HEADING_PID = new PIDCoefficients(hP, hI, hD);
 
+
     private String TAG = "SampleMecanumDrive";
+    public static double LATERAL_MULTIPLIER = 1;
 
     public enum Mode {
         IDLE,
@@ -92,9 +94,10 @@ public class SampleMecanumDrive extends MecanumDrive {
 
     // added for drive simulator
     private DriveTrain _virtualDriveTrain;
+    private Pose2d lastPoseOnTurn;
 
     public SampleMecanumDrive(HardwareMap hardwareMap) {
-        super(kV, kA, kStatic, TRACK_WIDTH);
+        super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);
@@ -190,6 +193,9 @@ public class SampleMecanumDrive extends MecanumDrive {
     public void turnAsync(double angle) {
         double heading = getPoseEstimate().getHeading();
         RobotLogger.dd(TAG, "turn: current heading "+Double.toString(heading)+" angle "+Double.toString(angle));
+
+        lastPoseOnTurn = getPoseEstimate();
+
         turnProfile = MotionProfileGenerator.generateSimpleMotionProfile(
                 new MotionState(heading, 0, 0, 0),
                 new MotionState(heading + angle, 0, 0, 0),
@@ -197,6 +203,7 @@ public class SampleMecanumDrive extends MecanumDrive {
                 constraints.maxAngAccel,
                 constraints.maxAngJerk
         );
+
         turnStart = clock.seconds();
         mode = Mode.TURN;
     }
@@ -284,6 +291,11 @@ public class SampleMecanumDrive extends MecanumDrive {
                         0, 0, targetAlpha
                 )));
 
+                Pose2d newPose = lastPoseOnTurn.copy(lastPoseOnTurn.getX(), lastPoseOnTurn.getY(), targetState.getX());
+
+                fieldOverlay.setStroke("#4CAF50");
+                DashboardUtil.drawRobot(fieldOverlay, newPose);
+
                 if (t >= turnProfile.duration()) {
                     mode = Mode.IDLE;
                     setDriveSignal(new DriveSignal());
@@ -297,14 +309,13 @@ public class SampleMecanumDrive extends MecanumDrive {
                 Trajectory trajectory = follower.getTrajectory();
 
                 fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("4CAF50");
+                fieldOverlay.setStroke("#4CAF50");
                 DashboardUtil.drawSampledPath(fieldOverlay, trajectory.getPath());
                 double t = follower.elapsedTime();
                 DashboardUtil.drawRobot(fieldOverlay, trajectory.get(t));
 
                 fieldOverlay.setStroke("#3F51B5");
                 DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
-                DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
                 if (!follower.isFollowing()) {
                     mode = Mode.IDLE;
@@ -314,6 +325,9 @@ public class SampleMecanumDrive extends MecanumDrive {
                 break;
             }
         }
+
+        fieldOverlay.setStroke("#3F51B5");
+        DashboardUtil.drawRobot(fieldOverlay, currentPose);
 
         dashboard.sendTelemetryPacket(packet);
     }
@@ -443,8 +457,8 @@ public class SampleMecanumDrive extends MecanumDrive {
     public List<Double> getOdomWheelPositions() {
         RobotLogger.dd(TAG, "getOdomWheelPositions");
         List<Double> wheelPositions = new ArrayList<>();
-        List<DcMotor> motors = _virtualDriveTrain.getOdomMotors();
-        for (DcMotor motor : motors) {
+        List<DcMotorEx> motors = _virtualDriveTrain.getOdomMotors();
+        for (DcMotorEx motor : motors) {
             int pos = motor.getCurrentPosition();
             double t = StandardTrackingWheelLocalizer.encoderTicksToInches(pos);
             RobotLogger.dd(TAG, "getOdomWheelPositions, motor position(ticks): " + pos + "  ticks to inches: " + t);
