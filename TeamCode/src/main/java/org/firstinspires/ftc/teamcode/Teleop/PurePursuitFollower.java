@@ -1,36 +1,70 @@
-package org.firstinspires.ftc.teamcode.drive.opmode;
+package org.firstinspires.ftc.teamcode.Teleop;
 
 import android.util.Log;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.drive.Robot;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.virtual.FieldDashboard;
+import org.firstinspires.ftc.teamcode.util.AllHardwareMap;
+import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import org.firstinspires.ftc.teamcode.util.SafeSleep;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.getNextTargetV2;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.getNextTargetV3;
 
+/*
+ * Follows a path using pure pursuit algorithm
+ */
+@TeleOp(name = "PurePursuitFollower")
+public class PurePursuitFollower extends LinearOpMode {
+    String TAG = "PIDTestVirtual";
 
-@TeleOp(name = "PurePursuitFollowerVirtual")
-public class PurePursuitFollowerVirtual extends LinearOpMode {
-    private String TAG = "PIDTestVirtual";
+    AllHardwareMap hwMap;
+    //frontRight: horizontal odometer
+    //backRight: vertical right odometer
+    //frontLeft: front left motor
+    //backLeft: vertical Left odometer
+    DcMotor frontRight, backRight, frontLeft, backLeft;
+
+    BNO055IMU imu;
 
     Date datePrev = new Date();
     Date dateNew = new Date();
     double dateDiff;
+
+    FtcDashboard dashboard;
 
     double radius = 24;
 
@@ -42,16 +76,32 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        for (Pose2d p : path) {
-            System.out.println("(" + p.getX() + ", "  + p.getY() + ", " + p.getHeading() + ")");
-        }
+        hwMap = new AllHardwareMap(hardwareMap);
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(25);
 
-        Robot robot = new Robot(hardwareMap, true,0.0, 0.0, Math.PI/2);
+        //Initialize hardware map values. PLEASE UPDATE THESE VALUES TO MATCH YOUR CONFIGURATION
+        frontRight = hwMap.frontRight;
+        backRight = hwMap.backRight;
+        frontLeft = hwMap.frontLeft;
+        backLeft = hwMap.backLeft;
+        initHardwareMap(frontRight, backRight, frontLeft, backLeft);
+        //Initialize IMU parameters
+        imu = hwMap.gyro;
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled      = true;
+        parameters.loggingTag          = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+        imu.initialize(parameters);
+
+        Robot robot = new Robot(hardwareMap, false,0.0, 0.0, Math.PI/2);
         ArrayList<Double> motorPowers;
         Pose2d currentTarget;
-        int index;
+        int targetIndex;
 
-//        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
         FieldDashboard fieldDashboard = new FieldDashboard(robot);
 
         Pose2d currentPose = robot.getPoseEstimate();
@@ -60,34 +110,38 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
         double currentHeading = currentPose.getHeading();
 
         waitForStart();
-
         while (opModeIsActive()) {   //put teleop code in here
             dateNew.setTime(new Date().getTime());
             dateDiff = dateNew.getTime() - datePrev.getTime();
             datePrev.setTime(dateNew.getTime());
 
-            TelemetryPacket packet = new TelemetryPacket();
-
-            currentX = -robot.getPoseEstimate().getY();
-            currentY = robot.getPoseEstimate().getX();
-            currentHeading = robot.getPoseEstimate().getHeading() + (0.5 * Math.PI);
-            if (currentHeading > Math.PI) {
-                currentHeading = currentHeading - (2 * Math.PI);
-            }
-            currentPose = new Pose2d(currentX, currentY, currentHeading);
+//            currentX = -robot.getPoseEstimate().getY();
+//            currentY = robot.getPoseEstimate().getX();
+//            currentHeading = robot.getPoseEstimate().getHeading() + (0.5 * Math.PI);
+//            if (currentHeading > Math.PI) {
+//                currentHeading = currentHeading - (2 * Math.PI);
+//            }
+//            currentPose = new Pose2d(currentX, currentY, currentHeading);
+            currentPose = robot.getCurrentPose();
 
             //currentTarget = getNextTargetV2(currentPose, radius, PPPath);
-            index = getNextTargetV3(currentPose, radius, PPPath, prevTargetIndex);
-            currentTarget = PPPath.path.get(index);
-            prevTargetIndex = index;
+            targetIndex = getNextTargetV3(currentPose, radius, PPPath, prevTargetIndex);
+            currentTarget = PPPath.path.get(targetIndex);
+            prevTargetIndex = targetIndex;
             RobotLogger.dd(TAG, "currentTarget: (" + currentTarget.getX() + ", " + currentTarget.getY() + ", " + currentTarget.getHeading() + ")");
 
-            motorPowers = robot.update(currentPose, currentTarget, (int) dateDiff);
+//            telemetry.addData("Right Odometer: ", backRight.getCurrentPosition());
+//            telemetry.addData("Left Odometer: ", backLeft.getCurrentPosition());
+//            telemetry.addData("Horizontal Odometer: ", frontRight.getCurrentPosition());
+            double imuReading = -imu.getAngularOrientation().firstAngle;
+            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
+
             //FL, BL, BR, FR
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));
 
             Log.d(TAG, "Loopcycle: " + dateDiff);
             RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ", " + currentHeading + ")");
+            telemetry.addData("Localizer: ", "(" + currentX + ", " + currentY + ", " + currentHeading + ")");
             telemetry.update();
             fieldDashboard.updateDashboard();
             SafeSleep.sleep_milliseconds(this, 18);
@@ -108,7 +162,8 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
         return path;
     }
 
-    private void initHardwareMap(DcMotor right_front, DcMotor right_back, DcMotor left_front, DcMotor left_back) {
+    private void initHardwareMap(DcMotor right_front, DcMotor right_back, DcMotor left_front, DcMotor left_back){
+
         right_front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right_back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left_front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -124,7 +179,10 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
         left_front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         left_back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
+//        right_front.setDirection(DcMotorSimple.Direction.REVERSE);
+//        right_back.setDirection(DcMotorSimple.Direction.REVERSE);
         left_back.setDirection(DcMotorSimple.Direction.REVERSE);
+
 
         telemetry.addData("Status", "Hardware Map Init Complete");
         telemetry.update();

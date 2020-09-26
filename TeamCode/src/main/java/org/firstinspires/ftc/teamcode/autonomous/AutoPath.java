@@ -53,80 +53,80 @@ public class AutoPath {
         //vu = new VuforiaCamLocalizer(hardwareMap);
     }
 
-//    public static void StrafeDiagonalHelper(SampleMecanumDrive _drive, Vector2d dest) {
-//        Trajectory trajectory;
-//        Pose2d currentPos = _drive.getPoseEstimate();
-//        TrajectoryBuilder builder = null;
-//        builder = new TrajectoryBuilder(currentPos, DriveConstants.BASE_CONSTRAINTS);
-//
-//        Pose2d error_pose = _drive.follower.getLastError();
-//
-//        double current_x = currentPos.getX();
-//        double current_y = currentPos.getY();
-//        double delta_x = dest.getX() - current_x;
-//        double delta_y = dest.getY() - current_y;
-//
-//        RobotLogger.dd(TAG, "StrafeDiagonalHelper, currentPos %s, errorPos %s", currentPos.toString(), error_pose.toString());
-//        RobotLogger.dd(TAG, "StrafeDiagonalHelper, xy: %s", dest.toString());
-//        Vector2d firstStop;
-//        if (Math.abs(delta_x) > Math.abs(delta_y)) {
-//            RobotLogger.dd(TAG, "x > y, line first and then strafe");
-//            double square_offset = Math.abs(delta_y);
-//            double new_x = 0;
-//            if (delta_x > 0)
-//                new_x = dest.getX() - square_offset;
-//            else
-//                new_x = dest.getX() + square_offset;
-//
-//            firstStop = new Vector2d(new_x, current_y);
-//            RobotLogger.dd(TAG, "added one line to stop: " + firstStop.toString());
-//            boolean dir = (firstStop.getX() - current_x) < 0 ? true : false;
-//            builder.lineTo(firstStop).strafeTo(dest);
-//        } else if (Math.abs(delta_x) < Math.abs(delta_y)) {
-//            RobotLogger.dd(TAG, "x < y, strafe first and then line");
-//            double square_offset = Math.abs(delta_x);
-//            double new_y = 0;
-//            if (delta_y < 0)
-//                new_y = current_y - square_offset;
-//            else
-//                new_y = current_y + square_offset;
-//
-//            firstStop = new Vector2d(dest.getX(), new_y);
-//            RobotLogger.dd(TAG, "added one strafe stop: " + firstStop.toString());
-//            builder.strafeTo(firstStop).strafeTo(dest);
-//        } else {
-//            //double y_offset = delta_y - delta_x;
-//            builder.strafeTo(dest);
-//        }
-//        trajectory = builder.build();   //x - 2.812, y + 7.984
-//        _drive.followTrajectory(trajectory);
-//
-//        currentPos = _drive.getPoseEstimate();
-//        error_pose = _drive.follower.getLastError();
-//        RobotLogger.dd(TAG, "StrafeDiagonalHelper, currentPos %s, errorPos %s", currentPos.toString(), error_pose.toString());
-//    }
-//
-//    /*
-//    input: last pose from previous move;
-//    return: drive instance;
-//     */
-//    private SampleMecanumDrive DriveBuilderReset(boolean isStrafe, boolean init_imu, String label) {
-//            currentPos = _drive.getPoseEstimate();
-//            Pose2d newPos = currentPos;
-//            Pose2d error_pose = _drive.follower.getLastError();
-//            RobotLogger.dd(TAG, "start new step: %s, count[%d], currentPos %s, errorPos %s",
-//                    label, step_count, currentPos.toString(), error_pose.toString());
-//            if (DriveConstants.ENABLE_ARM_ACTIONS == false) {
-//                SafeSleep.sleep_milliseconds(opMode, (int) DriveConstants.TEST_PAUSE_TIME);
-//            }
-//
-//            _drive.getLocalizer().setPoseEstimate(currentPos);
-//            _drive.getLocalizer().update();
-//            builder = new TrajectoryBuilder(_drive.getPoseEstimate(), DriveConstants.BASE_CONSTRAINTS);
-//            RobotLogger.dd(TAG, "drive and builder created, initialized with pose: " + _drive.getPoseEstimate().toString());
-//            return _drive;
-//        }
-//
+    public static void StrafeDiagonalHelper(SampleMecanumDrive _drive, Vector2d dest) {
+        Trajectory trajectory;
+        Pose2d currentPos = _drive.getPoseEstimate();
+        TrajectoryBuilder builder = null;
+        builder = new TrajectoryBuilder(currentPos, DriveConstants.BASE_CONSTRAINTS);
+
+        Pose2d error_pose = _drive.follower.getLastError();
+
+        double current_x = currentPos.getX();
+        double current_y = currentPos.getY();
+        double delta_x = dest.getX() - current_x;
+        double delta_y = dest.getY() - current_y;
+
+        RobotLogger.dd(TAG, "StrafeDiagonalHelper, currentPos %s, errorPos %s", currentPos.toString(), error_pose.toString());
+        RobotLogger.dd(TAG, "StrafeDiagonalHelper, xy: %s", dest.toString());
+        Vector2d firstStop;
+        if (Math.abs(delta_x) > Math.abs(delta_y)) {
+            RobotLogger.dd(TAG, "x > y, line first and then strafe");
+            double square_offset = Math.abs(delta_y);
+            double new_x = 0;
+            if (delta_x > 0)
+                new_x = dest.getX() - square_offset;
+            else
+                new_x = dest.getX() + square_offset;
+
+            firstStop = new Vector2d(new_x, current_y);
+            RobotLogger.dd(TAG, "added one line to stop: " + firstStop.toString());
+            boolean dir = (firstStop.getX() - current_x) < 0 ? true : false;
+            builder.lineTo(firstStop).strafeTo(dest);
+        } else if (Math.abs(delta_x) < Math.abs(delta_y)) {
+            RobotLogger.dd(TAG, "x < y, strafe first and then line");
+            double square_offset = Math.abs(delta_x);
+            double new_y = 0;
+            if (delta_y < 0)
+                new_y = current_y - square_offset;
+            else
+                new_y = current_y + square_offset;
+
+            firstStop = new Vector2d(dest.getX(), new_y);
+            RobotLogger.dd(TAG, "added one strafe stop: " + firstStop.toString());
+            builder.strafeTo(firstStop).strafeTo(dest);
+        } else {
+            //double y_offset = delta_y - delta_x;
+            builder.strafeTo(dest);
+        }
+        trajectory = builder.build();   //x - 2.812, y + 7.984
+        _drive.followTrajectory(trajectory);
+
+        currentPos = _drive.getPoseEstimate();
+        error_pose = _drive.follower.getLastError();
+        RobotLogger.dd(TAG, "StrafeDiagonalHelper, currentPos %s, errorPos %s", currentPos.toString(), error_pose.toString());
+    }
+
+    /*
+    input: last pose from previous move;
+    return: drive instance;
+     */
+    private SampleMecanumDrive DriveBuilderReset(boolean isStrafe, boolean init_imu, String label) {
+            currentPos = _drive.getPoseEstimate();
+            Pose2d newPos = currentPos;
+            Pose2d error_pose = _drive.follower.getLastError();
+            RobotLogger.dd(TAG, "start new step: %s, count[%d], currentPos %s, errorPos %s",
+                    label, step_count, currentPos.toString(), error_pose.toString());
+            if (DriveConstants.ENABLE_ARM_ACTIONS == false) {
+                SafeSleep.sleep_milliseconds(opMode, (int) DriveConstants.TEST_PAUSE_TIME);
+            }
+
+            _drive.getLocalizer().setPoseEstimate(currentPos);
+            _drive.getLocalizer().update();
+            builder = new TrajectoryBuilder(_drive.getPoseEstimate(), DriveConstants.BASE_CONSTRAINTS);
+            RobotLogger.dd(TAG, "drive and builder created, initialized with pose: " + _drive.getPoseEstimate().toString());
+            return _drive;
+        }
+
 //    public static void initGrab(AllHardwareMap hw, FieldPosition side, com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
 //        mode) {
 //        transferReset(hw, mode);
@@ -134,7 +134,7 @@ public class AutoPath {
 //        init(hw, mode);
 //        prepGrab(hw, side, true, mode);    //*******
 //    }
-//
+
 //    private int FollowPathFromXMLFile(Pose2d coordinates[], VuforiaCamLocalizer vLocal, boolean isRed) {
 //        Pose2d error_pose;
 //        int xy_len = coordinates.length;

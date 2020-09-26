@@ -41,7 +41,7 @@ public class PathTest extends LinearOpMode {
         //hwMap.liftOne.setDirection(DcMotorSimple.Direction.REVERSE);
         //
         int[] skystonePositions = new int[2];
-//        skystonePositions[0] = (int) DriveConstants.TEST_SKY_STONE_POSITION;
+        skystonePositions[0] = (int) DriveConstants.TEST_SKY_STONE_POSITION;
         RobotLogger.dd(TAG, "xml file %d", skystonePositions[0]);
         String filename = "path_blue_.xml";
         int tindex = filename.indexOf(".xml");
@@ -54,7 +54,7 @@ public class PathTest extends LinearOpMode {
         _drive = new SampleMecanumDrive(hardwareMap);
 
         Pose2d startingPos = new Pose2d(new Vector2d(-34.752, -63.936), Math.toRadians(0));
-//        hwMap = new AllHardwareMap(hardwareMap, _drive);
+        hwMap = new AllHardwareMap(hardwareMap, _drive);
         fieldPosition = FieldPosition.RED_QUARY;
 
         waitForStart();
