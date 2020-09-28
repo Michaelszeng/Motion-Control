@@ -19,7 +19,7 @@ public class DriveTrain extends BaseDriveTrain {
         super(_drv);
         drive = _drv;
         setPoseEstimate(new Pose2d(0, 0, 0));
-        RobotLogger.dd("DriveTrain", "drive train created");
+//        RobotLogger.dd("DriveTrain", "drive train created");
     }
 
     /*
@@ -34,7 +34,7 @@ public class DriveTrain extends BaseDriveTrain {
     }
     */
     public Pose2d getRobotPose() {
-        RobotLogger.dd(TAG, "getRobotHeading, num of motors: " + drive_motors.size());
+//        RobotLogger.dd(TAG, "getRobotHeading, num of motors: " + drive_motors.size());
         double extHeading = 0;
         List<Double> wheelPositions = drive.getWheelPositions();
         if (lastWheelPositions.size() != 0) {

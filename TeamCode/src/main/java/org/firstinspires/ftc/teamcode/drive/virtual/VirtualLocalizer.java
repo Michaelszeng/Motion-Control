@@ -23,7 +23,6 @@ public class VirtualLocalizer implements Localizer {
     @NotNull
     @Override
     public Pose2d getPoseEstimate() {
-        RobotLogger.dd(TAG, "getPoseEstimate");
         update();
         return _poseEstimate;
     }

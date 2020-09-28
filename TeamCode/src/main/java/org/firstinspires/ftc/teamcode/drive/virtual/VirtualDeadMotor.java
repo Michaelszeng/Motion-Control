@@ -23,7 +23,7 @@ import java.util.List;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.GEAR_RATIO;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.HARDCODED_TICKS_PER_REV;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.ODOMETRY_FORWARD_OFFSET;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.ODOMETRY_HORIZONTAL_TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.ODOMETRY_TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.WHEEL_BASE;
@@ -88,7 +88,7 @@ public class VirtualDeadMotor implements DcMotorEx {
         double EPSILON = 1e-3, deltaX = 0, deltaY = 0, rs = 0, rt = 0;
         double deltaB = 0, deltaR = 0, deltaL = 0;
         double r = ODOMETRY_TRACK_WIDTH / 2;
-        double rb = ODOMETRY_FORWARD_OFFSET;
+        double rb = ODOMETRY_HORIZONTAL_TRACK_WIDTH;
 
         deltaY = (delta_y * Math.cos(theta - Math.PI/2)) - (delta_x * Math.sin(theta - Math.PI/2));
         deltaY = deltaY / (Math.pow(Math.cos(theta - Math.PI/2), 2)  + Math.pow(Math.sin(theta - Math.PI/2), 2));
