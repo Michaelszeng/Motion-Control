@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import android.support.annotation.NonNull;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
@@ -284,7 +282,6 @@ public class Robot extends MecanumDrive {
         }
     }
 
-    @NonNull
     @Override
     public List<Double> getWheelPositions() {
         RobotLogger.dd(TAG, "getWheelPositions");
@@ -330,11 +327,12 @@ public class Robot extends MecanumDrive {
     public List<DcMotorEx> getMotors() {
         return motors;
     }
+
     public List<Double> getOdomWheelPositions() {
         RobotLogger.dd(TAG, "getOdomWheelPositions");
         List<Double> wheelPositions = new ArrayList<>();
-        List<DcMotor> motors = _virtualDriveTrain.getOdomMotors();
-        for (DcMotor motor : motors) {
+        List<DcMotorEx> motors = _virtualDriveTrain.getOdomMotors();
+        for (DcMotorEx motor : motors) {
             int pos = motor.getCurrentPosition();
             double t = StandardTrackingWheelLocalizer.encoderTicksToInches(pos);
             RobotLogger.dd(TAG, "getOdomWheelPositions, motor position(ticks): " + pos + "  ticks to inches: " + t);

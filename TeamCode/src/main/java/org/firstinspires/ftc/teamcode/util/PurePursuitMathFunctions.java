@@ -96,18 +96,18 @@ public class PurePursuitMathFunctions {
 
         //Setting the bounds for all the points in the path to check (maximum bounds is +/- 50 points of the previous target
         int minBound;
-        if (prevTargetIndex - 50 < 0) {
+        if (prevTargetIndex - 150 < 0) {
             minBound = 0;
         }
         else {
-            minBound = prevTargetIndex-50;
+            minBound = prevTargetIndex - 150;
         }
         int maxBound;
-        if (prevTargetIndex + 50 > path.path.size() - 1) {
+        if (prevTargetIndex + 150 > path.path.size() - 1) {
             maxBound = path.path.size() - 1;
         }
         else {
-            maxBound = prevTargetIndex + 50;
+            maxBound = prevTargetIndex + 150;
         }
 
 

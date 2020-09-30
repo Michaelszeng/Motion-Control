@@ -124,7 +124,6 @@ public class PurePursuitFollower extends LinearOpMode {
 //            currentPose = new Pose2d(currentX, currentY, currentHeading);
             currentPose = robot.getCurrentPose();
 
-            //currentTarget = getNextTargetV2(currentPose, radius, PPPath);
             targetIndex = getNextTargetV3(currentPose, radius, PPPath, prevTargetIndex);
             currentTarget = PPPath.path.get(targetIndex);
             prevTargetIndex = targetIndex;
