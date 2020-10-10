@@ -77,6 +77,8 @@ public class Robot extends MecanumDrive {
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
         this.virtual = virtual;
 
+//        this.setPoseEstimate(new Pose2d(startX, startY, startHeading));
+
         if (!DriveConstants.VirtualizeDrive) {
             LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
 
@@ -319,7 +321,7 @@ public class Robot extends MecanumDrive {
             return imu.getAngularOrientation().firstAngle;
         } else {
             Pose2d pose = _virtualDriveTrain.getRobotPose();
-            RobotLogger.dd(TAG, "Simulated Pose (IMU ExternalHeading): " + pose.toString());
+//            RobotLogger.dd(TAG, "Simulated Pose (IMU ExternalHeading): " + pose.toString());
             return pose.getHeading();
         }
     }

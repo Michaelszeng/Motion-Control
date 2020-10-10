@@ -61,7 +61,7 @@ public class PIDController {
         //Must ensure starting errors are not 0 to avoid NaN
         startingErrorX = ensureNonZero(startingErrorX);
         startingErrorY = ensureNonZero(startingErrorY);
-        startingErrorHeading = ensureNonZero(startingErrorHeading);
+        startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
         RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
     }
 
@@ -74,7 +74,8 @@ public class PIDController {
         RobotLogger.dd(TAG, "target: " + "(" + target.getX() + ", " + target.getY() + ", " + target.getHeading() + ")");
         currentErrorX = robotPose.getX() - target.getX();
         currentErrorY = robotPose.getY() - target.getY();
-        currentErrorHeading = robotPose.getHeading() - target.getHeading();
+        currentErrorHeading = normalizeHeading(robotPose.getHeading() - target.getHeading());
+        RobotLogger.dd(TAG, "currentErrorHeading: " + currentErrorHeading);
         errorHistory.add(new Pose2d(currentErrorX, currentErrorY, currentErrorHeading));
 
         //Percent errors always positive! Sign is checked later.
@@ -82,10 +83,12 @@ public class PIDController {
         currentErrorPercentX = Math.abs(currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         currentErrorPercentY = Math.abs(currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         //Ensure that startingErrorHeading isn't close to 0, or currentErrorPercentHeading can easily exceed 1.0
+        RobotLogger.dd(TAG, "startingErrorHeading before: " + startingErrorHeading);
         startingErrorHeading = Math.abs(startingErrorHeading);
-        if (startingErrorHeading < 0.2618) {    //15 degrees
+        if (Math.toDegrees(startingErrorHeading) < 15) {
             startingErrorHeading = Math.toRadians(15.5 - ((1 * 7)/((0.6 * Math.toDegrees(startingErrorHeading)) + 1)));
         }
+        RobotLogger.dd(TAG, "startingErrorHeading after: " + startingErrorHeading);
         currentErrorPercentHeading = Math.abs(currentErrorHeading) / startingErrorHeading;
         errorHistoryPercents.add(new Pose2d(currentErrorPercentX, currentErrorPercentY, currentErrorPercentHeading));
 
@@ -251,8 +254,8 @@ public class PIDController {
 //        double localVectorY = localVector.get(1);
 
         //vectorX and vectorY are local to X and Y of robot
-//        ArrayList<Double> powers = vectorToPowersV1(localVectorX, localVectorY, 0.0);
-        ArrayList<Double> powers = vectorToPowersV3(xNetOutput, yNetOutput, hNetOutput);
+        //v3 is stable in the old configuration
+        ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);
         return powers;
     }
 
@@ -369,6 +372,44 @@ public class PIDController {
 
     public ArrayList<Double> vectorToPowersV4(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
         double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
+        RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
+        RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
+        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, -currentHeading);
+        double vectorX = localVector.get(0);
+        double vectorY = localVector.get(1);
+        RobotLogger.dd(TAG, "vectorX: " + vectorX);
+        RobotLogger.dd(TAG, "vectorY: " + vectorY);
+
+        //vectorX and vectorY are local to X and Y of robot
+        double magnitude = Math.sqrt(Math.pow(vectorY, 2) + Math.pow(vectorX, 2));
+        //                              opp      adj
+        double direction = Math.atan2(vectorX, vectorY);
+
+        double sin = Math.sin(direction + Math.PI / 4.0);
+        double cos = Math.cos(direction + Math.PI / 4.0);
+
+        double largerComponent = Math.max(Math.abs(sin), Math.abs(cos));
+        sin /= largerComponent;
+        cos /= largerComponent;
+
+        double powerFL = magnitude * sin + rotationVelocity;
+        double powerFR = magnitude * cos - rotationVelocity;
+        double powerBR = magnitude * sin - rotationVelocity;
+        double powerBL = magnitude * cos + rotationVelocity;
+
+        double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
+
+        ArrayList<Double> powers = new ArrayList<>();
+//        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+        powers.add(powerFL / scaleFactor);
+        powers.add(powerBL / scaleFactor);
+        powers.add(powerBR / scaleFactor);
+        powers.add(powerFR / scaleFactor);
+        return powers;
+    }
+
+    public ArrayList<Double> vectorToPowersV5(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
+        double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
         RobotLogger.dd(TAG, "currentHeading: " + currentHeading);
         double heading90Difference = (Math.PI/2) - currentHeading;
         RobotLogger.dd(TAG, "heading90Difference: " + heading90Difference);
@@ -452,7 +493,7 @@ public class PIDController {
         }
     }
 
-    public static double AngleWrap(double angle) {
+    public static double normalizeHeading(double angle) {
         //Ensures angle turn is between 180 and -180
         while(angle < -Math.PI) {
             angle += 2 * Math.PI;

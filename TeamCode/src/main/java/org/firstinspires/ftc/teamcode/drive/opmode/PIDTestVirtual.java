@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.virtual.FieldDashboard;
@@ -26,11 +25,11 @@ public class PIDTestVirtual extends LinearOpMode {
     Date dateNew = new Date();
     double dateDiff;
 
-    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
-    final double testFinalAngle = 3*Math.PI/4;
+    final double testDirection = Math.PI/4;     //0 degrees = West (Right)
+    final double testFinalAngle = Math.PI;
 //    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
 //    final double testAngle = Math.PI;     //0 degrees = West (Right)
-    final double testDistance = 24; //look ahead distance
+    final double testDistance = 48; //look ahead distance
     double globalAngle;
     double xDistance;
     double yDistance;
@@ -60,17 +59,14 @@ public class PIDTestVirtual extends LinearOpMode {
 
             TelemetryPacket packet = new TelemetryPacket();
 
-            xDistance = testDistance * Math.cos(testAngle);
-            yDistance = testDistance * Math.sin(testAngle);
+            xDistance = testDistance * Math.cos(testDirection);
+            yDistance = testDistance * Math.sin(testDirection);
 
             currentTarget = new Pose2d(xDistance, yDistance, testFinalAngle);
             currentX = -robot.getPoseEstimate().getY();
             currentY = robot.getPoseEstimate().getX();
-            currentHeading = robot.getPoseEstimate().getHeading() + (0.5*Math.PI);
+            currentHeading = normalizeHeading(robot.getPoseEstimate().getHeading());
             RobotLogger.dd(TAG, "CurrentHeading: " + currentHeading);
-            if (currentHeading > Math.PI) {
-                currentHeading = currentHeading - (2 * Math.PI);
-            }
 
             currentPose = new Pose2d(currentX, currentY, currentHeading);
             motorPowers = robot.update(currentPose, currentTarget, (int) dateDiff);
@@ -90,6 +86,17 @@ public class PIDTestVirtual extends LinearOpMode {
         }
     }
 
+    public double normalizeHeading(double heading) {
+        //Simulating behavior or real IMU--range of headings is +/- 180, North is 0
+        double currentHeading = heading;
+        while (currentHeading < -Math.PI) {
+            currentHeading = currentHeading + (2 * Math.PI);
+        }
+        while (currentHeading > Math.PI) {
+            currentHeading = currentHeading - (2 * Math.PI);
+        }
+        return currentHeading;
+    }
 
     private void initHardwareMap(DcMotor right_front, DcMotor right_back, DcMotor left_front, DcMotor left_back) {
 //        right_front = hardwareMap.dcMotor.get(rfName);

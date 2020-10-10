@@ -47,6 +47,15 @@ public class SimpleDrive2 extends LinearOpMode {
             currentY = currentPose.getX();
             currentHeading = currentPose.getHeading();
 
+            //Simulating behavior or real IMU--range of headings is +/- 180, North is 0
+            while (currentHeading < -Math.PI) {
+                currentHeading = currentHeading + (2 * Math.PI);
+            }
+            while (currentHeading > Math.PI) {
+                currentHeading = currentHeading - (2 * Math.PI);
+            }
+
+
             RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ", " + currentHeading + ")");
             fieldDashboard.updateDashboard();
 

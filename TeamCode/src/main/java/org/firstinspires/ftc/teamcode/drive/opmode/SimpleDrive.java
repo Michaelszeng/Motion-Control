@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.virtual.FieldDashboard;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import org.firstinspires.ftc.teamcode.util.SafeSleep;
@@ -25,39 +26,40 @@ import java.util.List;
 public class SimpleDrive extends LinearOpMode {
     private String TAG = "SimpleDrive";
 
-    List<Pose2d> poseHistory = new ArrayList<>();
-    FtcDashboard dashboard;
     public void runOpMode() throws InterruptedException {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        dashboard = FtcDashboard.getInstance();
-        dashboard.setTelemetryTransmissionInterval(25);
-        double s = 0;
-        while (! isStopRequested()) {
-            while(s < 60) {
-                //FL, BL, BR, FR
-                drive.setMotorPowers(0.8,0.0, 0.0, 0.0);
-                List<Double> wheelPositions = drive.getWheelPositions();
-                s = wheelPositions.get(0);
-                RobotLogger.dd(TAG, wheelPositions.toString());
-                SafeSleep.sleep_milliseconds(this, 10);
+        FieldDashboard fieldDashboard = new FieldDashboard(drive);
+        Pose2d currentPose = drive.getPoseEstimate();
+        double currentX = -currentPose.getY();
+        double currentY = currentPose.getX();
+        double currentHeading = currentPose.getHeading();
 
-                TelemetryPacket packet = new TelemetryPacket();
-                Canvas fieldOverlay = packet.fieldOverlay();
-                Pose2d currentPose = new Pose2d(s, 0, 0);
-                poseHistory.add(currentPose);
-                fieldOverlay.setStrokeWidth(1);
-                fieldOverlay.setStroke("#3F51B5");
-                DashboardUtil.drawPoseHistory(fieldOverlay, poseHistory);
-                DashboardUtil.drawRobot(fieldOverlay, currentPose);
-                RobotLogger.dd(TAG, String.valueOf(s));
-                packet.put("mode", SampleMecanumDrive.Mode.FOLLOW_TRAJECTORY);
+        waitForStart();
 
-                packet.put("x", currentPose.getX());
-                packet.put("y", currentPose.getY());
-                packet.put("heading", currentPose.getHeading());
-                dashboard.sendTelemetryPacket(packet);
+        while (opModeIsActive()) {
+            //FL, BL, BR, FR
+            drive.setMotorPowers(0.0, 0.0, 0.8, 0.8);
 
+            List<Double> wheelPositions = drive.getWheelPositions();
+
+            currentPose = drive.getPoseEstimate();
+            currentX = -currentPose.getY();
+            currentY = currentPose.getX();
+            currentHeading = currentPose.getHeading();
+
+            //Simulating behavior or real IMU--range of headings is +/- 180, North is 0
+            while (currentHeading < -Math.PI) {
+                currentHeading = currentHeading + (2 * Math.PI);
             }
+            while (currentHeading > Math.PI) {
+                currentHeading = currentHeading - (2 * Math.PI);
+            }
+
+
+            RobotLogger.dd(TAG, "localizer: (" + currentX + ", " + currentY + ", " + currentHeading + ")");
+            fieldDashboard.updateDashboard();
+
+            SafeSleep.sleep_milliseconds(this, 50);
         }
     }
 }
