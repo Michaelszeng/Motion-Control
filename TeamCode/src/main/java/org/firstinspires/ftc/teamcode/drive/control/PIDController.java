@@ -18,7 +18,7 @@ public class PIDController {
     Pose2d startPose;
     Pose2d target;
     ArrayList<Double> outputs;
-    double distance;
+    double distance;    //currently a useless variable
 
     double startingErrorX;
     double startingErrorY;
