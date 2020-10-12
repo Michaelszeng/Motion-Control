@@ -23,14 +23,14 @@ public class ThreeOdometerLocalizer {
         this.ODOMETRY_HORIZONTAL_TRACK_WIDTH = DriveConstants.ODOMETRY_HORIZONTAL_TRACK_WIDTH;
     }
 
-    //NON-FUNCTIONAL
+    //FUNCTIONAL
     //Inspiration: https://drive.google.com/file/d/11c3Z9EkDj2_GuOQSFzpVzba_HPKqD6ej/view
-    public ArrayList<Double> getPoseChangeV1(double leftChangeTicks, double rightChangeTicks, double horizontalChangeTicks, double headingCurrentDeg, double headingPrevDeg) {  //heading in deg
+    public ArrayList<Double> getPoseChangeV1(double leftChangeTicks, double rightChangeTicks, double horizontalChangeTicks, double headingCurrentDeg, double headingPrevDeg) {  //heading in rad
         double leftChange = ticksToInches((int) leftChangeTicks, odoTicksPerRevLeft);
         double rightChange = ticksToInches((int) rightChangeTicks, odoTicksPerRevRight);
         double horizontalChange = ticksToInches((int) horizontalChangeTicks, odoTicksPerRevHorizontal);
-        double headingCurrent = degreesToRadians(headingCurrentDeg);
-        double headingPrev = degreesToRadians(headingPrevDeg);
+        double headingCurrent = headingCurrentDeg;
+        double headingPrev = headingPrevDeg;
 
 //        double ENCODER_COUNTS_PER_INCH_LEFT = (1 / odoTicksPerRevLeft) * (2 * Math.PI * odoWheelRadius);
 //        double ENCODER_COUNTS_PER_INCH_RIGHT = (1 / odoTicksPerRevRight) * (2 * Math.PI * odoWheelRadius);
@@ -72,14 +72,14 @@ public class ThreeOdometerLocalizer {
 
     //FUNCTIONAL
     //Inspiration: https://www.youtube.com/watch?v=ZW7T6EFyYnc&t=330s
-    public ArrayList<Double> getPoseChangeV2(double leftChangeTicks, double rightChangeTicks, double horizontalChangeTicks, double headingCurrent, double headingPrev) {  //heading in deg, clockwise = positive
+    public ArrayList<Double> getPoseChangeV2(double leftChangeTicks, double rightChangeTicks, double horizontalChangeTicks, double headingCurrent, double headingPrev) {  //heading in rad, clockwise = positive
         //Local = of the field
         //Global = of the robot
 
         double leftChange = ticksToInches((int) leftChangeTicks, odoTicksPerRevLeft);
         double rightChange = ticksToInches((int) rightChangeTicks, odoTicksPerRevRight);
 
-        double headingChange = degreesToRadians(headingCurrent - headingPrev);
+        double headingChange = headingCurrent - headingPrev;
         double odoHeadingChange = (leftChange - rightChange) / (ODOMETRY_TRACK_WIDTH);
         //need to subtract (strafeWheelTrackWidth * globalHeading) so the robot doesn't think its moving when it turns
         double horizontalChange = ticksToInches((int) horizontalChangeTicks, odoTicksPerRevHorizontal) - (headingChange * ODOMETRY_HORIZONTAL_TRACK_WIDTH);
@@ -88,7 +88,7 @@ public class ThreeOdometerLocalizer {
         double localVectorX = horizontalChange;
         double localVectorY = (leftChange + rightChange) / 2;
 
-        double globalHeadingAvg = degreesToRadians((headingCurrent + headingPrev) / 2);
+        double globalHeadingAvg = (headingCurrent + headingPrev) / 2;
 
         double globalVectorX = localVectorX * Math.cos(globalHeadingAvg) + localVectorY * Math.sin(globalHeadingAvg);
         double globalVectorY =  - localVectorX * Math.sin(globalHeadingAvg) + localVectorY * Math.cos(globalHeadingAvg);
@@ -136,6 +136,10 @@ public class ThreeOdometerLocalizer {
 
     public double degreesToRadians(double degrees) {
         return degrees * Math.PI / 180;
+    }
+
+    public double radiansToDegrees(double radians) {
+        return radians * 180 / Math.PI;
     }
 
     public double ticksToInches(int ticks, double odoTicksPerRev) {

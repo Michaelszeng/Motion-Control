@@ -75,7 +75,7 @@ public class LocalizationManualTest extends LinearOpMode {
 
             double imuReading = -imu.getAngularOrientation().firstAngle;
 
-            robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, new Pose2d(), (int) dateDiff);
+            robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading);
             currentPose = robot.getCurrentPose();
 
             telemetry.addData("Loop Cycle", dateDiff);

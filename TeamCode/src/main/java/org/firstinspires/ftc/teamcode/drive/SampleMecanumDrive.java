@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import androidx.annotation.NonNull;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
@@ -368,7 +366,6 @@ public class SampleMecanumDrive extends MecanumDrive {
         }
     }
 
-    @NonNull
     @Override
     public List<Double> getWheelPositions() {
         RobotLogger.dd(TAG, "getWheelPositions");

@@ -25,11 +25,11 @@ public class PIDTestVirtual3 extends LinearOpMode {
     Date dateNew = new Date();
     double dateDiff;
 
-    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
-    final double testFinalAngle = -Math.PI/2;
+    final double testDirection = Math.PI/4;     //0 degrees = West (Right)
+    final double testFinalAngle = -Math.PI;
     //    final double testAngle = Math.PI/2;     //0 degrees = West (Right)
 //    final double testAngle = Math.PI;     //0 degrees = West (Right)
-    final double testDistance = 24; //look ahead distance
+    final double testDistance = 48; //look ahead distance
     double globalAngle;
     double xDistance;
     double yDistance;
@@ -59,16 +59,13 @@ public class PIDTestVirtual3 extends LinearOpMode {
 
             TelemetryPacket packet = new TelemetryPacket();
 
-            xDistance = testDistance * Math.cos(testAngle);
-            yDistance = testDistance * Math.sin(testAngle);
+            xDistance = testDistance * Math.cos(testDirection);
+            yDistance = testDistance * Math.sin(testDirection);
 
             currentTarget = new Pose2d(xDistance, yDistance, testFinalAngle);
             currentX = -robot.getPoseEstimate().getY();
             currentY = robot.getPoseEstimate().getX();
-            currentHeading = robot.getPoseEstimate().getHeading() + (0.5*Math.PI);
-            if (currentHeading > Math.PI) {
-                currentHeading = currentHeading - (2 * Math.PI);
-            }
+            currentHeading = normalizeHeading(robot.getPoseEstimate().getHeading());
 
             currentPose = new Pose2d(currentX, currentY, currentHeading);
             motorPowers = robot.update(currentPose, currentTarget, (int) dateDiff);
@@ -88,6 +85,17 @@ public class PIDTestVirtual3 extends LinearOpMode {
         }
     }
 
+    public double normalizeHeading(double heading) {
+        //Simulating behavior or real IMU--range of headings is +/- 180, North is 0
+        double currentHeading = heading;
+        while (currentHeading < -Math.PI) {
+            currentHeading = currentHeading + (2 * Math.PI);
+        }
+        while (currentHeading > Math.PI) {
+            currentHeading = currentHeading - (2 * Math.PI);
+        }
+        return currentHeading;
+    }
 
     private void initHardwareMap(DcMotor right_front, DcMotor right_back, DcMotor left_front, DcMotor left_back) {
 //        right_front = hardwareMap.dcMotor.get(rfName);

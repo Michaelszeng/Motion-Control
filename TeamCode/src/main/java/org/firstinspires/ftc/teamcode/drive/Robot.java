@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import android.support.annotation.NonNull;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.control.PIDCoefficients;
 import com.acmerobotics.roadrunner.control.PIDFController;
@@ -67,10 +65,6 @@ public class Robot extends MecanumDrive {
     private List<DcMotorEx> motors;
     private BNO055IMU imu;
 
-    private PIDFController turnController;
-    private MotionProfile turnProfile;
-    private double turnStart;
-
     private boolean virtual;
     // added for drive simulator
     private DriveTrain _virtualDriveTrain;
@@ -82,6 +76,8 @@ public class Robot extends MecanumDrive {
         poseHistory.add(new Pose2d(startX, startY, startHeading));
         motors = Arrays.asList(leftFront, leftRear, rightRear, rightFront);
         this.virtual = virtual;
+
+//        this.setPoseEstimate(new Pose2d(startX, startY, startHeading));
 
         if (!DriveConstants.VirtualizeDrive) {
             LynxModuleUtil.ensureMinimumFirmwareVersion(hardwareMap);
@@ -115,7 +111,7 @@ public class Robot extends MecanumDrive {
             _virtualDriveTrain.AddMotors(motors);
             setLocalizer(new VirtualLocalizer(_virtualDriveTrain));
             //setLocalizer(new MecanumLocalizer(this, false));
-            RobotLogger.dd(TAG, "use default 4 wheel localizer");
+//            RobotLogger.dd(TAG, "use default 4 wheel localizer");
         }
 
         for (DcMotorEx motor : motors) {
@@ -134,18 +130,31 @@ public class Robot extends MecanumDrive {
             setPIDCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, MOTOR_VELO_PID);
         }
         // TODO: reverse any motors using DcMotor.setDirection()
-
-        // TODO: if desired, use setLocalizer() to change the localization method
-        // for instance, setLocalizer(new ThreeTrackingWheelLocalizer(...));
-        if (!DriveConstants.VirtualizeDrive) {
-            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap));
-        }
-        else {
-//            setLocalizer(new StandardTrackingWheelLocalizer(hardwareMap, _virtualDriveTrain));
-        }
     }
 
-    //Physical Robot
+    //Physical Robot: Just Localization
+    public void update(double rightOdoReading, double leftOdoReading, double horizontalOdoReading, double headingReading) {
+        double leftOdoChange = leftOdoReading - prevLeftOdoReading;
+        double rightOdoChange = rightOdoReading - prevRightOdoReading;
+        double horizontalOdoChange = horizontalOdoReading - prevHorizontalOdoReading;
+//        RobotLogger.dd(TAG, "leftOdoChange: " + leftOdoChange);
+//        RobotLogger.dd(TAG, "rightOdoChange: " + rightOdoChange);
+//        RobotLogger.dd(TAG, "horizOdoChange: " + horizontalOdoChange);
+        double previousHeading = poseHistory.get(poseHistory.size() - 1).getHeading();
+        ArrayList<Double> coordinateChange = localizer.getPoseChangeV1(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
+//        ArrayList<Double> coordinateChange = localizer.getPoseChangeV2(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
+//        ArrayList<Double> coordinateChange = localizer.getPoseChangeV3(leftOdoChange, rightOdoChange, horizontalOdoChange, leftOdoReading, rightOdoReading, horizontalOdoReading, headingReading, previousHeading);
+
+        Pose2d prevPose = poseHistory.get(poseHistory.size() - 1);
+        Pose2d currentPose = new Pose2d(prevPose.getX() + coordinateChange.get(0), prevPose.getY() + coordinateChange.get(1), headingReading);
+        poseHistory.add(currentPose);
+
+        prevLeftOdoReading = leftOdoReading;
+        prevRightOdoReading = rightOdoReading;
+        prevHorizontalOdoReading = horizontalOdoReading;
+    }
+
+    //Physical Robot: Follow Point
     public ArrayList<Double> update(double rightOdoReading, double leftOdoReading, double horizontalOdoReading, double headingReading, Pose2d targetPose, int loopTime) {
         double leftOdoChange = leftOdoReading - prevLeftOdoReading;
         double rightOdoChange = rightOdoReading - prevRightOdoReading;
@@ -153,8 +162,8 @@ public class Robot extends MecanumDrive {
         double previousHeading = poseHistory.get(poseHistory.size() - 1).getHeading();
 //        double headingChange = headingReading - previousHeading;
 
-//        ArrayList<Double> coordinateChange = localizer.getPoseChangeV1(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
-        ArrayList<Double> coordinateChange = localizer.getPoseChangeV2(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
+        ArrayList<Double> coordinateChange = localizer.getPoseChangeV1(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
+//        ArrayList<Double> coordinateChange = localizer.getPoseChangeV2(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
 //        ArrayList<Double> coordinateChange = localizer.getPoseChangeV3(leftOdoChange, rightOdoChange, horizontalOdoChange, leftOdoReading, rightOdoReading, horizontalOdoReading, headingReading, previousHeading);
 
         Pose2d prevPose = poseHistory.get(poseHistory.size() - 1);
@@ -163,30 +172,7 @@ public class Robot extends MecanumDrive {
         targetHistory.add(targetPose);
 
         ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
-        if (targetHistory.get(targetHistory.size() - 1).equals(targetHistory.get(targetHistory.size() - 2))) {
-            motorPowers = pidControllers.get(pidControllers.size() - 1).update(currentPose, loopTime);
-        }
-        else {
-            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-            pidControllers.add(controller);
-            motorPowers = controller.update(currentPose, loopTime);
-        }
-
-        prevLeftOdoReading = leftOdoReading;
-        prevRightOdoReading = rightOdoReading;
-        prevHorizontalOdoReading = horizontalOdoReading;
-
-        return motorPowers;
-    }
-
-    //Virtual Robot
-    public ArrayList<Double> update(Pose2d currentPose, Pose2d targetPose, int loopTime) {
-        //The old pose's heading sometimes has an extra 2Pi added
-        poseHistory.add(currentPose);
-        targetHistory.add(targetPose);
-
-        ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
-        Pose2d prevTargetPose = new Pose2d(0.0, 0.0, 0.0);
+        Pose2d prevTargetPose;
 
         if (targetHistory.size() > 1) {
             prevTargetPose = targetHistory.get(targetHistory.size() - 2);
@@ -194,6 +180,10 @@ public class Robot extends MecanumDrive {
         else {
             prevTargetPose = targetPose;
         }
+
+        RobotLogger.dd(TAG, "prevTargetPose: (" + prevTargetPose.getX() + ", " + prevTargetPose.getY() + ", " + prevTargetPose.getHeading() + ")");
+        RobotLogger.dd(TAG, "targetPose: (" + targetPose.getX() + ", " + targetPose.getY() + ", " + targetPose.getHeading() + ")");
+
         if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
             PIDController latestController = pidControllers.get(pidControllers.size() - 1);
             motorPowers = latestController.update(currentPose, loopTime);
@@ -204,6 +194,53 @@ public class Robot extends MecanumDrive {
             motorPowers = controller.update(currentPose, loopTime);
         }
 
+
+//        ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
+//        if (targetHistory.get(targetHistory.size() - 1).equals(targetHistory.get(targetHistory.size() - 2))) {
+//            motorPowers = pidControllers.get(pidControllers.size() - 1).update(currentPose, loopTime);
+//        }
+//        else {
+//            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+//            pidControllers.add(controller);
+//            motorPowers = controller.update(currentPose, loopTime);
+//        }
+
+        prevLeftOdoReading = leftOdoReading;
+        prevRightOdoReading = rightOdoReading;
+        prevHorizontalOdoReading = horizontalOdoReading;
+
+        return motorPowers;
+    }
+
+    //Virtual Robot: Follow Point
+    public ArrayList<Double> update(Pose2d currentPose, Pose2d targetPose, int loopTime) {
+        //The old pose's heading sometimes has an extra 2Pi added
+        poseHistory.add(currentPose);
+        targetHistory.add(targetPose);
+
+        ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
+        Pose2d prevTargetPose;
+
+        if (targetHistory.size() > 1) {
+            prevTargetPose = targetHistory.get(targetHistory.size() - 2);
+        }
+        else {
+            prevTargetPose = targetPose;
+        }
+
+        RobotLogger.dd(TAG, "prevTargetPose: (" + prevTargetPose.getX() + ", " + prevTargetPose.getY() + ", " + prevTargetPose.getHeading() + ")");
+        RobotLogger.dd(TAG, "targetPose: (" + targetPose.getX() + ", " + targetPose.getY() + ", " + targetPose.getHeading() + ")");
+
+        if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
+            PIDController latestController = pidControllers.get(pidControllers.size() - 1);
+            motorPowers = latestController.update(currentPose, loopTime);
+        }
+        else {
+            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 1.0, 1.2);
+            pidControllers.add(controller);
+            motorPowers = controller.update(currentPose, loopTime);
+        }
+        RobotLogger.dd(TAG, "pidControllers.size(): " + pidControllers.size());
         return motorPowers;
     }
 
@@ -247,7 +284,6 @@ public class Robot extends MecanumDrive {
         }
     }
 
-    @NonNull
     @Override
     public List<Double> getWheelPositions() {
         RobotLogger.dd(TAG, "getWheelPositions");
@@ -285,7 +321,7 @@ public class Robot extends MecanumDrive {
             return imu.getAngularOrientation().firstAngle;
         } else {
             Pose2d pose = _virtualDriveTrain.getRobotPose();
-            RobotLogger.dd(TAG, "Simulated Pose (IMU ExternalHeading): " + pose.toString());
+//            RobotLogger.dd(TAG, "Simulated Pose (IMU ExternalHeading): " + pose.toString());
             return pose.getHeading();
         }
     }
@@ -293,11 +329,12 @@ public class Robot extends MecanumDrive {
     public List<DcMotorEx> getMotors() {
         return motors;
     }
+
     public List<Double> getOdomWheelPositions() {
         RobotLogger.dd(TAG, "getOdomWheelPositions");
         List<Double> wheelPositions = new ArrayList<>();
-        List<DcMotor> motors = _virtualDriveTrain.getOdomMotors();
-        for (DcMotor motor : motors) {
+        List<DcMotorEx> motors = _virtualDriveTrain.getOdomMotors();
+        for (DcMotorEx motor : motors) {
             int pos = motor.getCurrentPosition();
             double t = StandardTrackingWheelLocalizer.encoderTicksToInches(pos);
             RobotLogger.dd(TAG, "getOdomWheelPositions, motor position(ticks): " + pos + "  ticks to inches: " + t);
