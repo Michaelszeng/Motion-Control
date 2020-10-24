@@ -59,13 +59,13 @@ public class VirtualMotorEx implements DcMotorEx {
     {
         motor_name = name;
         last_get_wheel_position_time = SystemClock.elapsedRealtime();
-        RobotLogger.dd(TAG, "create VirtualMotorEx " + name + " " + last_get_wheel_position_time);
+//        RobotLogger.dd(TAG, "create VirtualMotorEx " + name + " " + last_get_wheel_position_time);
         last_get_wheel_position_power = 0;
         last_wheel_position = 0;
         motor_power = 0;
     }
     public void setPower(double power) {
-        RobotLogger.dd(TAG, "%s: setPower %f", motor_name, power);
+//        RobotLogger.dd(TAG, "%s: setPower %f", motor_name, power);
         motor_power = power;
     }
 
@@ -93,7 +93,7 @@ public class VirtualMotorEx implements DcMotorEx {
      * @see #setMotorDisable()
      */
     public boolean isMotorEnabled() {
-        RobotLogger.callers(2, TAG, "not implemented yet");
+//        RobotLogger.callers(2, TAG, "not implemented yet");
         return motor_enabled;
     };
 
@@ -102,7 +102,7 @@ public class VirtualMotorEx implements DcMotorEx {
      * @param angularRate  the desired ticks per second
      */
     public void setVelocity(double angularRate) {
-        RobotLogger.callers(2, TAG, "not implemented yet");
+//        RobotLogger.callers(2, TAG, "not implemented yet");
     };
 
     /**
@@ -113,7 +113,7 @@ public class VirtualMotorEx implements DcMotorEx {
      * @see #getVelocity(AngleUnit)
      */
     public void setVelocity(double angularRate, AngleUnit unit) {
-        RobotLogger.callers(2, TAG, "not implemented yet");
+//        RobotLogger.callers(2, TAG, "not implemented yet");
     };
 
     private int inchesToTicks(double t) {
@@ -140,7 +140,7 @@ public class VirtualMotorEx implements DcMotorEx {
      * @see #setVelocity(double, AngleUnit)
      */
     public double getVelocity(AngleUnit unit) {
-        RobotLogger.callers(2, TAG, "not implemented yet");
+//        RobotLogger.callers(2, TAG, "not implemented yet");
         return 0;
     };
 
@@ -161,8 +161,8 @@ public class VirtualMotorEx implements DcMotorEx {
     @Deprecated
     public void setPIDCoefficients(DcMotor.RunMode mode, PIDCoefficients pidCoefficients) {
         PID_parameters = pidCoefficients;
-        RobotLogger.dd(TAG, "setPIDFCoefficients %f, %f, %f",
-                PID_parameters.p, PID_parameters.i, PID_parameters.d);
+//        RobotLogger.dd(TAG, "setPIDFCoefficients %f, %f, %f",
+//                PID_parameters.p, PID_parameters.i, PID_parameters.d);
     };
 
     /**
@@ -189,8 +189,8 @@ public class VirtualMotorEx implements DcMotorEx {
      */
     public void setPIDFCoefficients(DcMotor.RunMode mode, PIDFCoefficients pidfCoefficients) throws UnsupportedOperationException {
         PIDF_parameters = pidfCoefficients;
-        RobotLogger.dd(TAG, "PIDF: %f, %f, %f, %f",
-                PIDF_parameters.p, PIDF_parameters.i, PIDF_parameters.d, PIDF_parameters.f);
+//        RobotLogger.dd(TAG, "PIDF: %f, %f, %f, %f",
+//                PIDF_parameters.p, PIDF_parameters.i, PIDF_parameters.d, PIDF_parameters.f);
     };
 
     /**
@@ -200,7 +200,7 @@ public class VirtualMotorEx implements DcMotorEx {
      * @see #setPIDFCoefficients(RunMode, PIDFCoefficients)
      */
     public void setVelocityPIDFCoefficients(double p, double i, double d, double f) {
-        RobotLogger.callers(2, TAG, "not implemented yet");
+//        RobotLogger.callers(2, TAG, "not implemented yet");
     };
 
     /**
@@ -479,14 +479,14 @@ public class VirtualMotorEx implements DcMotorEx {
         long time_duration = current_time - last_get_wheel_position_time;
         double v = getVelocity();
         double delta = v * ((double)time_duration) / 1000.0;
-        RobotLogger.dd(TAG, "current_time: " + current_time + " last_get_wheel_position_time: " + last_get_wheel_position_time + " velocity: " + Double.toString(v) + " delta position: " + Double.toString(delta));
+//        RobotLogger.dd(TAG, "current_time: " + current_time + " last_get_wheel_position_time: " + last_get_wheel_position_time + " velocity: " + Double.toString(v) + " delta position: " + Double.toString(delta));
 
         int current_pos =  (int) (delta + last_wheel_position);
 
-        RobotLogger.dd(TAG, motor_name + ", velocity: " + Double.toString(v)
-                + ", time duration: " + Double.toString(time_duration) + ", currPosition: "
-                + Double.toString(current_pos) + ", last power: " + Double.toString(last_get_wheel_position_power)
-                + ", current power: " + Double.toString(motor_power));
+//        RobotLogger.dd(TAG, motor_name + ", velocity: " + Double.toString(v)
+//                + ", time duration: " + Double.toString(time_duration) + ", currPosition: "
+//                + Double.toString(current_pos) + ", last power: " + Double.toString(last_get_wheel_position_power)
+//                + ", current power: " + Double.toString(motor_power));
         last_get_wheel_position_time = current_time;
         last_wheel_position = current_pos;
         return current_pos;
@@ -615,7 +615,7 @@ public class VirtualMotorEx implements DcMotorEx {
      * @see #setPower(double)
      */
     public double getPower() {
-        RobotLogger.dd(TAG, "getPower %f", motor_power);
+//        RobotLogger.dd(TAG, "getPower %f", motor_power);
         return motor_power;
         };
     /*  */

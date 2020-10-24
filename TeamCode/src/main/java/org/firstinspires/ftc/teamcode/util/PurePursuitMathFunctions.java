@@ -2,9 +2,23 @@ package org.firstinspires.ftc.teamcode.util;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.w3c.dom.DOMException;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class PurePursuitMathFunctions {
     private static String TAG = "PurePursuitMathFunctions";
@@ -117,14 +131,6 @@ public class PurePursuitMathFunctions {
             double distanceRadiusDifference = Math.abs(distance - radius);
 
             //Comparing how close to an intersection it is, to the 12 current closes intersections
-//            for (int j=11; j>0; j--) {
-//                if (distanceRadiusDifference < distRadiusDiffs.get(j) && distanceRadiusDifference > distRadiusDiffs.get(j-1)) {
-//                    distRadiusDiffs.add(j, distanceRadiusDifference);
-//                    diffIndices.add(j, i);
-//                    distRadiusDiffs.remove(distRadiusDiffs.size() - 1);
-//                    diffIndices.remove(diffIndices.size() - 1);
-//                }
-//            }
             int index = distRadiusDiffs.size() - 1;
             while (distanceRadiusDifference < distRadiusDiffs.get(index)) {
                 index -= 1;
@@ -132,7 +138,7 @@ public class PurePursuitMathFunctions {
                     break;
                 }
             }
-            RobotLogger.dd(TAG, "index for replacement: " + index);
+//            RobotLogger.dd(TAG, "index for replacement: " + index);
             if (index < 11) {   //If the intersection is one of the 12 closest
                 distRadiusDiffs.add(index, distanceRadiusDifference);
                 diffIndices.add(index, i);
@@ -144,17 +150,6 @@ public class PurePursuitMathFunctions {
         for (int i=0; i<diffIndices.size(); i++) {   //Print intersects
             RobotLogger.dd(TAG, "prevTargetIndex: " + prevTargetIndex + "; index: " + diffIndices.get(i) + "; intersect: " + path.path.get(diffIndices.get(i)));
         }
-
-//        int minIndicesDiff = 999;
-//        int minIndex = 0;
-//        int offset = 11;     //Expectation is that the new intersect's index should be a constant offset larger than the prev index
-//        for (int i : diffIndices) {     //return the index of the target pose that is nearest to what is expected to be next
-//            if (Math.abs(i - offset - prevTargetIndex) < minIndicesDiff) {
-//                minIndicesDiff = Math.abs(i - offset - prevTargetIndex);
-//                minIndex = i;
-//            }
-//        }
-//        RobotLogger.dd(TAG, "minIndex: " + minIndex);
 
         int maxIndex = 0;
         for (int index : diffIndices) {
@@ -169,7 +164,70 @@ public class PurePursuitMathFunctions {
             return prevTargetIndex;
         }
         return maxIndex;
-//        return new ArrayList<Double>(Arrays.asList(path.path.get(minIndicesDiff).getX(), path.path.get(minIndicesDiff).getY(), path.path.get(minIndicesDiff).getHeading(), minIndicesDiff+0.0));
+    }
+
+    public static int getNextTargetV4(Pose2d robotPose, double radius, PurePursuitPath path, int prevTargetIndex) {
+        //Only the 12 intersections will be considered (so the robot can pass back and for within the area of a circle 6 times
+        ArrayList<Double> distRadiusDiffs = new ArrayList<>(Arrays.asList(999.9, 999.9, 999.9, 999.9, 999.9, 999.9, 999.9, 999.9, 999.9, 999.9, 999.9, 999.9));
+        ArrayList<Integer> diffIndices = new ArrayList<>(Arrays.asList(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
+
+        //Setting the bounds for all the points in the path to check (maximum bounds is +/- 50 points of the previous target
+        int minBound;
+        if (prevTargetIndex - 150 < 0) {
+            minBound = 0;
+        }
+        else {
+            minBound = prevTargetIndex - 150;
+        }
+        int maxBound;
+        if (prevTargetIndex + 150 > path.path1.size() - 1) {
+            maxBound = path.path1.size() - 1;
+        }
+        else {
+            maxBound = prevTargetIndex + 150;
+        }
+
+
+        for (int i=minBound; i<maxBound; i++) {
+            Pose2d pathPose = new Pose2d(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h);  //path.path.get(i);
+            double distance = Math.hypot(robotPose.getX() - pathPose.getX(), robotPose.getY() - pathPose.getY());   //Get distance between robot pose and current path pose
+            double distanceRadiusDifference = Math.abs(distance - radius);
+
+            //Comparing how close to an intersection it is, to the 12 current closes intersections
+            int index = distRadiusDiffs.size() - 1;
+            while (distanceRadiusDifference < distRadiusDiffs.get(index)) {
+                index -= 1;
+                if (index == 0) {
+                    break;
+                }
+            }
+//            RobotLogger.dd(TAG, "index for replacement: " + index);
+            if (index < 11) {   //If the intersection is one of the 12 closest
+                distRadiusDiffs.add(index, distanceRadiusDifference);
+                diffIndices.add(index, i);
+                distRadiusDiffs.remove(distRadiusDiffs.size() - 1);
+                diffIndices.remove(diffIndices.size() - 1);
+            }
+        }
+
+        for (int i=0; i<diffIndices.size(); i++) {   //Print intersects
+//            RobotLogger.dd(TAG, "prevTargetIndex: " + prevTargetIndex + "; index: " + diffIndices.get(i) + "; intersect: " + path.path.get(diffIndices.get(i)));
+            RobotLogger.dd(TAG, "prevTargetIndex: " + prevTargetIndex + "; index: " + diffIndices.get(i) + "; intersect: " + new Pose2d(path.path1.get(diffIndices.get(i)).x, path.path1.get(diffIndices.get(i)).y, path.path1.get(diffIndices.get(i)).h));
+        }
+
+        int maxIndex = 0;
+        for (int index : diffIndices) {
+            if (index > maxIndex) {
+                maxIndex = index;
+            }
+        }
+        RobotLogger.dd(TAG, "maxIndex (targetPose): "+ maxIndex);
+
+        //If the target pose is a previous pose in the path, we know we are at the end of the path and we no longer change the target Pose
+        if (maxIndex < prevTargetIndex) {
+            return prevTargetIndex;
+        }
+        return maxIndex;
     }
 
     public static double AngleWrap(double angle) {

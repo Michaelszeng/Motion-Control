@@ -21,11 +21,12 @@ import java.util.Date;
 import java.util.List;
 
 import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.getNextTargetV3;
+import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.getNextTargetV4;
 
 
 @TeleOp(name = "PurePursuitFollowerVirtual")
 public class PurePursuitFollowerVirtual extends LinearOpMode {
-    private String TAG = "PIDTestVirtual";
+    private String TAG = "PurePursuitFollowerVirtual";
 
     Date datePrev = new Date();
     Date dateNew = new Date();
@@ -46,11 +47,11 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
     int prevTargetIndex = 0;
 
     @Override
-    public void runOpMode() throws InterruptedException {
+    public void runOpMode()  {
         RobotLogger.dd(TAG, PPPath.toString());
-//        for (Pose2d p : path) {
-//            System.out.println("(" + p.getX() + ", "  + p.getY() + ", " + p.getHeading() + ")");
-//        }
+        for (Pose2d p : path) {
+            System.out.println("(" + p.getX() + ", "  + p.getY() + ", " + p.getHeading() + ")");
+        }
 
         Robot robot = new Robot(hardwareMap, true,0.0, 0.0, Math.PI/2);
         ArrayList<Double> motorPowers;
@@ -76,14 +77,15 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
 
             currentX = -robot.getPoseEstimate().getY();
             currentY = robot.getPoseEstimate().getX();
-            currentHeading = robot.getPoseEstimate().getHeading() + (0.5 * Math.PI);
+//            currentHeading = robot.getPoseEstimate().getHeading() + (0.5 * Math.PI);
+            currentHeading = normalizeHeading(robot.getPoseEstimate().getHeading());
             if (currentHeading > Math.PI) {
                 currentHeading = currentHeading - (2 * Math.PI);
             }
             currentPose = new Pose2d(currentX, currentY, currentHeading);
 
-            index = getNextTargetV3(currentPose, radius, PPPath, prevTargetIndex);
-            currentTarget = PPPath.path.get(index);
+            index = getNextTargetV4(currentPose, radius, PPPath, prevTargetIndex);
+            currentTarget = new Pose2d(PPPath.path1.get(index).x, PPPath.path1.get(index).y, PPPath.path1.get(index).h);    //PPPath.path.get(index);
             prevTargetIndex = index;
             RobotLogger.dd(TAG, "currentTarget: (" + currentTarget.getX() + ", " + currentTarget.getY() + ", " + currentTarget.getHeading() + ")");
 
@@ -133,5 +135,17 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
 
         telemetry.addData("Status", "Hardware Map Init Complete");
         telemetry.update();
+    }
+
+    public double normalizeHeading(double heading) {
+        //Simulating behavior or real IMU--range of headings is +/- 180, North is 0
+        double currentHeading = heading;
+        while (currentHeading < -Math.PI) {
+            currentHeading = currentHeading + (2 * Math.PI);
+        }
+        while (currentHeading > Math.PI) {
+            currentHeading = currentHeading - (2 * Math.PI);
+        }
+        return currentHeading;
     }
 }

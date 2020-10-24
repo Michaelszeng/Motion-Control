@@ -236,7 +236,7 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 1.0, 1.2);
+            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -276,7 +276,7 @@ public class Robot extends MecanumDrive {
     }
 
     public void setPIDCoefficients(DcMotor.RunMode runMode, PIDCoefficients coefficients) {
-        RobotLogger.dd(TAG, "setPIDCoefficients");
+//        RobotLogger.dd(TAG, "setPIDCoefficients");
         for (DcMotorEx motor : motors) {
             motor.setPIDFCoefficients(runMode, new PIDFCoefficients(
                     coefficients.kP, coefficients.kI, coefficients.kD, getMotorVelocityF()
@@ -286,7 +286,7 @@ public class Robot extends MecanumDrive {
 
     @Override
     public List<Double> getWheelPositions() {
-        RobotLogger.dd(TAG, "getWheelPositions");
+//        RobotLogger.dd(TAG, "getWheelPositions");
         List<Double> wheelPositions = new ArrayList<>();
         for (DcMotorEx motor : motors) {
             wheelPositions.add(encoderTicksToInches(motor.getCurrentPosition()));
@@ -296,7 +296,7 @@ public class Robot extends MecanumDrive {
 
     public List<Double> getWheelVelocities() {
         List<Double> wheelVelocities = new ArrayList<>();
-        RobotLogger.dd(TAG, "getWheelVelocities");
+//        RobotLogger.dd(TAG, "getWheelVelocities");
 
         for (DcMotorEx motor : motors) {
             wheelVelocities.add(encoderTicksToInches(motor.getVelocity()));
@@ -316,7 +316,7 @@ public class Robot extends MecanumDrive {
 
     @Override
     public double getRawExternalHeading() {
-        RobotLogger.callers(4, TAG, "getRawExternalHeading");
+//        RobotLogger.callers(4, TAG, "getRawExternalHeading");
         if (!DriveConstants.VirtualizeDrive) {
             return imu.getAngularOrientation().firstAngle;
         } else {
@@ -331,13 +331,13 @@ public class Robot extends MecanumDrive {
     }
 
     public List<Double> getOdomWheelPositions() {
-        RobotLogger.dd(TAG, "getOdomWheelPositions");
+//        RobotLogger.dd(TAG, "getOdomWheelPositions");
         List<Double> wheelPositions = new ArrayList<>();
         List<DcMotorEx> motors = _virtualDriveTrain.getOdomMotors();
         for (DcMotorEx motor : motors) {
             int pos = motor.getCurrentPosition();
             double t = StandardTrackingWheelLocalizer.encoderTicksToInches(pos);
-            RobotLogger.dd(TAG, "getOdomWheelPositions, motor position(ticks): " + pos + "  ticks to inches: " + t);
+//            RobotLogger.dd(TAG, "getOdomWheelPositions, motor position(ticks): " + pos + "  ticks to inches: " + t);
             wheelPositions.add(t);
         }
         return wheelPositions;

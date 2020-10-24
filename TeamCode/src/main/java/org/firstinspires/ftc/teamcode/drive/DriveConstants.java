@@ -287,7 +287,7 @@ public class DriveConstants {
         return coordinates;
     }
 
-    public static void  updateDriveConstants(String filename){
+    public static void updateDriveConstants(String filename) {
         String full_path = AppUtil.CONFIG_FILES_DIR + "/" + filename;
         try{
             File inputFile = new File(full_path);

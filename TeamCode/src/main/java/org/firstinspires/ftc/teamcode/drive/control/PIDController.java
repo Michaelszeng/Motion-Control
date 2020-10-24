@@ -83,7 +83,6 @@ public class PIDController {
         currentErrorPercentX = Math.abs(currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         currentErrorPercentY = Math.abs(currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         //Ensure that startingErrorHeading isn't close to 0, or currentErrorPercentHeading can easily exceed 1.0
-        RobotLogger.dd(TAG, "startingErrorHeading before: " + startingErrorHeading);
         startingErrorHeading = Math.abs(startingErrorHeading);
         if (Math.toDegrees(startingErrorHeading) < 15) {
             startingErrorHeading = Math.toRadians(15.5 - ((1 * 7)/((0.6 * Math.toDegrees(startingErrorHeading)) + 1)));
@@ -208,10 +207,12 @@ public class PIDController {
             jerkControlMultiplier = 0.5;
         }
         if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
+            //Multiplying by a constant so the inputted hP value can be around 1.0
+            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
         }
         else {
-            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
+            //Multiplying by a constant so the inputted hP value can be around 1.0
+            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
         }
 
         //integral calculator: outputs integral of all previous hErrors * hi
@@ -233,12 +234,12 @@ public class PIDController {
         }
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-                //Multiplying by a constant so the inputted yD value can be around 1.0
-                dHOutput = (hD * 15) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+                //Multiplying by a constant so the inputted hD value can be around 1.0
+                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
             else {
-                //Multiplying by a constant so the inputted yD value can be around 1.0
-                dHOutput = -(hD * 15) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+                //Multiplying by a constant so the inputted hD value can be around 1.0
+                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
         }
         RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
@@ -410,42 +411,35 @@ public class PIDController {
 
     public ArrayList<Double> vectorToPowersV5(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
         double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
-        RobotLogger.dd(TAG, "currentHeading: " + currentHeading);
-        double heading90Difference = (Math.PI/2) - currentHeading;
-        RobotLogger.dd(TAG, "heading90Difference: " + heading90Difference);
-
         RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
         RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
-        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, heading90Difference);
+        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, -currentHeading);
         double vectorX = localVector.get(0);
         double vectorY = localVector.get(1);
         RobotLogger.dd(TAG, "vectorX: " + vectorX);
         RobotLogger.dd(TAG, "vectorY: " + vectorY);
 
-        double yPowerFL = vectorY;
-        double yPowerFR = vectorY;
-        double yPowerBR = vectorY;
-        double yPowerBL = vectorY;
+        //vectorX and vectorY are local to X and Y of robot
+        double magnitude = Math.sqrt(Math.pow(vectorY, 2) + Math.pow(vectorX, 2));
+        //                              opp      adj
+        double direction = Math.atan2(vectorX, vectorY);
 
-        double xPowerFL = vectorX;
-        double xPowerFR = -vectorX;
-        double xPowerBR = vectorX;
-        double xPowerBL = -vectorX;
+        double sin = Math.sin(direction + Math.PI / 4.0);
+        double cos = Math.cos(direction + Math.PI / 4.0);
 
-        double hPowerFL = rotationVelocity;
-        double hPowerFR = -rotationVelocity;
-        double hPowerBR = -rotationVelocity;
-        double hPowerBL = rotationVelocity;
+        double largerComponent = Math.max(Math.abs(sin), Math.abs(cos));
+        sin /= largerComponent;
+        cos /= largerComponent;
 
-        double powerFL = xPowerFL + yPowerFL + hPowerFL;
-        double powerFR = xPowerFR + yPowerFR + hPowerFR;
-        double powerBR = xPowerBR + yPowerBR + hPowerBR;
-        double powerBL = xPowerBL + yPowerBL + hPowerBL;
+        double powerFL = magnitude * sin + rotationVelocity;
+        double powerFR = magnitude * cos - rotationVelocity;
+        double powerBR = magnitude * sin - rotationVelocity;
+        double powerBL = magnitude * cos + rotationVelocity;
 
         double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
 
         ArrayList<Double> powers = new ArrayList<>();
-        Log.d(TAG, "ScaleFactor: " + scaleFactor);
+//        Log.d(TAG, "ScaleFactor: " + scaleFactor);
         powers.add(powerFL / scaleFactor);
         powers.add(powerBL / scaleFactor);
         powers.add(powerBR / scaleFactor);
