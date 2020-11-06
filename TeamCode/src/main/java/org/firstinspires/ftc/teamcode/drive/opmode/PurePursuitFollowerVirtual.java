@@ -49,9 +49,9 @@ public class PurePursuitFollowerVirtual extends LinearOpMode {
     @Override
     public void runOpMode()  {
         RobotLogger.dd(TAG, PPPath.toString());
-        for (Pose2d p : path) {
-            System.out.println("(" + p.getX() + ", "  + p.getY() + ", " + p.getHeading() + ")");
-        }
+//        for (Pose2d p : path) {
+//            System.out.println("(" + p.getX() + ", "  + p.getY() + ", " + p.getHeading() + ")");
+//        }
 
         Robot robot = new Robot(hardwareMap, true,0.0, 0.0, Math.PI/2);
         ArrayList<Double> motorPowers;

@@ -18,7 +18,6 @@ public class PIDController {
     Pose2d startPose;
     Pose2d target;
     ArrayList<Double> outputs;
-    double distance;    //currently a useless variable
 
     double startingErrorX;
     double startingErrorY;
@@ -41,10 +40,9 @@ public class PIDController {
     double hI;
     double hD;
 
-    public PIDController(Pose2d robotPose, Pose2d target, double distance, double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
+    public PIDController(Pose2d robotPose, Pose2d target,  double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
         startPose = robotPose;
         this.target = target;
-        this.distance = distance;
         this.xP = xP;
         this.xI = xI;
         this.xD = xD;
@@ -71,7 +69,7 @@ public class PIDController {
         outputs = new ArrayList<>();
         outputs.clear();
 //        RobotLogger.dd(TAG, "robotPose: " + robotPose.toString());
-        RobotLogger.dd(TAG, "target: " + "(" + target.getX() + ", " + target.getY() + ", " + target.getHeading() + ")");
+//        RobotLogger.dd(TAG, "target: " + "(" + target.getX() + ", " + target.getY() + ", " + target.getHeading() + ")");
         currentErrorX = robotPose.getX() - target.getX();
         currentErrorY = robotPose.getY() - target.getY();
         currentErrorHeading = normalizeHeading(robotPose.getHeading() - target.getHeading());
@@ -208,11 +206,11 @@ public class PIDController {
         }
         if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
             //Multiplying by a constant so the inputted hP value can be around 1.0
-            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
         }
         else {
             //Multiplying by a constant so the inputted hP value can be around 1.0
-            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
         }
 
         //integral calculator: outputs integral of all previous hErrors * hi
@@ -221,10 +219,10 @@ public class PIDController {
             iHOutput += errorVector.getHeading();
         }
         if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-            iHOutput = iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
+            iHOutput = -iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
         }
         else {
-            iHOutput = -iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
+            iHOutput = iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
         }
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * hd
@@ -235,11 +233,11 @@ public class PIDController {
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
                 //Multiplying by a constant so the inputted hD value can be around 1.0
-                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
             else {
                 //Multiplying by a constant so the inputted hD value can be around 1.0
-                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
         }
         RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
@@ -375,49 +373,12 @@ public class PIDController {
         double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
         RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
         RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
-        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, -currentHeading);
+        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, currentHeading);
         double vectorX = localVector.get(0);
         double vectorY = localVector.get(1);
         RobotLogger.dd(TAG, "vectorX: " + vectorX);
         RobotLogger.dd(TAG, "vectorY: " + vectorY);
-
-        //vectorX and vectorY are local to X and Y of robot
-        double magnitude = Math.sqrt(Math.pow(vectorY, 2) + Math.pow(vectorX, 2));
-        //                              opp      adj
-        double direction = Math.atan2(vectorX, vectorY);
-
-        double sin = Math.sin(direction + Math.PI / 4.0);
-        double cos = Math.cos(direction + Math.PI / 4.0);
-
-        double largerComponent = Math.max(Math.abs(sin), Math.abs(cos));
-        sin /= largerComponent;
-        cos /= largerComponent;
-
-        double powerFL = magnitude * sin + rotationVelocity;
-        double powerFR = magnitude * cos - rotationVelocity;
-        double powerBR = magnitude * sin - rotationVelocity;
-        double powerBL = magnitude * cos + rotationVelocity;
-
-        double scaleFactor = limitPower(1.0, powerFL, powerFR, powerBR, powerBL);
-
-        ArrayList<Double> powers = new ArrayList<>();
-//        Log.d(TAG, "ScaleFactor: " + scaleFactor);
-        powers.add(powerFL / scaleFactor);
-        powers.add(powerBL / scaleFactor);
-        powers.add(powerBR / scaleFactor);
-        powers.add(powerFR / scaleFactor);
-        return powers;
-    }
-
-    public ArrayList<Double> vectorToPowersV5(double vectorXGlobal, double vectorYGlobal, double rotationVelocity) {
-        double currentHeading = poseHistoryLocal.get(poseHistoryLocal.size() - 1).getHeading();
-        RobotLogger.dd(TAG, "vectorXGlobal: " + vectorXGlobal);
-        RobotLogger.dd(TAG, "vectorYGlobal: " + vectorYGlobal);
-        ArrayList<Double> localVector = vectorGlobalToLocal(vectorXGlobal, vectorYGlobal, -currentHeading);
-        double vectorX = localVector.get(0);
-        double vectorY = localVector.get(1);
-        RobotLogger.dd(TAG, "vectorX: " + vectorX);
-        RobotLogger.dd(TAG, "vectorY: " + vectorY);
+        RobotLogger.dd(TAG, "rotationVelocity: " + rotationVelocity);
 
         //vectorX and vectorY are local to X and Y of robot
         double magnitude = Math.sqrt(Math.pow(vectorY, 2) + Math.pow(vectorX, 2));

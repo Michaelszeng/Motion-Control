@@ -36,6 +36,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.getMotorVeloci
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VirtualizeDrive;
 
 //import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 
@@ -167,13 +168,15 @@ public class Robot extends MecanumDrive {
 //        ArrayList<Double> coordinateChange = localizer.getPoseChangeV3(leftOdoChange, rightOdoChange, horizontalOdoChange, leftOdoReading, rightOdoReading, horizontalOdoReading, headingReading, previousHeading);
 
         Pose2d prevPose = poseHistory.get(poseHistory.size() - 1);
+        RobotLogger.dd(TAG, "headingReading: " + headingReading);
         Pose2d currentPose = new Pose2d(prevPose.getX() + coordinateChange.get(0), prevPose.getY() + coordinateChange.get(1), headingReading);
+//        RobotLogger.dd(TAG, "currentPose in Robot.update(): " + currentPose);
+        RobotLogger.dd(TAG, "currentPose.getHeading() in Robot.update(): " + currentPose.getHeading());
         poseHistory.add(currentPose);
         targetHistory.add(targetPose);
 
         ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
         Pose2d prevTargetPose;
-
         if (targetHistory.size() > 1) {
             prevTargetPose = targetHistory.get(targetHistory.size() - 2);
         }
@@ -181,15 +184,15 @@ public class Robot extends MecanumDrive {
             prevTargetPose = targetPose;
         }
 
-        RobotLogger.dd(TAG, "prevTargetPose: (" + prevTargetPose.getX() + ", " + prevTargetPose.getY() + ", " + prevTargetPose.getHeading() + ")");
-        RobotLogger.dd(TAG, "targetPose: (" + targetPose.getX() + ", " + targetPose.getY() + ", " + targetPose.getHeading() + ")");
+//        RobotLogger.dd(TAG, "prevTargetPose: (" + prevTargetPose.getX() + ", " + prevTargetPose.getY() + ", " + prevTargetPose.getHeading() + ")");
+//        RobotLogger.dd(TAG, "targetPose: (" + targetPose.getX() + ", " + targetPose.getY() + ", " + targetPose.getHeading() + ")");
 
         if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
             PIDController latestController = pidControllers.get(pidControllers.size() - 1);
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.5, 1.0, 1.2);
+            PIDController controller = new PIDController(currentPose, targetPose, 0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.1, 0.1, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -236,7 +239,7 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
+            PIDController controller = new PIDController(currentPose, targetPose, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -245,6 +248,7 @@ public class Robot extends MecanumDrive {
     }
 
     public Pose2d getCurrentPose() {
+        RobotLogger.dd(TAG, "poseHistory.get(poseHistory.size() - 1): " + poseHistory.get(poseHistory.size() - 1));
         return poseHistory.get(poseHistory.size() - 1);
     }
 
@@ -306,12 +310,30 @@ public class Robot extends MecanumDrive {
 
     @Override
     public void setMotorPowers(double v, double v1, double v2, double v3) {
+        if (VirtualizeDrive == false) {
+            double vReal = v;
+            double v1Real = -v1;
+            double v2Real = -v2;
+            double v3Real = -v3;
+            RobotLogger.dd(TAG, "setMotorPowers: (physical)     " + vReal + "     " + v3Real + "\n" +
+                                         "                               " + v1Real + "     " + v2Real);
+            leftFront.setPower(vReal);
+            leftRear.setPower(v1Real);
+            rightRear.setPower(v2Real);
+            rightFront.setPower(v3Real);
+        } else {
+            RobotLogger.dd(TAG, "setMotorPowers: (virtual)      " + v + "     " + v3 + "\n" +
+                                         "                               " + v1 + "     " + v2);
+            leftFront.setPower(v);
+            leftRear.setPower(v1);
+            rightRear.setPower(v2);
+            rightFront.setPower(v3);
+        }
+
+
 //        RobotLogger.dd(TAG,"setMotorPowers");
 
-        leftFront.setPower(v);
-        leftRear.setPower(v1);
-        rightRear.setPower(v2);
-        rightFront.setPower(v3);
+
     }
 
     @Override

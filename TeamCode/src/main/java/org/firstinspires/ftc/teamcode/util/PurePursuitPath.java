@@ -54,7 +54,18 @@ public class PurePursuitPath {
         return output;
     }
 
-
+    public static void joinSegments(ArrayList<PurePursuitPathPoint> path_2) throws Exception {
+        //If they are the exact same point
+        if (path1.get(path1.size() - 1).x == path_2.get(0).x && path1.get(path1.size() - 1).y == path_2.get(0).y && path1.get(path1.size() - 1).h == path_2.get(0).h && path1.get(path1.size() - 1).isVertex == path_2.get(0).isVertex) {
+            //Append the 2nd path to the current path
+            for (int i=1; i<path_2.size(); i++) {
+                path1.add(path_2.get(i));
+            }
+        }
+        else {
+            throw new Exception("Cannot Join Paths. End and Start PurePursuitPathPoint are not the same.");
+        }
+    }
 
     public static void importXMLPath(String filename) {
         String full_path = AppUtil.CONFIG_FILES_DIR + "/" + filename;

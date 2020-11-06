@@ -24,7 +24,7 @@ public class SafeSleep
             r = r - t;
         }
         long sleep_duration = SystemClock.elapsedRealtime() - start_time;
-        RobotLogger.dd("SafeSleep", "actually slept for " + sleep_duration + " when requested to sleep " + c);
+//        RobotLogger.dd("SafeSleep", "actually slept for " + sleep_duration + " when requested to sleep " + c);
 
     }
 }

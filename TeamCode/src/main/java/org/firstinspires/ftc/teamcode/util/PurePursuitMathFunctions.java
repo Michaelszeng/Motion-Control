@@ -264,7 +264,7 @@ public class PurePursuitMathFunctions {
             }
         }
 
-        RobotLogger.dd(TAG, "minDistRadDiffIndex: "+ minDistRadDiffIndex);
+//        RobotLogger.dd(TAG, "minDistRadDiffIndex: "+ minDistRadDiffIndex);
         //If the target pose is a previous pose in the path, we know we are at the end of the path and we no longer change the target Pose
         if (minDistRadDiffIndex < prevTargetIndex) {
             return prevTargetIndex;

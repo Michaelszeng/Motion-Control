@@ -37,7 +37,7 @@ public class ThreeOdometerLocalizer {
 //        double odoHeadingChange = ((rightChangeTicks) / (ODOMETRY_TRACK_WIDTH * ENCODER_COUNTS_PER_INCH_RIGHT)) - ((leftChangeTicks) / (ODOMETRY_TRACK_WIDTH * ENCODER_COUNTS_PER_INCH_LEFT));
         double odoHeadingChange = (rightChange - leftChange) / ODOMETRY_TRACK_WIDTH;
 
-        Log.d(TAG, "odoHeadingChange: " + odoHeadingChange);
+//        Log.d(TAG, "odoHeadingChange: " + odoHeadingChange);
 //        Log.d(TAG, "IMUHeadingChange: " + (headingCurrent - headingPrev));
 
         //these changes are still perpendicular to the robot, do they need to be rotated based on the robot's heading
@@ -51,8 +51,8 @@ public class ThreeOdometerLocalizer {
         else {
             double longitudinalRadius = (ODOMETRY_TRACK_WIDTH * 0.5 * (leftChange + rightChange)) / (rightChange - leftChange);
             double lateralRadius = (horizontalChange / odoHeadingChange) - Math.abs(ODOMETRY_HORIZONTAL_TRACK_WIDTH);
-            Log.d(TAG, "Longitudinal Radius: " + longitudinalRadius);
-            Log.d(TAG, "Lateral Radius: " + lateralRadius);
+//            Log.d(TAG, "Longitudinal Radius: " + longitudinalRadius);
+//            Log.d(TAG, "Lateral Radius: " + lateralRadius);
 
             xChange = longitudinalRadius * (Math.cos(odoHeadingChange) - 1) + lateralRadius * Math.sin(odoHeadingChange);
             yChange = longitudinalRadius * Math.sin(odoHeadingChange) + lateralRadius * (1 - Math.cos(odoHeadingChange));
@@ -83,7 +83,7 @@ public class ThreeOdometerLocalizer {
         double odoHeadingChange = (leftChange - rightChange) / (ODOMETRY_TRACK_WIDTH);
         //need to subtract (strafeWheelTrackWidth * globalHeading) so the robot doesn't think its moving when it turns
         double horizontalChange = ticksToInches((int) horizontalChangeTicks, odoTicksPerRevHorizontal) - (headingChange * ODOMETRY_HORIZONTAL_TRACK_WIDTH);
-        Log.d(TAG, "subtracted from strafe: " + (headingChange * ODOMETRY_HORIZONTAL_TRACK_WIDTH));
+//        Log.d(TAG, "subtracted from strafe: " + (headingChange * ODOMETRY_HORIZONTAL_TRACK_WIDTH));
 
         double localVectorX = horizontalChange;
         double localVectorY = (leftChange + rightChange) / 2;
@@ -102,7 +102,7 @@ public class ThreeOdometerLocalizer {
     //FUNCTIONAL
     //Inspiration: Recharged Green (https://github.com/RechargedGreen/SkystoneApp/blob/master/TeamCode/src/main/java/org/firstinspires/ftc/teamcode/odometry/ThreeWheel.kt)
     public ArrayList<Double> getPoseChangeV3(double leftChangeTicks, double rightChangeTicks, double horizontalChangeTicks, double currentLeftTicks, double currentRightTicks, double currentHorizontalTicks, double headingCurrent, double headingPrev) {  //heading change in radians, clockwise = positive
-        //Identical to V2 but uses latest/current heading instead of the avg heading
+        //Identical to V2 but uses latest/current heading instead of the avg heading, and uses heading from odo
         //Local = of the field
         //Global = of the robot
 

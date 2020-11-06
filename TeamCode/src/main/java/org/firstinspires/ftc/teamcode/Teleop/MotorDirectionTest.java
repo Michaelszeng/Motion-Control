@@ -7,10 +7,11 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.util.AllHardwareMap;
 
-@TeleOp(name = "OdometryManualTest")
-public class OdometryManualTest extends LinearOpMode {
+@TeleOp(name = "MotorDirectionTest")
+public class MotorDirectionTest extends LinearOpMode {
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer
     //backRight: vertical right odometer
@@ -36,7 +37,7 @@ public class OdometryManualTest extends LinearOpMode {
 
         //Initialize IMU parameters
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
         parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
         parameters.loggingEnabled      = true;
@@ -44,24 +45,15 @@ public class OdometryManualTest extends LinearOpMode {
         parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
         imu.initialize(parameters);
 
+        Robot robot = new Robot(hardwareMap, false,0.0, 0.0, 0.0);
+
         waitForStart();
 
         while(opModeIsActive()) {   //put teleop code in here
 //            telemetry.addData("Right Vertical: ", verticalRight.getCurrentPosition());
 //            telemetry.addData("Left Vertical: ", verticalLeft.getCurrentPosition());
 //            telemetry.addData("horizontal: ", horizontal.getCurrentPosition());
-            double imuReading1 = -imu.getAngularOrientation().firstAngle;
-            double imuReading2 = -imu.getAngularOrientation().secondAngle;
-            double imuReading3 = -imu.getAngularOrientation().thirdAngle;
-
-            telemetry.addData("frontLeft Motor: ", frontLeft.getCurrentPosition());
-            telemetry.addData("Right Odometer: ", backRight.getCurrentPosition());
-            telemetry.addData("Left Odometer: ", backLeft.getCurrentPosition());
-            telemetry.addData("Horizontal Odometer: ", frontRight.getCurrentPosition());
-
-            telemetry.addData("IMU firstAngle: ", imuReading1);
-            telemetry.addData("IMU secondAngle: ", imuReading2);
-            telemetry.addData("IMU thirdAngle: ", imuReading3);
+            robot.setMotorPowers(0.5, 0.5, 0.5, 0.5);
 
             telemetry.update();
             idle();
