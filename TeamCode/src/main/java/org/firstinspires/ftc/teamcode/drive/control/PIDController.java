@@ -6,6 +6,12 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xStartPower;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yStartPower;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hStartPower;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xAccel;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yAccel;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hAccel;
 
 import java.util.ArrayList;
 
@@ -101,7 +107,7 @@ public class PIDController {
         //proportional calculator: outputs present error * xP
         double pXOutput;
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
-        jerkControlMultiplier = 0.75 + 2 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX()));
+        jerkControlMultiplier = xStartPower + xAccel * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX()));
         if (jerkControlMultiplier > 1) {
             jerkControlMultiplier = 1;
         }
@@ -154,7 +160,7 @@ public class PIDController {
         //proportional calculator: outputs present error * yP
         double pYOutput;
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
-        jerkControlMultiplier = 0.90 + 4 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY()));
+        jerkControlMultiplier = yStartPower + yAccel * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY()));
         if (jerkControlMultiplier > 1) {
             jerkControlMultiplier = 1;
         }
@@ -200,7 +206,7 @@ public class PIDController {
         //proportional calculator: outputs present error * hP
         double pHOutput;
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
-        jerkControlMultiplier = 0.3 + 6 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading()));
+        jerkControlMultiplier = hStartPower + hAccel * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading()));
         if (jerkControlMultiplier > 0.5) {    //Set max value
             jerkControlMultiplier = 0.5;
         }

@@ -22,6 +22,8 @@ import org.firstinspires.ftc.teamcode.drive.virtual.DriveTrain;
 import org.firstinspires.ftc.teamcode.drive.virtual.VirtualLocalizer;
 import org.firstinspires.ftc.teamcode.drive.virtual.VirtualMotorEx;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions;
+import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 
 import java.util.ArrayList;
@@ -37,6 +39,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VirtualizeDrive;
+//import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reachedDestination;
 
 //import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 
@@ -192,7 +195,7 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.1, 0.1, 1.0);
+            PIDController controller = new PIDController(currentPose, targetPose, 0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -214,6 +217,8 @@ public class Robot extends MecanumDrive {
 
         return motorPowers;
     }
+
+
 
     //Virtual Robot: Follow Point
     public ArrayList<Double> update(Pose2d currentPose, Pose2d targetPose, int loopTime) {

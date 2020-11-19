@@ -18,6 +18,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.drive.Robot;
+import org.firstinspires.ftc.teamcode.drive.control.PurePursuitMotionProfileGenerator;
 import org.firstinspires.ftc.teamcode.drive.virtual.FieldDashboard;
 import org.firstinspires.ftc.teamcode.util.AllHardwareMap;
 import org.firstinspires.ftc.teamcode.util.DashboardUtil;
@@ -39,11 +40,11 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.getNe
 /*
  * Follows a path using pure pursuit algorithm
  *
- * THIS VERSION IS STABLE
+ * THIS VERSION IS UNDERGOING TESTING WITH MOTION PROFILING
  */
-@TeleOp(name = "PurePursuitFollower")
-public class PurePursuitFollower extends LinearOpMode {
-    String TAG = "PurePursuitFollower";
+@TeleOp(name = "PurePursuitFollowerV3")
+public class PurePursuitFollowerV3 extends LinearOpMode {
+    String TAG = "PurePursuitFollowerV3";
 
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer
@@ -72,6 +73,11 @@ public class PurePursuitFollower extends LinearOpMode {
         RobotLogger.dd(TAG, "_______________________________________________________");
         PurePursuitPath PPPath = new PurePursuitPath(path, "pp_path_1.xml");
         RobotLogger.dd(TAG, PPPath.toString());
+
+        PurePursuitMotionProfileGenerator mpg = new PurePursuitMotionProfileGenerator(PPPath);
+        mpg.generateProfiles();
+        mpg.exportProfiles();
+
         hwMap = new AllHardwareMap(hardwareMap);
         dashboard = FtcDashboard.getInstance();
         dashboard.setTelemetryTransmissionInterval(25);

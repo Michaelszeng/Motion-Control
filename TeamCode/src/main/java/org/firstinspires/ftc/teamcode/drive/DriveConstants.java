@@ -60,6 +60,22 @@ public class DriveConstants {
     public static double hI = 0.5;
     public static double hD = 0.00001;
 
+    //PurePursuit PID Constants
+    public static double xStartPower = 0.75;
+    public static double yStartPower = 0.90;
+    public static double hStartPower = 0.30;
+    public static double xAccel = 2.0;
+    public static double yAccel = 4.0;
+    public static double hAccel = 6.0;
+    public static double kStaticM = 0.045;   //Found using StaticTest.java
+    public static double kVM = 0.0628;      //Found using kVTest.java
+    public static double kAM = 0.000156;      //Found using kATest.java
+    public static double maxV = 62.308;  //Used to generate motion profile
+    public static double maxA = 65;      //Used to generate motion profile
+    public static double maxJ = 130;
+    public static double maxAngV = 250;      //Used to generate motion profile      = maxV/14.25 * 180/Math.PI
+    public static double maxAngA = 180;      //Used to generate motion profile
+
     public static double ODOMETRY_TRACK_WIDTH = 14.632;
     public static double ODOMETRY_HORIZONTAL_TRACK_WIDTH = -4.4;
     public static double HARDCODED_TICKS_PER_REV = 383.6; //MOTOR_CONFIG.getTicksPerRev();

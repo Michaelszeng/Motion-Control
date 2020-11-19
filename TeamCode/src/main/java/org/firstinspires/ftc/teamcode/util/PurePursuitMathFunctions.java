@@ -23,6 +23,12 @@ import javax.xml.parsers.ParserConfigurationException;
 public class PurePursuitMathFunctions {
     private static String TAG = "PurePursuitMathFunctions";
 
+    public enum ReachedDestination {
+        FALSE,
+        CHANGE,
+        TRUE
+    }
+
     public static Pose2d getNextTargetV1(Pose2d robotPose, double radius, PurePursuitPath path) {
         double lastDistance = 9999;
         //2 smallest differences, because the two intersects between circle and line may be slightly different magnitudes
@@ -281,6 +287,25 @@ public class PurePursuitMathFunctions {
             angle -= 2 * Math.PI;
         }
         return angle;
+    }
+
+    public static ReachedDestination reachedDestination(Pose2d robotPose, PurePursuitPathPoint pathEnd, ReachedDestination reachedDestination) {
+        double headingDifference = robotPose.getHeading() - pathEnd.h;
+        double locationDifference = Math.abs(Math.hypot(robotPose.getX() - pathEnd.x, robotPose.getY() - pathEnd.y));
+        if (headingDifference < 0.0523599 && locationDifference < 1.0) {
+            if (reachedDestination == ReachedDestination.CHANGE || reachedDestination == ReachedDestination.TRUE) {
+                return ReachedDestination.TRUE;
+            }
+            if (reachedDestination == ReachedDestination.FALSE) {
+                return ReachedDestination.CHANGE;
+            }
+        }
+        return ReachedDestination.FALSE;
+    }
+
+    public double estimateDuration(PurePursuitPath PPPath, double radius) {
+        
+        return 0.0;
     }
 
 }
