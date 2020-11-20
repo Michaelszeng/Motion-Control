@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.util.pj2;
+package org.firstinspires.ftc.teamcode.util.MathFunctions;
 
 public class Cubic {
     // Hidden constants.
