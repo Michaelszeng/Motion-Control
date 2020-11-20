@@ -206,7 +206,13 @@ public class PurePursuitMotionProfileGenerator {
 
 
         //SECTION 4
-        
+        int index_s_Accelerate = path.path1.size() - index_s_0AccelReached;     //The points that have 0 acceleration are the section between the equal length trapezoids
+        for (int i=index_s_0AccelReached; i<index_s_Accelerate; i++) {
+            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+            t = dx/maxV;
+            duration += t;
+            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, maxV, 0.0, duration));
+        }
         //END SECTION 4
 
         return null;
@@ -218,12 +224,12 @@ public class PurePursuitMotionProfileGenerator {
         String velocities = "";
         String accelerations = "";
         for (PurePursuitPathPoint p : path.path1) {
-            if (String.valueOf(p.t) == "NaN") {
+            if (p.t == Double.NaN) {
 
             }
             else {
 //                RobotLogger.dd(TAG, "Appending: " + String.valueOf(p.t) + ", " + String.valueOf(p.velocity)+ ", " + String.valueOf(p.acceleration));
-                times = times + p.t;
+                times = times + String.format("%.4f", p.t);
                 times = times + ",";
                 velocities = velocities + p.velocity;
                 velocities = velocities + ",";
