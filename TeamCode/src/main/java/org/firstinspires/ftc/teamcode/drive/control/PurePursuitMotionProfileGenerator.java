@@ -30,18 +30,20 @@ public class PurePursuitMotionProfileGenerator {
 //        RobotLogger.dd(TAG, "t_MaxAccelReached: " + t_MaxAccelReached);
 //        RobotLogger.dd(TAG, "s_MaxAccelReached: " + s_MaxAccelReached);
 
-
-        int index_s_MaxAccelReached = 0;
         double currentDistance = 0;
 
         double prevSmallestDiff = 9999.9;
         double smallestDiff = 9998.9;
         double currentDiff;
 
-        PurePursuitPathPoint prevPose = path.path1.get(0);
         int counter = 0;
         while (smallestDiff < prevSmallestDiff && counter < path.path1.size()) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
-            currentDistance += Math.hypot(path.path1.get(counter).x, path.path1.get(counter).y);
+            if (counter == 0) {
+                currentDistance += Math.hypot(path.path1.get(counter).x, path.path1.get(counter).y);
+            }
+            else {
+                currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
+            }
 //            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_MaxAccelReached - currentDistance);
 //            RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
@@ -55,8 +57,8 @@ public class PurePursuitMotionProfileGenerator {
             }
             counter++;
         }
-        index_s_MaxAccelReached = counter;
-//        RobotLogger.dd(TAG, "counter: " + counter);
+        int index_s_MaxAccelReached = counter;
+        RobotLogger.dd(TAG, "Section 1 counter: " + counter);
 
         double v0 = 0.0;
         double a0 = 0.0;
@@ -65,7 +67,12 @@ public class PurePursuitMotionProfileGenerator {
         double a;
         double t;   //Time increment; duration is the total time elasped to the pose
         for (int i=0; i<index_s_MaxAccelReached; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
-            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+            if (i ==0) {
+                dx = Math.abs(Math.hypot(path.path1.get(i).x, path.path1.get(i).y));
+            }
+            else {
+                dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
+            }
             //Equation: 0 = -dx + v0t + 1/2 at^2 + 1/6 jt^3
             cubic.solve(0.1667 * maxJ, 0.5 * a0, v0, -dx);
             if (cubic.nRoots == 1) {
@@ -95,15 +102,13 @@ public class PurePursuitMotionProfileGenerator {
         double t_InflectReached = (maxV - (2*v0)) / maxA;
         double s_InflectReached = s_MaxAccelReached + v0*t_InflectReached + 0.5*maxA*Math.pow(t_InflectReached, 2);
 
-        int index_s_InflectReached = index_s_MaxAccelReached;
         currentDistance = 0;
 
         prevSmallestDiff = 9999.9;
         smallestDiff = 9998.9;
-        prevPose = path.path1.get(index_s_MaxAccelReached);
         counter = index_s_MaxAccelReached;
         while (smallestDiff < prevSmallestDiff && counter < path.path1.size()) { //This loop finds the index of the PurePursuitPathPose where max velocity with constant accel should be reached
-            currentDistance += Math.hypot(path.path1.get(counter).x, path.path1.get(counter).y);
+            currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
             RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_InflectReached - currentDistance);
             RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
@@ -117,11 +122,12 @@ public class PurePursuitMotionProfileGenerator {
             }
             counter++;
         }
-        index_s_InflectReached = counter;
+        int index_s_InflectReached = counter;
         RobotLogger.dd(TAG, "counter: " + counter);
 
         for (int i=index_s_MaxAccelReached; i<index_s_InflectReached; i++) {     //This loop sets the targetV and targetA for all points between reaching max accel and reaching max velocity
-            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+            dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
+//            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
             //Equation: 0 = -dx + v0t + 1/2 at^2
             quad.solve(0.5 * maxA, v0, -dx);
             if (quad.nRoots == 1) {
@@ -147,18 +153,16 @@ public class PurePursuitMotionProfileGenerator {
 
         //SECTION 3
         double t_0AccelReached = (maxA - 0) / maxJ;
-        double s_0AccelReached = v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) + 0.1667*maxJ*Math.pow(t_MaxAccelReached, 3);
+        double s_0AccelReached = s_InflectReached + v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) - 0.1667*maxJ*Math.pow(t_MaxAccelReached, 3);
 
-        int index_s_0AccelReached = index_s_InflectReached;
         currentDistance = 0;
 
         prevSmallestDiff = 9999.9;
         smallestDiff = 9998.9;
 
-        prevPose = path.path1.get(0);
         counter = index_s_InflectReached;
         while (smallestDiff < prevSmallestDiff && counter < path.path1.size()) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
-            currentDistance += Math.hypot(path.path1.get(counter).x, path.path1.get(counter).y);
+            currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
 //            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_0AccelReached - currentDistance);
 //            RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
@@ -172,11 +176,13 @@ public class PurePursuitMotionProfileGenerator {
             }
             counter++;
         }
-        index_s_0AccelReached = counter;
-//        RobotLogger.dd(TAG, "counter: " + counter);
+        int index_s_0AccelReached = counter;
+        int temp = counter-index_s_InflectReached;
+        RobotLogger.dd(TAG, "Section 3 counter: " + temp);
 
         for (int i=index_s_InflectReached; i<index_s_0AccelReached; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
-            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+            dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
+//            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
             //Equation: 0 = -dx + v0t + 1/2 at^2 + 1/6 jt^3
             cubic.solve(0.1667 * maxJ, 0.5 * a0, v0, -dx);
             if (cubic.nRoots == 1) {
@@ -208,7 +214,8 @@ public class PurePursuitMotionProfileGenerator {
         //SECTION 4
         int index_s_Accelerate = path.path1.size() - index_s_0AccelReached;     //The points that have 0 acceleration are the section between the equal length trapezoids
         for (int i=index_s_0AccelReached; i<index_s_Accelerate; i++) {
-            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+            dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
+//            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
             t = dx/maxV;
             duration += t;
             path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, maxV, 0.0, duration));
@@ -231,9 +238,9 @@ public class PurePursuitMotionProfileGenerator {
 //                RobotLogger.dd(TAG, "Appending: " + String.valueOf(p.t) + ", " + String.valueOf(p.velocity)+ ", " + String.valueOf(p.acceleration));
                 times = times + String.format("%.4f", p.t);
                 times = times + ",";
-                velocities = velocities + p.velocity;
+                velocities = velocities + String.format("%.4f", p.velocity);
                 velocities = velocities + ",";
-                accelerations = accelerations + p.acceleration;
+                accelerations = accelerations + String.format("%.4f", p.acceleration);
                 accelerations = accelerations + ",";
             }
         }

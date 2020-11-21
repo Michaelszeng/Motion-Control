@@ -72,7 +72,7 @@ public class DriveConstants {
     public static double kAM = 0.000156;      //Found using kATest.java
     public static double maxV = 62.308;  //Used to generate motion profile
     public static double maxA = 65;      //Used to generate motion profile
-    public static double maxJ = 130;
+    public static double maxJ = 260;
     public static double maxAngV = 250;      //Used to generate motion profile      = maxV/14.25 * 180/Math.PI
     public static double maxAngA = 180;      //Used to generate motion profile
 
