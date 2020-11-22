@@ -1,0 +1,11 @@
+[submodule "EasyOpeCVLib"]
+	path = EasyOpeCVLib
+	url = https://github.com/FTCclueless/EasyOpenCV.git
+
+[submodule "road-runner-lib"]
+	path = road-runner-lib
+	url = https://github.com/wangxdflight/road-runner.git
+	branch = dev_sub
+[submodule "DogeCVLib"]
+	path = DogeCVLib
+	url = https://github.com/wangxdflight/DogeCV.git

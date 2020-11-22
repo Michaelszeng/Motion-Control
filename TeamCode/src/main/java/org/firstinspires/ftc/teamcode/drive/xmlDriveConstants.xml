@@ -1,0 +1,151 @@
+<?xml version="1.0"?>
+<driveConstants>
+    <variable dtype = "int">
+        <name>TEST_SKY_STONE_POSITION</name>
+        <value>1</value>
+    </variable>
+    <variable dtype = "boolean">
+        <name>USE_VUFORIA_LOCALIZER</name>
+        <value>false</value>
+    </variable>
+    <variable dtype = "boolean">
+        <name>ENABLE_ARM_ACTIONS</name>
+        <value>false</value>
+    </variable>
+    <variable dtype = "boolean">
+        <name>USING_STRAFE_DIAGONAL</name>
+        <value>true</value>
+    </variable>
+    <variable dtype = "int">
+        <name>TEST_PAUSE_TIME</name>
+        <value>1000</value>
+    </variable>
+    <variable dtype = "double">
+        <name>odoEncoderTicksPerRev</name>
+        <value>1565.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>txP</name>
+        <value>5.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>txI</name>
+        <value>0.5</value>
+    </variable>
+    <variable dtype = "double">
+        <name>txD</name>
+        <value>0.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>tyP</name>
+        <value>5.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>tyI</name>
+        <value>10.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>tyD</name>
+        <value>0.00001</value>
+    </variable>
+    <variable dtype = "double">
+        <name>hP</name>
+        <value>10.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>hI</name>
+        <value>0.5</value>
+    </variable>
+    <variable dtype = "double">
+        <name>hD</name>
+        <value>0.00001</value>
+    </variable>
+    <variable dtype = "double">
+        <name>ODOMETRY_TRACK_WIDTH</name>
+        <value>14.8</value>
+    </variable>
+    <variable dtype = "double">
+        <name>ODOMETRY_FORWARD_OFFSET</name>
+        <value>-5.5</value>
+    </variable>
+    <variable dtype = "double">
+        <name>HARDCODED_TICKS_PER_REV</name>
+        <value>383.6</value>
+    </variable>
+    <variable dtype = "double">
+        <name>MAX_RPM_FROM_SPEC</name>
+        <value>435.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>HARDCODED_RPM_RATIO</name>
+        <value>0.683</value>
+    </variable>
+    <variable dtype = "double">
+        <name>TICKS_PER_REV</name>
+        <value>1.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>MAX_RPM</name>
+        <value>1.0</value>
+    </variable>
+    <variable dtype = "boolean">
+        <name>RUN_USING_ENCODER</name>
+        <value>true</value>
+    </variable>
+    <variable dtype = "double">
+        <name>kP</name>
+        <value>1.72</value>
+    </variable>
+    <variable dtype = "double">
+        <name>kI</name>
+        <value>0.172</value>
+    </variable>
+    <variable dtype = "double">
+        <name>kD</name>
+        <value>0.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>WHEEL_RADIUS</name>
+        <value>2</value>
+    </variable>
+    <variable dtype = "double">
+        <name>GEAR_RATIO</name>
+        <value>1.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>TRACK_WIDTH</name>
+        <value>14.2</value>
+    </variable>
+    <variable dtype = "double">
+        <name>WHEEL_BASE</name>
+        <value>14.2</value>
+    </variable>
+    <variable dtype = "double">
+        <name>kV</name>
+        <value>0.0111</value>
+    </variable>
+    <variable dtype = "double">
+        <name>kA</name>
+        <value>0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>kStatic</name>
+        <value>0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>maxVel</name>
+        <value>75.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>maxAccel</name>
+        <value>35.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>maxAngVel</name>
+        <value>135.0</value>
+    </variable>
+    <variable dtype = "double">
+        <name>maxAngAccel</name>
+        <value>90.0</value>
+    </variable>
+</driveConstants>
