@@ -4,11 +4,17 @@ import java.util.ArrayList;
 
 public class TurretFunctions {
     public String TAG = "TurretFunctions";
-    double shooterY = 13.5;
-    double legalY = 5.0 * 12 + shooterY;
-    double legalX = 16.0 * 12;
-    double g = 9.806;
+
+    final static double leftBound = 0;
+    final static double rightBound = 480;
+
+    final double shooterY = 13.5;
+    final double legalY = 5.0 * 12 + shooterY;
+    final double legalX = 16.0 * 12;
+    final double g = 9.806;
     double xAcceleration = 0.0;
+
+    final static double threshold = 20.0;    //degrees
 
     public boolean determineShotLegality(double velocity, double angle) {
         double v0y = velocity * Math.sin(angle);
@@ -21,6 +27,34 @@ public class TurretFunctions {
             return false;
         }
         return true;
+    }
+
+    public static double normalizeTarget(double currentPosition, double targetH) {
+        double newTarget;
+
+        double shortestDisplacementToTarget = normalizeAngle(targetH - currentPosition);
+        double targetPosition = shortestDisplacementToTarget + currentPosition;
+
+        if (targetPosition > rightBound - threshold) {
+            newTarget = targetPosition - 360;
+            return newTarget;
+        }
+        else if (targetPosition < leftBound + threshold) {
+            newTarget = targetPosition + 360;
+            return newTarget;
+        }
+        return targetH;
+    }
+
+    public static double normalizeAngle(double angle) {
+        //Ensures angle turn is between 180 and -180
+        while(angle < -180) {
+            angle += 360;
+        }
+        while (angle > 180) {
+            angle -= 360;
+        }
+        return angle;
     }
 
     public ArrayList<Double> quadSolver(double a, double b, double c) {

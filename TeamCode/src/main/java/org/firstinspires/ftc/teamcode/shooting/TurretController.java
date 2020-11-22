@@ -1,15 +1,16 @@
 package org.firstinspires.ftc.teamcode.shooting;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
+
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import java.util.ArrayList;
+import org.firstinspires.ftc.teamcode.shooting.TurretFunctions;
 
-public class TurretPIDController {
-    final String TAG = "PIDController";
-    final int ticksPerRev = 384;
+public class TurretController {
+    final String TAG = "TurretController";
+    final int ticksPerRev = 767;
     //Set the bounds of the turret rotation so wiring doesn't break
-    final double leftBound = 0;
-    final double rightBound = 360;
+
 
     ArrayList<Double> positionHistoryLocal = new ArrayList<>();
     ArrayList<Double> errorHistoryPercents = new ArrayList<>();
@@ -31,26 +32,27 @@ public class TurretPIDController {
     double position;    //In degrees
     double netOutput;
 
-    public TurretPIDController(Double startPositionTicks, Double target, double p, double i, double d) {
+    public TurretController(Double startPositionTicks, Double rawTarget, double p, double i, double d) {
         this.startPosition = (startPositionTicks * 360) / ticksPerRev;
-        this.target = target;
         this.p = p;
         this.i = i;
         this.d = d;
-
+        this.target = TurretFunctions.normalizeTarget(startPositionTicks, rawTarget);
         startingError = ensureNonZero(startPosition - target);
         //Must ensure starting errors are not 0 to avoid NaN
         RobotLogger.dd(TAG, "Controller startingError: " + startingError);
     }
 
-    public double update(Double positionTicks, int prevLoopTime) {
+    public double update(int positionTicks, int prevLoopTime, double rawTarget) {
         position = (positionTicks * 360) / ticksPerRev;
         positionHistoryLocal.add(position);
+
+        this.target = TurretFunctions.normalizeTarget(positionTicks, rawTarget);
+
         outputs = new ArrayList<>();
         outputs.clear();
-//        RobotLogger.dd(TAG, "robotPose: " + robotPose.toString());
         RobotLogger.dd(TAG, "target: " + target);
-        currentError = position - target;
+        currentError = target - position;
         errorHistory.add(currentError);
 
         //Percent errors always positive! Sign is checked later.
@@ -65,15 +67,15 @@ public class TurretPIDController {
         //proportional calculator: outputs present error * p
         double pOutput;
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
-        jerkControlMultiplier = 0.90 + 4 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1)));
+        jerkControlMultiplier = 0.80 + 4 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1)));
         if (jerkControlMultiplier > 1) {
             jerkControlMultiplier = 1;
         }
         if (errorHistory.get(errorHistory.size() - 1) >= 0.0) {
-            pOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
+            pOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
         }
         else {
-            pOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
+            pOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
         }
 
         //integral calculator: outputs integral of all previous yErrors * yi
@@ -82,10 +84,10 @@ public class TurretPIDController {
             iOutput += errorPercent;
         }
         if (errorHistory.get(errorHistory.size() - 1) >= 0.0) {
-            iOutput = -iOutput * (i/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
+            iOutput = iOutput * (i/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
         }
         else {
-            iOutput = iOutput * (i/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
+            iOutput = -iOutput * (i/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
         }
 
 
@@ -97,16 +99,26 @@ public class TurretPIDController {
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1) >= 0.0) {
                 //Multiplying by a constant so the inputted yD value can be around 1.0
-                dOutput = -(d * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1) - errorHistoryPercents.get(errorHistoryPercents.size() - 2))) / prevLoopTime;
+                dOutput = (d * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1) - errorHistoryPercents.get(errorHistoryPercents.size() - 2))) / prevLoopTime;
             }
             else {
                 //Multiplying by a constant so the inputted yD value can be around 1.0
-                dOutput = (d * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1) - errorHistoryPercents.get(errorHistoryPercents.size() - 2))) / prevLoopTime;
+                dOutput = -(d * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1) - errorHistoryPercents.get(errorHistoryPercents.size() - 2))) / prevLoopTime;
             }
         }
         RobotLogger.dd(TAG, "PID: " + pOutput + ", " + iOutput + ", " + dOutput);
         netOutput = pOutput+iOutput+dOutput;
+
+        toString(positionTicks, rawTarget, target, netOutput);
         return (pOutput+iOutput+dOutput);
+    }
+
+    public void toString(int positionTicks, double rawTarget, double normalizedTarget, double power) {
+        RobotLogger.dd(TAG, "positionTicks: " + positionTicks);
+        RobotLogger.dd(TAG, "rawTarget: " + rawTarget);
+        RobotLogger.dd(TAG, "normalizedTarget: " + normalizedTarget);
+        RobotLogger.dd(TAG, "outputPower: " + power);
+        RobotLogger.dd(TAG, " ");
     }
 
     public double ensureNonZero(double error) {
@@ -116,16 +128,5 @@ public class TurretPIDController {
         else {
             return error;
         }
-    }
-
-    public static double normalizeHeading(double angle) {
-        //Ensures angle turn is between 180 and -180
-        while(angle < -Math.PI) {
-            angle += 2 * Math.PI;
-        }
-        while (angle > Math.PI) {
-            angle -= 2 * Math.PI;
-        }
-        return angle;
     }
 }
