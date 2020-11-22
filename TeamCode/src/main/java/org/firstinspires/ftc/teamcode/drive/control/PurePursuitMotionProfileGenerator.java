@@ -33,6 +33,7 @@ public class PurePursuitMotionProfileGenerator {
         double currentDistance = 0;
 
         double prevSmallestDiff = 9999.9;
+        double prevPrevSmallestDiff = 9999.9;
         double smallestDiff = 9998.9;
         double currentDiff;
 
@@ -190,6 +191,12 @@ public class PurePursuitMotionProfileGenerator {
         //Displacement from maxA to 0A
 //        double s_0AccelReached = s_InflectReached + v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) - 0.1667*maxJ*Math.pow(t_0AccelReached, 3);
         double s_0AccelReached = v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) - 0.1667*maxJ*Math.pow(t_0AccelReached, 3);
+//        double test1 = s_InflectReached + v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) - 0.1667*maxJ*Math.pow(t_0AccelReached, 3);
+//        double test2 = s_InflectReached + v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) + 0.1667*maxJ*Math.pow(t_0AccelReached, 3);
+//        double test3 = v0*t_0AccelReached + 0.5*maxA*Math.pow(t_0AccelReached, 2) + 0.1667*maxJ*Math.pow(t_0AccelReached, 3);
+//        RobotLogger.dd(TAG, "s0Accel1: " + test1);
+//        RobotLogger.dd(TAG, "s0Accel2: " + test2);
+//        RobotLogger.dd(TAG, "s0Accel3: " + test3);
 //        double ds = s_0AccelReached - s_InflectReached;
 //        RobotLogger.dd(TAG, "ds: " + ds);
         RobotLogger.dd(TAG, "s_0accelreached: " + s_0AccelReached);
@@ -197,22 +204,24 @@ public class PurePursuitMotionProfileGenerator {
         currentDistance = 0;
 
         prevSmallestDiff = 9999.9;
+        prevPrevSmallestDiff = 9999.9;
         smallestDiff = 9998.9;
 
         counter = index_s_InflectReached;
-        while (smallestDiff < prevSmallestDiff && counter < path.path1.size()) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
+        while ((smallestDiff <= prevSmallestDiff|| smallestDiff <= prevPrevSmallestDiff) && counter < path.path1.size()) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
             currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
             RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_0AccelReached - currentDistance);
             RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
             RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
             prevSmallestDiff = smallestDiff;
-            if (currentDiff < prevSmallestDiff) {
+            if (currentDiff <= prevSmallestDiff) {
                 smallestDiff = currentDiff;
             }
             else {
                 break;
             }
+            prevPrevSmallestDiff = prevSmallestDiff;
             counter++;
         }
         int index_s_0AccelReached = counter;
@@ -276,14 +285,14 @@ public class PurePursuitMotionProfileGenerator {
 
 
         //SECTION 4
-//        int index_s_Accelerate = path.path1.size() - index_s_0AccelReached;     //The points that have 0 acceleration are the section between the equal length trapezoids
-//        for (int i=index_s_0AccelReached; i<index_s_Accelerate; i++) {
-//            dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
-////            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
-//            t = dx/maxV;
-//            duration += t;
-//            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, maxV, 0.0, duration));
-//        }
+        int index_s_Accelerate = path.path1.size() - index_s_0AccelReached;     //The points that have 0 acceleration are the section between the equal length trapezoids
+        for (int i=index_s_0AccelReached; i<index_s_Accelerate; i++) {
+            dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
+//            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+            t = dx/maxV;
+            duration += t;
+            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, maxV, 0.0, duration));
+        }
         //END SECTION 4
 
         return null;
