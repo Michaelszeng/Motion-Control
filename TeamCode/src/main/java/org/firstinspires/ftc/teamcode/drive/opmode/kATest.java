@@ -28,7 +28,7 @@ Given the velocity at every moment, the program subtracts measuredVelocity/kV to
 The acceleration is then measured, and plotted against power in the dashboard, and the slope is the kA.
  */
 @TeleOp(name = "kATest")
-//@Disabled
+@Disabled
 public class kATest extends LinearOpMode {
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer

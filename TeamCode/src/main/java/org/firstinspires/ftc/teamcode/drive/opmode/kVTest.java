@@ -27,8 +27,7 @@ This class ramps up the motor power and measures velocity to create a velocity v
 The slope of this plot is the kv value.
  */
 @TeleOp(name = "kVTest")
-//@Disabled
-
+@Disabled
 public class kVTest extends LinearOpMode {
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer

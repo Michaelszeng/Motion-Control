@@ -18,7 +18,7 @@ This class slowly increases the power to the wheels until the robot is able to m
 odometry wheels). This find the minimum power required for movement.
  */
 @TeleOp(name = "StaticTest")
-//@Disabled
+@Disabled
 public class StaticTest extends LinearOpMode {
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer

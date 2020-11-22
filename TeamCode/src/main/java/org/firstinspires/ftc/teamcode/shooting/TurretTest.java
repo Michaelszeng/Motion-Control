@@ -61,7 +61,6 @@ public class TurretTest extends LinearOpMode {
 
 
             turretController.update(192, (int) dateDiff, -10);
-            turretController.update(-192, (int) dateDiff, 15);
             turretController.update(192, (int) dateDiff, 15);
             turretController.update(192, (int) dateDiff, 25);
 

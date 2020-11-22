@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.shooting;
 
+import org.firstinspires.ftc.teamcode.util.RobotLogger;
+
 import java.util.ArrayList;
 
 public class TurretFunctions {
-    public String TAG = "TurretFunctions";
+    public static String TAG = "TurretFunctions";
 
     final static double leftBound = 0;
     final static double rightBound = 480;
@@ -12,7 +14,6 @@ public class TurretFunctions {
     final double legalY = 5.0 * 12 + shooterY;
     final double legalX = 16.0 * 12;
     final double g = 9.806;
-    double xAcceleration = 0.0;
 
     final static double threshold = 20.0;    //degrees
 
@@ -33,13 +34,17 @@ public class TurretFunctions {
         double newTarget;
 
         double shortestDisplacementToTarget = normalizeAngle(targetH - currentPosition);
+//        RobotLogger.dd(TAG, "shortestDisplacementToTarget: " + shortestDisplacementToTarget);
         double targetPosition = shortestDisplacementToTarget + currentPosition;
+//        RobotLogger.dd(TAG, "targetPosition: " + targetPosition);
 
         if (targetPosition > rightBound - threshold) {
+//            RobotLogger.dd(TAG, "exceeded rightbound");
             newTarget = targetPosition - 360;
             return newTarget;
         }
-        else if (targetPosition < leftBound + threshold) {
+        if (targetPosition < leftBound + threshold) {
+//            RobotLogger.dd(TAG, "exceeded leftbound");
             newTarget = targetPosition + 360;
             return newTarget;
         }

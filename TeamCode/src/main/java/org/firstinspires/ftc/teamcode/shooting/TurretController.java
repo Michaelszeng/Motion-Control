@@ -38,8 +38,10 @@ public class TurretController {
         this.i = i;
         this.d = d;
         this.target = TurretFunctions.normalizeTarget(startPositionTicks, rawTarget);
-        startingError = ensureNonZero(startPosition - target);
-        //Must ensure starting errors are not 0 to avoid NaN
+        startingError = ensureNonZero(startPosition - target);  //Must ensure starting errors are not 0 to avoid NaN
+        if (startingError < 15) {   //this is a 1/x function that makes close-to-zero starting errors less close to zero
+            startingError = 15.5 - ((1 * 7)/((0.6 * startingError) + 1));
+        }
         RobotLogger.dd(TAG, "Controller startingError: " + startingError);
     }
 
@@ -47,13 +49,14 @@ public class TurretController {
         position = (positionTicks * 360) / ticksPerRev;
         positionHistoryLocal.add(position);
 
-        this.target = TurretFunctions.normalizeTarget(positionTicks, rawTarget);
+        this.target = TurretFunctions.normalizeTarget(position, rawTarget);
 
         outputs = new ArrayList<>();
         outputs.clear();
-        RobotLogger.dd(TAG, "target: " + target);
+//        RobotLogger.dd(TAG, "target: " + target);
         currentError = target - position;
         errorHistory.add(currentError);
+
 
         //Percent errors always positive! Sign is checked later.
         currentErrorPercent = Math.abs(currentError / startingError);
@@ -72,10 +75,10 @@ public class TurretController {
             jerkControlMultiplier = 1;
         }
         if (errorHistory.get(errorHistory.size() - 1) >= 0.0) {
-            pOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
+            pOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
         }
         else {
-            pOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
+            pOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1) * p);
         }
 
         //integral calculator: outputs integral of all previous yErrors * yi
@@ -109,12 +112,13 @@ public class TurretController {
         RobotLogger.dd(TAG, "PID: " + pOutput + ", " + iOutput + ", " + dOutput);
         netOutput = pOutput+iOutput+dOutput;
 
-        toString(positionTicks, rawTarget, target, netOutput);
+        toString(positionTicks, position, rawTarget, target, netOutput);
         return (pOutput+iOutput+dOutput);
     }
 
-    public void toString(int positionTicks, double rawTarget, double normalizedTarget, double power) {
+    public void toString(int positionTicks, double position, double rawTarget, double normalizedTarget, double power) {
         RobotLogger.dd(TAG, "positionTicks: " + positionTicks);
+        RobotLogger.dd(TAG, "position: " + position);
         RobotLogger.dd(TAG, "rawTarget: " + rawTarget);
         RobotLogger.dd(TAG, "normalizedTarget: " + normalizedTarget);
         RobotLogger.dd(TAG, "outputPower: " + power);
