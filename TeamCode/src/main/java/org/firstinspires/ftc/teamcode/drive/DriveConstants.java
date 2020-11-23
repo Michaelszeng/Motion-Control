@@ -71,10 +71,10 @@ public class DriveConstants {
     public static double kVM = 0.0628;      //Found using kVTest.java
     public static double kAM = 0.000156;      //Found using kATest.java
     public static double maxV = 62.308;  //Used to generate motion profile
-    public static double maxA = 65;      //Used to generate motion profile
-    public static double maxJ = 130;
-    public static double maxAngV = 250;      //Used to generate motion profile      = maxV/14.25 * 180/Math.PI
-    public static double maxAngA = 180;      //Used to generate motion profile
+    public static double maxA = 70;      //Used to generate motion profile
+    public static double maxJ = 390;
+    public static double maxAngV = 250;      //Used for Rotation Control      = maxV/14.25 * 180/Math.PI
+    public static double maxAngA = 180;      //Used for Rotation Control
 
     public static double ODOMETRY_TRACK_WIDTH = 14.632;
     public static double ODOMETRY_HORIZONTAL_TRACK_WIDTH = -4.4;
