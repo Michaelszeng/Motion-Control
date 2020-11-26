@@ -5,25 +5,38 @@ import android.util.Log;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
+import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
+
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xStartPower;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yStartPower;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hStartPower;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xAccel;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yAccel;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hAccel;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxV;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngVel;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngAccel;
 
 import java.util.ArrayList;
 
 public class PIDController {
     final String TAG = "PIDController";
 
+    PurePursuitPath PPPath;
     ArrayList<Pose2d> poseHistoryLocal = new ArrayList<>();
     ArrayList<Pose2d> errorHistoryPercents = new ArrayList<>();
     ArrayList<Pose2d> errorHistory = new ArrayList<>();
     Pose2d startPose;
     Pose2d target;
     ArrayList<Double> outputs;
+    PurePursuitPathPoint nearestPoint;
+    int nearestPointIndex;
 
     double startingErrorX;
     double startingErrorY;
@@ -67,6 +80,46 @@ public class PIDController {
         startingErrorY = ensureNonZero(startingErrorY);
         startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
         RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
+    }
+
+    public PIDController(Pose2d robotPose, Pose2d target, int targetIndex, PurePursuitPath PPPath, double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
+        startPose = robotPose;
+        this.target = target;
+        this.xP = xP;
+        this.xI = xI;
+        this.xD = xD;
+        this.yP = yP;
+        this.yI = yI;
+        this.yD = yD;
+        this.hP = hP;
+        this.hI = hI;
+        this.hD = hD;
+        this.PPPath = PPPath;
+
+        startingErrorX = startPose.getX() - target.getX();
+        startingErrorY = startPose.getY() - target.getY();
+        startingErrorHeading = startPose.getHeading() - target.getHeading();
+        //Must ensure starting errors are not 0 to avoid NaN
+        startingErrorX = ensureNonZero(startingErrorX);
+        startingErrorY = ensureNonZero(startingErrorY);
+        startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
+        RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
+
+        double smallestDiff = 99999.9;
+        int smallestDiffIndex = 0;
+        double diff;
+        for (int i=targetIndex - 100; i<targetIndex + 50; i++) {    //Searching range of points around target to find nearestPoint
+            diff = Math.sqrt(Math.pow(robotPose.getX() - PPPath.path1.get(i).x, 2) + Math.pow(robotPose.getY() - PPPath.path1.get(i).y, 2));
+            if (diff < smallestDiff) {
+                smallestDiff = diff;
+                smallestDiffIndex = i;
+            }
+            else {
+                break;
+            }
+        }
+        nearestPoint = PPPath.path1.get(smallestDiffIndex);
+        nearestPointIndex = smallestDiffIndex;
     }
 
 
@@ -248,10 +301,19 @@ public class PIDController {
         }
         RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
 
+        //STABLE
+//        double xNetOutput = pXOutput + iXOutput + dXOutput;
+//        double yNetOutput = pYOutput + iYOutput + dYOutput;
+//        double hNetOutput = pHOutput + iHOutput + dHOutput;
 
-
-        double xNetOutput = pXOutput + iXOutput + dXOutput;
-        double yNetOutput = pYOutput + iYOutput + dYOutput;
+        //Weights of PID vs Feedforward is 0.65 and 0.35
+        double feedForwardXYOutput = 0.4*(kV * nearestPoint.velocity + kA * nearestPoint.acceleration);     //Need to correct for +/- sign
+        if (Math.abs(feedForwardXYOutput) > 0.0) {  //kStatic technically boosts the output to over 100%?
+            feedForwardXYOutput += kStatic;
+        }
+        double directionOfMotion = Math.atan2(robotPose.getY()-target.getY(), robotPose.getX()-target.getX());
+        double xNetOutput = 0.65*(pXOutput + iXOutput + dXOutput) + feedForwardXYOutput * Math.sin(robotPose.getHeading() - directionOfMotion + 90);
+        double yNetOutput = 0.65*(pYOutput + iYOutput + dYOutput) + feedForwardXYOutput * Math.cos(robotPose.getHeading() - directionOfMotion + 90);
         double hNetOutput = pHOutput + iHOutput + dHOutput;
 
 //        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());

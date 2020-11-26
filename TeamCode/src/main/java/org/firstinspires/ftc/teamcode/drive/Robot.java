@@ -158,7 +158,7 @@ public class Robot extends MecanumDrive {
         prevHorizontalOdoReading = horizontalOdoReading;
     }
 
-    //Physical Robot: Follow Point
+    //Physical Robot: Follow Point      STABLE
     public ArrayList<Double> update(double rightOdoReading, double leftOdoReading, double horizontalOdoReading, double headingReading, Pose2d targetPose, int loopTime) {
         double leftOdoChange = leftOdoReading - prevLeftOdoReading;
         double rightOdoChange = rightOdoReading - prevRightOdoReading;
@@ -196,6 +196,68 @@ public class Robot extends MecanumDrive {
         }
         else {
             PIDController controller = new PIDController(currentPose, targetPose, 0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
+            pidControllers.add(controller);
+            motorPowers = controller.update(currentPose, loopTime);
+        }
+
+
+//        ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
+//        if (targetHistory.get(targetHistory.size() - 1).equals(targetHistory.get(targetHistory.size() - 2))) {
+//            motorPowers = pidControllers.get(pidControllers.size() - 1).update(currentPose, loopTime);
+//        }
+//        else {
+//            PIDController controller = new PIDController(currentPose, targetPose, 24.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+//            pidControllers.add(controller);
+//            motorPowers = controller.update(currentPose, loopTime);
+//        }
+
+        prevLeftOdoReading = leftOdoReading;
+        prevRightOdoReading = rightOdoReading;
+        prevHorizontalOdoReading = horizontalOdoReading;
+
+        return motorPowers;
+    }
+
+
+
+    //Physical Robot: Follow Point      UNDERGOING TESTING WITH MOTION PROFILING
+    public ArrayList<Double> update(double rightOdoReading, double leftOdoReading, double horizontalOdoReading, double headingReading, Pose2d targetPose, int targetIndex, PurePursuitPath PPPath, int loopTime) {
+        double leftOdoChange = leftOdoReading - prevLeftOdoReading;
+        double rightOdoChange = rightOdoReading - prevRightOdoReading;
+        double horizontalOdoChange = horizontalOdoReading - prevHorizontalOdoReading;
+        double previousHeading = poseHistory.get(poseHistory.size() - 1).getHeading();
+//        double headingChange = headingReading - previousHeading;
+
+        ArrayList<Double> coordinateChange = localizer.getPoseChangeV1(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
+//        ArrayList<Double> coordinateChange = localizer.getPoseChangeV2(leftOdoChange, rightOdoChange, horizontalOdoChange, headingReading, previousHeading);
+//        ArrayList<Double> coordinateChange = localizer.getPoseChangeV3(leftOdoChange, rightOdoChange, horizontalOdoChange, leftOdoReading, rightOdoReading, horizontalOdoReading, headingReading, previousHeading);
+
+        Pose2d prevPose = poseHistory.get(poseHistory.size() - 1);
+        RobotLogger.dd(TAG, "headingReading: " + headingReading);
+        Pose2d currentPose = new Pose2d(prevPose.getX() + coordinateChange.get(0), prevPose.getY() + coordinateChange.get(1), headingReading);
+//        RobotLogger.dd(TAG, "currentPose in Robot.update(): " + currentPose);
+        RobotLogger.dd(TAG, "currentPose.getHeading() in Robot.update(): " + currentPose.getHeading());
+        poseHistory.add(currentPose);
+        targetHistory.add(targetPose);
+
+        ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
+        Pose2d prevTargetPose;
+        if (targetHistory.size() > 1) {
+            prevTargetPose = targetHistory.get(targetHistory.size() - 2);
+        }
+        else {
+            prevTargetPose = targetPose;
+        }
+
+//        RobotLogger.dd(TAG, "prevTargetPose: (" + prevTargetPose.getX() + ", " + prevTargetPose.getY() + ", " + prevTargetPose.getHeading() + ")");
+//        RobotLogger.dd(TAG, "targetPose: (" + targetPose.getX() + ", " + targetPose.getY() + ", " + targetPose.getHeading() + ")");
+
+        if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
+            PIDController latestController = pidControllers.get(pidControllers.size() - 1);
+            motorPowers = latestController.update(currentPose, loopTime);
+        }
+        else {
+            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath,0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }

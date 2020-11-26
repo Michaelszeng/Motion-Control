@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.control;
 
+import com.qualcomm.robotcore.util.RobotLog;
+
 import org.firstinspires.ftc.teamcode.util.MathFunctions.Quadratic;
 import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
 import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
@@ -7,10 +9,13 @@ import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import org.firstinspires.ftc.teamcode.util.MathFunctions.Cubic;
 
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxJ;
 
+//NOTE: HEADING IS IN RADIANS
 public class PurePursuitMotionProfileGenerator {
     final String TAG = "PurePursuitMotionProfileGenerator";
 
@@ -24,6 +29,7 @@ public class PurePursuitMotionProfileGenerator {
     }
 
     public PurePursuitPath generateProfiles() {
+        //XY
         //SECTION 1
         double t_MaxAccelReached = (maxA - 0) / maxJ;
         double s_MaxAccelReached = 0.1667 * maxJ * Math.pow(t_MaxAccelReached, 3);
@@ -424,7 +430,7 @@ public class PurePursuitMotionProfileGenerator {
         double t_End = t_MaxAccelReached2;  //This is true because the 2 sides of the acceleration trapezoid are the same and the 2 acceleration trapezoids are the same
         //Displacement from 0A to -maxA
         double s_End = v0*t_End - 0.5*maxA*Math.pow(t_End, 2) + 0.1667*maxJ*Math.pow(t_End, 3);
-        RobotLogger.dd(TAG, "s_End: " + s_End);
+        RobotLogger.dd(TAG, "s_End:" + s_End);
 
         currentDistance = 0;
         prevSmallestDiff = 9999.9;
@@ -451,8 +457,11 @@ public class PurePursuitMotionProfileGenerator {
         int index_s_End = counter;
         RobotLogger.dd(TAG, "Section 5 counter: " + counter);
 
+        index_s_End = path.path1.size()-1;
+        RobotLogger.dd(TAG, "s_End, method 2: " + index_s_End);
+
         prevdt = t;
-        for (int i=index_s_InflectReached2; i<index_s_End; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
+        for (int i=index_s_InflectReached2; i<=index_s_End; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
             dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
             //Equation: 0 = -dx + v0t + 1/2 at^2 + 1/6 jt^3
             //t is the time displacement between 2 consecutive Poses
@@ -510,6 +519,125 @@ public class PurePursuitMotionProfileGenerator {
         }
         //END SECTION 7
 
+
+
+
+
+        //HEADING
+        double h0 = path.path1.get(0).h;
+        double hF = path.path1.get(path.path1.size()-1).h;
+        double hDisplacement = hF - h0;
+        RobotLogger.dd(TAG, "hDisplacement: " + Math.toDegrees(hDisplacement));
+
+        //SECTION 1
+        double t_0AngAReached;
+        if (Math.pow(path.path1.get(path.path1.size()-1).t, 2) < ((4 * Math.toDegrees(hDisplacement))/(maxAngA))) {
+            RobotLogger.dd(TAG, "------------------------------------------ERROR: PATH IS TOO SHORT FOR GIVEN HEADING CHANGE------------------------------------------");
+        }
+//        quad.solve(-maxAngA, maxAngA*path.path1.get(path.path1.size()-1).t, -hDisplacement);
+        quad.solve(1, -path.path1.get(path.path1.size()-1).t, Math.toDegrees(hDisplacement)/maxAngA);
+        RobotLogger.dd(TAG, "quad.x1: " + quad.x1);
+        RobotLogger.dd(TAG, "quad.x2: " + quad.x2);
+        if (quad.nRoots == 1) {
+            t_0AngAReached = quad.x1;
+        }
+        else if (quad.nRoots == 2) {
+            t_0AngAReached = Math.min(quad.x1, quad.x2);
+        }
+        else {
+            RobotLogger.dd(TAG, "------------------------------------------ERROR: PATH IS TOO SHORT FOR GIVEN HEADING CHANGE------------------------------------------");
+            t_0AngAReached = 0.0;
+        }
+
+        double h_0AngAReached = 0.5 * maxAngA * Math.pow(t_0AngAReached, 2);
+        double v_0AngAReached = maxAngA * t_0AngAReached;
+        RobotLogger.dd(TAG, "t_0AngAReached: " + t_0AngAReached);
+        RobotLogger.dd(TAG, "h_0AngAReached: " + h_0AngAReached);
+        RobotLogger.dd(TAG, "v_0AngAReached: " + v_0AngAReached);
+
+        prevSmallestDiff = 9999.9;
+        prevPrevSmallestDiff = 9999.9;
+        smallestDiff = 9998.9;
+
+        counter = 0;
+        while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < path.path1.size()/2) { //Exit the loop at reaching halfway of the path, or the final heading will never be reached
+            currentDiff = Math.abs(t_0AngAReached - path.path1.get(counter).t);
+            RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
+            RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
+            prevSmallestDiff = smallestDiff;
+            if (currentDiff <= prevSmallestDiff) {
+                smallestDiff = currentDiff;
+            }
+            else {
+                break;
+            }
+            prevPrevSmallestDiff = prevSmallestDiff;
+            counter++;
+        }
+        int index_t_0AngAReached = counter;
+        RobotLogger.dd(TAG, "index_t_0AngAReached: " + index_t_0AngAReached);
+
+        double angV0 = 0;
+        double angV;
+        double h = h0;
+        for (int i=0; i<index_t_0AngAReached; i++) {
+//            t = path.path1.get(i).t;
+//            //Equation: v = v0 + a0t
+//            angV = angV0 + maxAngA*t;
+//            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, angV, maxAngA));
+//            angV0 = angV;
+            if (i == 0) {
+                t = path.path1.get(i).t;
+            }
+            else {
+                t = path.path1.get(i).t - path.path1.get(i-1).t;
+            }
+            duration += t;
+
+            //Equation: v = v0 + a0t
+            angV = angV0 + maxAngA*t;
+            h += angV0*t + 0.5*maxAngA*Math.pow(t, 2);
+            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, angV, maxAngA));
+            angV0 = angV;
+        }
+        //END SECTION 1
+
+        //SECTION 2
+        int index_AngAccelerate = path.path1.size() - index_t_0AngAReached;
+        for (int i=index_t_0AngAReached; i<index_AngAccelerate; i++) {
+            t = path.path1.get(i).t - path.path1.get(i-1).t;
+            h += v_0AngAReached * t;
+            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, v_0AngAReached, 0.0));
+        }
+        //END SECTION 2
+
+        //SECTION 3
+        angV0 = maxAngV;
+        for (int i=index_AngAccelerate; i<index_s_End; i++) {     //This loop sets the targetV and targetA for all points between reaching max accel and reaching max velocity
+//            dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
+////            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
+//            //Equation: 0 = -dx + v0t + 1/2 at^2
+//            quad.solve(-0.5 * maxAngA, angV0, -dx);
+//            if (quad.nRoots == 1) {
+//                t = quad.x1;
+//            }
+//            else if (quad.nRoots == 2) {    //In this case, there will only be 1 positive solution
+//                Math.max(quad.x1, quad.x2);
+//            }
+//            else {  //Theoretically this should never happen
+//                t = 0.0;
+//            }
+//            duration += t;
+            t = path.path1.get(i).t - path.path1.get(i-1).t;
+
+            //Equation: v = v0 + a0t
+            angV = angV0 - maxAngA*t;
+            h += angV0*t - 0.5*maxAngA*Math.pow(t, 2);
+            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, angV, -maxAngA));
+            angV0 = angV;
+        }
+        //END SECTION 3
+
         return null;
     }
 
@@ -518,6 +646,9 @@ public class PurePursuitMotionProfileGenerator {
         String times = "";
         String velocities = "";
         String accelerations = "";
+        String h = "";
+        String angV = "";
+        String angA = "";
         for (PurePursuitPathPoint p : path.path1) {
             if (p.t == Double.NaN) {
 
@@ -530,11 +661,20 @@ public class PurePursuitMotionProfileGenerator {
                 velocities = velocities + ",";
                 accelerations = accelerations + String.format("%.4f", p.acceleration);
                 accelerations = accelerations + ",";
+                h = h + String.format("%.4f", p.h);
+                h = h + ",";
+                angV = angV + String.format("%.4f", p.angVelocity);
+                angV = angV + ",";
+                angA = angA + String.format("%.4f", p.angAcceleration);
+                angA = angA + ",";
             }
         }
         RobotLogger.dd(TAG, "times: " + times);
         RobotLogger.dd(TAG, "velocities: " + velocities);
         RobotLogger.dd(TAG, "accelerations: " + accelerations);
+        RobotLogger.dd(TAG, "h: " + h);
+        RobotLogger.dd(TAG, "hVelocities: " + angV);
+        RobotLogger.dd(TAG, "hAccelerations: " + angA);
     }
 
 }

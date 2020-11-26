@@ -71,7 +71,7 @@ public class PurePursuitFollowerV3 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogger.dd(TAG, "_______________________________________________________");
-        PurePursuitPath PPPath = new PurePursuitPath(path, "mpg_test.xml");
+        PurePursuitPath PPPath = new PurePursuitPath(path, "pp_path.xml");
         RobotLogger.dd(TAG, PPPath.toString());
 
         PurePursuitMotionProfileGenerator mpg = new PurePursuitMotionProfileGenerator(PPPath);
@@ -139,7 +139,8 @@ public class PurePursuitFollowerV3 extends LinearOpMode {
             double imuReading = -imu.getAngularOrientation().firstAngle;
 //            imuReading = getHeading(targetIndex, PPPath);
 //            RobotLogger.dd(TAG, "Corrected imuReading: " + imuReading);
-            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
+//            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
+            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, targetIndex, PPPath, (int) dateDiff);
 
             //FL, BL, BR, FR
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));
