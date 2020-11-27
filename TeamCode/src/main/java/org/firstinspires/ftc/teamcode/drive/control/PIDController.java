@@ -325,8 +325,7 @@ public class PIDController {
         */
 
         //vectorX and vectorY are local to X and Y of robot
-        //v3 is stable in the old configuration
-        ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);
+        ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);    //V4 should be the latest version
         return powers;
     }
 

@@ -81,6 +81,7 @@ public class PurePursuitFollower extends LinearOpMode {
         backRight = hwMap.backRight;
         frontLeft = hwMap.frontLeft;
         backLeft = hwMap.backLeft;
+        initHardwareMap(frontRight, backRight, frontLeft, backLeft);
 
 
         //BULK READ PARAMETERS
@@ -94,8 +95,6 @@ public class PurePursuitFollower extends LinearOpMode {
 //        }
         //END BULK READ PARAMETERS
 
-
-        initHardwareMap(frontRight, backRight, frontLeft, backLeft);
         //Initialize IMU parameters
         imu = hwMap.gyro;
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
@@ -146,29 +145,29 @@ public class PurePursuitFollower extends LinearOpMode {
         }
     }
 
-    public double getHeading(int targetIndex, PurePursuitPath PPPath) {
-        double imuReading = -imu.getAngularOrientation().firstAngle;
-        double imuReading2 = -imu.getAngularOrientation().secondAngle;
-        double imuReading3 = -imu.getAngularOrientation().thirdAngle;
-        int differenceInRobotPoseIndexAndTargetIndex = 40;
-        double approxPathPointHeading = PPPath.path1.get(targetIndex - differenceInRobotPoseIndexAndTargetIndex).h;
-
-        double minDifference = 999.9;
-        double minDifferenceReading = imuReading;
-        if (Math.abs(imuReading - approxPathPointHeading)  < minDifference) {
-            minDifference = Math.abs(imuReading - approxPathPointHeading);
-            minDifferenceReading = imuReading;
-        }
-        if (Math.abs(imuReading2 - approxPathPointHeading)  < minDifference) {
-            minDifference = Math.abs(imuReading2 - approxPathPointHeading);
-            minDifferenceReading = imuReading2;
-        }
-        if (Math.abs(imuReading3 - approxPathPointHeading)  < minDifference) {
-//            minDifference = Math.abs(imuReading3 - approxPathPointHeading);
-            minDifferenceReading = imuReading3;
-        }
-        return minDifferenceReading;
-    }
+//    public double getHeading(int targetIndex, PurePursuitPath PPPath) {
+//        double imuReading = -imu.getAngularOrientation().firstAngle;
+//        double imuReading2 = -imu.getAngularOrientation().secondAngle;
+//        double imuReading3 = -imu.getAngularOrientation().thirdAngle;
+//        int differenceInRobotPoseIndexAndTargetIndex = 40;
+//        double approxPathPointHeading = PPPath.path1.get(targetIndex - differenceInRobotPoseIndexAndTargetIndex).h;
+//
+//        double minDifference = 999.9;
+//        double minDifferenceReading = imuReading;
+//        if (Math.abs(imuReading - approxPathPointHeading)  < minDifference) {
+//            minDifference = Math.abs(imuReading - approxPathPointHeading);
+//            minDifferenceReading = imuReading;
+//        }
+//        if (Math.abs(imuReading2 - approxPathPointHeading)  < minDifference) {
+//            minDifference = Math.abs(imuReading2 - approxPathPointHeading);
+//            minDifferenceReading = imuReading2;
+//        }
+//        if (Math.abs(imuReading3 - approxPathPointHeading)  < minDifference) {
+////            minDifference = Math.abs(imuReading3 - approxPathPointHeading);
+//            minDifferenceReading = imuReading3;
+//        }
+//        return minDifferenceReading;
+//    }
 
     public ArrayList<Pose2d> parsePath(String pathString) {
         List<String> split = Arrays.asList(pathString.split("; "));
