@@ -96,10 +96,6 @@ public class Robot extends MecanumDrive {
             parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
             imu.initialize(parameters);
 
-            // TODO: if your hub is mounted vertically, remap the IMU axes so that the z-axis points
-            // upward (normal to the floor) using a command like the following:
-            // BNO055IMUUtil.remapAxes(imu, AxesOrder.XYZ, AxesSigns.NPN);
-
             leftFront = hardwareMap.get(DcMotorEx.class, "frontLeft");
             leftRear = hardwareMap.get(DcMotorEx.class, "backLeft");
             rightRear = hardwareMap.get(DcMotorEx.class, "backRight");

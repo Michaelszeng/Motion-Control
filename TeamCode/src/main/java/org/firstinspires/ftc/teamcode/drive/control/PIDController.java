@@ -301,24 +301,28 @@ public class PIDController {
         }
         RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
 
-        //STABLE
-//        double xNetOutput = pXOutput + iXOutput + dXOutput;
-//        double yNetOutput = pYOutput + iYOutput + dYOutput;
-//        double hNetOutput = pHOutput + iHOutput + dHOutput;
+
 
         //Weights of PID vs Feedforward is 0.65 and 0.35
-        double feedForwardXYOutput = 0.4*(kV * nearestPoint.velocity + kA * nearestPoint.acceleration);     //Need to correct for +/- sign
-        if (Math.abs(feedForwardXYOutput) > 0.0) {  //kStatic technically boosts the output to over 100%?
-            feedForwardXYOutput += kStatic;
-        }
-        double directionOfMotion = Math.atan2(robotPose.getY()-target.getY(), robotPose.getX()-target.getX());
-        double xNetOutput = 0.65*(pXOutput + iXOutput + dXOutput) + feedForwardXYOutput * Math.sin(robotPose.getHeading() - directionOfMotion + 90);
-        double yNetOutput = 0.65*(pYOutput + iYOutput + dYOutput) + feedForwardXYOutput * Math.cos(robotPose.getHeading() - directionOfMotion + 90);
+//        double feedForwardXYOutput = 0.4*(kV * nearestPoint.velocity + kA * nearestPoint.acceleration);     //Need to correct for +/- sign
+//        if (Math.abs(feedForwardXYOutput) > 0.0) {  //kStatic technically boosts the output to over 100%?
+//            feedForwardXYOutput += kStatic;
+//        }
+//        double directionOfMotion = Math.atan2(robotPose.getY()-target.getY(), robotPose.getX()-target.getX());
+//        double xNetOutput = 0.65*(pXOutput + iXOutput + dXOutput) + feedForwardXYOutput * Math.sin(robotPose.getHeading() - directionOfMotion + 90);
+//        double yNetOutput = 0.65*(pYOutput + iYOutput + dYOutput) + feedForwardXYOutput * Math.cos(robotPose.getHeading() - directionOfMotion + 90);
+//        double hNetOutput = pHOutput + iHOutput + dHOutput;
+
+        //STABLE
+        double xNetOutput = pXOutput + iXOutput + dXOutput;
+        double yNetOutput = pYOutput + iYOutput + dYOutput;
         double hNetOutput = pHOutput + iHOutput + dHOutput;
 
-//        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
-//        double localVectorX = localVector.get(0);
-//        double localVectorY = localVector.get(1);
+        /*
+        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
+        double localVectorX = localVector.get(0);
+        double localVectorY = localVector.get(1);
+        */
 
         //vectorX and vectorY are local to X and Y of robot
         //v3 is stable in the old configuration

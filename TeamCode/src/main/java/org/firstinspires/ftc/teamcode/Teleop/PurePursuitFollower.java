@@ -77,21 +77,21 @@ public class PurePursuitFollower extends LinearOpMode {
         dashboard.setTelemetryTransmissionInterval(25);
 
 //        //Initialize hardware map values. PLEASE UPDATE THESE VALUES TO MATCH YOUR CONFIGURATION
-//        frontRight = hwMap.frontRight;
-//        backRight = hwMap.backRight;
-//        frontLeft = hwMap.frontLeft;
-//        backLeft = hwMap.backLeft;
+        frontRight = hwMap.frontRight;
+        backRight = hwMap.backRight;
+        frontLeft = hwMap.frontLeft;
+        backLeft = hwMap.backLeft;
 
 
         //BULK READ PARAMETERS
-        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
-        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
-        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-        for (LynxModule module : allHubs) {
-            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
-        }
+//        frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
+//        backRight = hardwareMap.get(DcMotorEx.class, "backRight");
+//        frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
+//        backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
+//        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
+//        for (LynxModule module : allHubs) {
+//            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+//        }
         //END BULK READ PARAMETERS
 
 

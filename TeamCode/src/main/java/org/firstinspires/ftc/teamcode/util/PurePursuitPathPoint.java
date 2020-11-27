@@ -16,9 +16,11 @@ public class PurePursuitPathPoint {
         this.y = y;
         this.h = h;
         this.isVertex = isVertex;
-        velocity = Double.NaN;
-        acceleration = Double.NaN;
-        t = Double.NaN;
+        velocity = 0.0;
+        acceleration = 0.0;
+        t = 0.0;
+        angVelocity = 0.0;
+        angAcceleration = 0.0;
     }
 
     public PurePursuitPathPoint(double x, double y, double h, boolean isVertex, double velocity, double acceleration, double t) {
@@ -29,6 +31,8 @@ public class PurePursuitPathPoint {
         this.velocity = velocity;
         this.acceleration = acceleration;
         this.t = t;
+        angVelocity = 0.0;
+        angAcceleration = 0.0;
     }
 
     public PurePursuitPathPoint(double x, double y, double h, boolean isVertex, double velocity, double acceleration, double t, double angVelocity, double angAcceleration) {
@@ -51,6 +55,8 @@ public class PurePursuitPathPoint {
         this.velocity = velocity;
         this.acceleration = acceleration;
         this.t = t;
+        angVelocity = 0.0;
+        angAcceleration = 0.0;
     }
 
     public void set(double x, double y, double h, boolean isVertex, double velocity, double acceleration, double t, double hVelocity, double hAcceleration) {
