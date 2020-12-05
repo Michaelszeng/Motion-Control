@@ -33,6 +33,7 @@ public class PurePursuitPath {
     }
 
     public PurePursuitPath(ArrayList<Pose2d> path, String fileName) {
+        RobotLogger.dd(TAG, "Path File Name: " + fileName);
         this.path = path;
         buildPath(fileName);
     }

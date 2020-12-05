@@ -76,7 +76,7 @@ public class PurePursuitFollowerV3_5 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogger.dd(TAG, "_______________________________________________________");
-        PurePursuitPath PPPath = new PurePursuitPath(path, "pp_path.xml");
+        PurePursuitPath PPPath = new PurePursuitPath(path, "short_path_mpg_test_3.xml");
         RobotLogger.dd(TAG, "PPPath.size(): " + PPPath.size());
 //        RobotLogger.dd(TAG, PPPath.toString());
         for (PurePursuitPathPoint p : PPPath.path1) {
