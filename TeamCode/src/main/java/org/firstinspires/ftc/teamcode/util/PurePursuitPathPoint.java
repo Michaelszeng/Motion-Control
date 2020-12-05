@@ -11,6 +11,21 @@ public class PurePursuitPathPoint {
     public double angVelocity;
     public double angAcceleration;
 
+    @Override
+    public String toString() {
+        return "{" +
+                "x=" + String.format("%.4f", x) +
+                ", y=" + String.format("%.4f", y) +
+                ", h=" + String.format("%.4f", h) +
+                ", isVertex=" + isVertex +
+                ", velocity=" + String.format("%.4f", velocity) +
+                ", acceleration=" + String.format("%.4f", acceleration) +
+                ", t=" + String.format("%.4f", t) +
+                ", angVelocity=" + String.format("%.4f", angVelocity) +
+                ", angAcceleration=" + String.format("%.4f", angAcceleration) +
+                '}';
+    }
+
     public PurePursuitPathPoint(double x, double y, double h, boolean isVertex) {
         this.x = x;
         this.y = y;

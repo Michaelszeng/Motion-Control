@@ -39,7 +39,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VirtualizeDrive;
-//import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reachedDestination;
+import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reachedDestination;
 
 //import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 
@@ -64,6 +64,7 @@ public class Robot extends MecanumDrive {
     private double prevLeftOdoReading = 0.0;
     private double prevRightOdoReading = 0.0;
     private double prevHorizontalOdoReading = 0.0;
+    private PurePursuitMathFunctions.ReachedDestination reachedDestination = PurePursuitMathFunctions.ReachedDestination.FALSE;
 
     private DcMotorEx leftFront, leftRear, rightRear, rightFront;
     private List<DcMotorEx> motors;
@@ -191,7 +192,7 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
+            PIDController controller = new PIDController(currentPose, targetPose, 0.75, 0.2, 1.0, 0.75, 0.2, 1.0, 0.75, 0.2, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -256,6 +257,16 @@ public class Robot extends MecanumDrive {
             PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath,0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
+        }
+
+        reachedDestination = reachedDestination(currentPose, PPPath.path1.get(PPPath.path1.size()-1), reachedDestination);
+        if (reachedDestination == PurePursuitMathFunctions.ReachedDestination.TRUE) {
+            ArrayList<Double> zeroPowers = new ArrayList<>();
+            zeroPowers.add(0.0);
+            zeroPowers.add(0.0);
+            zeroPowers.add(0.0);
+            zeroPowers.add(0.0);
+            return zeroPowers;
         }
 
 

@@ -9,15 +9,18 @@ import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
 import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xStartPower;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yStartPower;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hStartPower;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xAccel;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yAccel;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hAccel;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kVM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kAM;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngVel;
@@ -37,6 +40,7 @@ public class PIDController {
     ArrayList<Double> outputs;
     PurePursuitPathPoint nearestPoint;
     int nearestPointIndex;
+    int targetIndex;
 
     double startingErrorX;
     double startingErrorY;
@@ -58,6 +62,8 @@ public class PIDController {
     double hP;
     double hI;
     double hD;
+
+    double PIDFRatio = 1.00;     //Percentage of power supplied by feedforward
 
     public PIDController(Pose2d robotPose, Pose2d target,  double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
         startPose = robotPose;
@@ -95,6 +101,7 @@ public class PIDController {
         this.hI = hI;
         this.hD = hD;
         this.PPPath = PPPath;
+        this.targetIndex = targetIndex;
 
         startingErrorX = startPose.getX() - target.getX();
         startingErrorY = startPose.getY() - target.getY();
@@ -104,22 +111,6 @@ public class PIDController {
         startingErrorY = ensureNonZero(startingErrorY);
         startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
         RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
-
-        double smallestDiff = 99999.9;
-        int smallestDiffIndex = 0;
-        double diff;
-        for (int i=targetIndex - 100; i<targetIndex + 50; i++) {    //Searching range of points around target to find nearestPoint
-            diff = Math.sqrt(Math.pow(robotPose.getX() - PPPath.path1.get(i).x, 2) + Math.pow(robotPose.getY() - PPPath.path1.get(i).y, 2));
-            if (diff < smallestDiff) {
-                smallestDiff = diff;
-                smallestDiffIndex = i;
-            }
-            else {
-                break;
-            }
-        }
-        nearestPoint = PPPath.path1.get(smallestDiffIndex);
-        nearestPointIndex = smallestDiffIndex;
     }
 
 
@@ -155,6 +146,38 @@ public class PIDController {
         RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
         RobotLogger.dd(TAG, "hPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading());
 
+
+        double smallestDiff = 99999.9;
+        int smallestDiffIndex = 0;
+        double diff;
+        //Setting the bounds for all the points in the path to check, avoiding index out of bounds error
+        int minBound;
+        if (targetIndex - 150 < 0) {
+            minBound = 0;
+        }
+        else {
+            minBound = targetIndex - 150;
+        }
+        int maxBound;
+        if (targetIndex + 75 > PPPath.path1.size() - 1) {
+            maxBound = PPPath.path1.size() - 1;
+        }
+        else {
+            maxBound = targetIndex + 75;
+        }
+        for (int i=minBound; i<maxBound; i++) {    //Searching range of points around target to find nearestPoint
+            diff = Math.hypot(robotPose.getX() - PPPath.path1.get(i).x, robotPose.getY() - PPPath.path1.get(i).y);
+//            diff = Math.sqrt(Math.pow(robotPose.getX() - PPPath.path1.get(i).x, 2) + Math.pow(robotPose.getY() - PPPath.path1.get(i).y, 2));
+            if (diff <= smallestDiff) {
+                smallestDiff = diff;
+                smallestDiffIndex = i;
+            }
+//            else {
+//                break;
+//            }
+        }
+        nearestPoint = PPPath.path1.get(smallestDiffIndex);
+        nearestPointIndex = smallestDiffIndex;
 
 
         //proportional calculator: outputs present error * xP
@@ -206,7 +229,6 @@ public class PIDController {
                 dXOutput = (xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
             }
         }
-        RobotLogger.dd(TAG, "xPID: " + pXOutput + ", " + iXOutput + ", " + dXOutput);
 
 
 
@@ -252,7 +274,6 @@ public class PIDController {
                 dYOutput = (yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
             }
         }
-        RobotLogger.dd(TAG, "yPID: " + pYOutput + ", " + iYOutput + ", " + dYOutput);
 
 
 
@@ -299,24 +320,69 @@ public class PIDController {
                 dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
         }
-        RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
 
 
 
-        //Weights of PID vs Feedforward is 0.65 and 0.35
-//        double feedForwardXYOutput = 0.4*(kV * nearestPoint.velocity + kA * nearestPoint.acceleration);     //Need to correct for +/- sign
-//        if (Math.abs(feedForwardXYOutput) > 0.0) {  //kStatic technically boosts the output to over 100%?
-//            feedForwardXYOutput += kStatic;
-//        }
-//        double directionOfMotion = Math.atan2(robotPose.getY()-target.getY(), robotPose.getX()-target.getX());
-//        double xNetOutput = 0.65*(pXOutput + iXOutput + dXOutput) + feedForwardXYOutput * Math.sin(robotPose.getHeading() - directionOfMotion + 90);
-//        double yNetOutput = 0.65*(pYOutput + iYOutput + dYOutput) + feedForwardXYOutput * Math.cos(robotPose.getHeading() - directionOfMotion + 90);
-//        double hNetOutput = pHOutput + iHOutput + dHOutput;
+        //Weights of PID vs Feedforward is (1.0-PIDFRatio) and PIDFRatio
+        /*
+        double kVRatio = kVM/(kVM+kAM);
+        double kARatio = kAM/(kVM+kAM);
+        double feedForwardXYOutput = (kVRatio*PIDFRatio*nearestPoint.velocity)/maxV + (kARatio*PIDFRatio*nearestPoint.acceleration)/maxA;
+        double feedForwardHOutput = (kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA;
+//        double directionOfMotion = Math.atan2(-robotPose.getY()+target.getY(), -robotPose.getX()+target.getX());    //Returns between -pi and pi, on a standard cartesion system (north is 90)
+
+        //Returns between -pi and pi, on robot coordinate system (north is 0, left is negative)
+        double directionOfMotion = -Math.atan2(target.getY()-robotPose.getY(), target.getX()-robotPose.getX()) + Math.PI/2;
+        if (directionOfMotion > Math.PI) {
+            directionOfMotion -= 2*Math.PI;
+        }
+
+        RobotLogger.dd(TAG, "directionOfMotion: " + directionOfMotion);
+        //Set the correct sign for the feedforward output using signum()
+//        double fXOutput = feedForwardXYOutput * Math.sin(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorX);
+//        double fYOutput = feedForwardXYOutput * Math.cos(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorY);
+
+        //sin and cos only function with a cartesian heading system, so we need to translate from robot heading system to cartesian by multiplying (robotCartesianHeading - directionOfMotion) by -1
+        double fXOutput = feedForwardXYOutput * Math.cos(robotPose.getHeading() + directionOfMotion);
+        double fYOutput = feedForwardXYOutput * Math.sin(robotPose.getHeading() + directionOfMotion);
+
+//        double fXOutput = feedForwardXYOutput * Math.sin(-(robotPose.getHeading() - directionOfMotion));
+//        double fYOutput = feedForwardXYOutput * Math.cos(-(robotPose.getHeading() - directionOfMotion));
+        double fHOutput = feedForwardHOutput;
+        */
+
+        ArrayList<Double> feedforwardOutputs = getFeedForwardPowersV1(robotPose);
+        double fXOutput = feedforwardOutputs.get(0);
+        double fYOutput = feedforwardOutputs.get(1);
+        double fHOutput = feedforwardOutputs.get(2);
+        double directionOfMotion = feedforwardOutputs.get(3);
+        double kVRatio = feedforwardOutputs.get(4);
+        double kARatio = feedforwardOutputs.get(5);
+
+        double xNetOutput = (1.0-PIDFRatio)*(pXOutput + iXOutput + dXOutput) + fXOutput;
+        double yNetOutput = (1.0-PIDFRatio)*(pYOutput + iYOutput + dYOutput) + fYOutput;
+        double hNetOutput = (1.0-PIDFRatio)*(pHOutput + iHOutput + dHOutput) + fHOutput;
+
+        RobotLogger.dd(TAG, "nearestPoint: " + nearestPoint.toString());
+        RobotLogger.dd(TAG, "xPIDF: " + pXOutput + ", " + iXOutput + ", " + dXOutput + ", " + fXOutput);
+        RobotLogger.dd(TAG, "yPIDF: " + pYOutput + ", " + iYOutput + ", " + dYOutput + ", " + fYOutput);
+        RobotLogger.dd(TAG, "hPIDF: " + pHOutput + ", " + iHOutput + ", " + dHOutput + ", " + fHOutput);
+        double targetXV = nearestPoint.velocity * Math.sin(-(robotPose.getHeading() - directionOfMotion)) * -Math.signum(startingErrorX);
+        double targetYV = nearestPoint.velocity * Math.cos(-(robotPose.getHeading() - directionOfMotion)) * -Math.signum(startingErrorX);
+        RobotLogger.dd(TAG, "targetVelocity / maxV: " + PPPath.path1.get(nearestPointIndex).velocity + " / " + maxV);
+//        RobotLogger.dd(TAG, "targetXVelocity: " + targetXV);
+//        RobotLogger.dd(TAG, "targetYVelocity: " + targetYV);
+        RobotLogger.dd(TAG, "(kVRatio*PIDFRatio*nearestPoint.velocity)/maxV: " + ((kVRatio*PIDFRatio*nearestPoint.velocity)/maxV));
+        RobotLogger.dd(TAG, "(kARatio*PIDFRatio*nearestPoint.acceleration)/maxA: " + ((kARatio*PIDFRatio*nearestPoint.acceleration)/maxA));
+        RobotLogger.dd(TAG, "(kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV: " + ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV));
+        RobotLogger.dd(TAG, "(kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA: " + ((kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA));
+
+
 
         //STABLE
-        double xNetOutput = pXOutput + iXOutput + dXOutput;
-        double yNetOutput = pYOutput + iYOutput + dYOutput;
-        double hNetOutput = pHOutput + iHOutput + dHOutput;
+//        double xNetOutput = pXOutput + iXOutput + dXOutput;
+//        double yNetOutput = pYOutput + iYOutput + dYOutput;
+//        double hNetOutput = pHOutput + iHOutput + dHOutput;
 
         /*
         ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
@@ -326,6 +392,7 @@ public class PIDController {
 
         //vectorX and vectorY are local to X and Y of robot
         ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);    //V4 should be the latest version
+
         return powers;
     }
 
@@ -477,6 +544,72 @@ public class PIDController {
         powers.add(powerBR / scaleFactor);
         powers.add(powerFR / scaleFactor);
         return powers;
+    }
+
+    public ArrayList<Double> getFeedForwardPowersV1(Pose2d robotPose) {
+        double kVRatio = kVM/(kVM+kAM);
+        double kARatio = kAM/(kVM+kAM);
+        double feedForwardXYOutput = (kVRatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).velocity)/maxV + (kARatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).acceleration)/maxA + kStatic;
+//        double feedForwardHOutput = (kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA;
+//        double feedForwardHOutput = ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA + kStatic) * -Math.signum(startingErrorHeading);
+        double feedForwardHOutput = 0.0;
+//        double directionOfMotion = Math.atan2(-robotPose.getY()+target.getY(), -robotPose.getX()+target.getX());    //Returns between -pi and pi, on a standard cartesion system (north is 90)
+
+        //Returns between -pi and pi, on robot coordinate system (north is 0, left is negative)
+        double directionOfMotion = -Math.atan2(target.getY()-robotPose.getY(), target.getX()-robotPose.getX()) + Math.PI/2;
+        if (directionOfMotion > Math.PI) {
+            directionOfMotion -= 2*Math.PI;
+        }
+
+        RobotLogger.dd(TAG, "directionOfMotion: " + Math.toDegrees(directionOfMotion));
+        //Set the correct sign for the feedforward output using signum()
+//        double fXOutput = feedForwardXYOutput * Math.sin(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorX);
+//        double fYOutput = feedForwardXYOutput * Math.cos(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorY);
+
+        //sin and cos only function with a cartesian heading system, so we need to translate from robot heading system to cartesian by multiplying (robotCartesianHeading - directionOfMotion) by -1
+        double fXOutput = feedForwardXYOutput * Math.sin(directionOfMotion - robotPose.getHeading());
+        double fYOutput = feedForwardXYOutput * Math.cos(directionOfMotion - robotPose.getHeading());
+
+        ArrayList<Double> outputs = new ArrayList<>();
+        outputs.add(fXOutput);
+        outputs.add(fYOutput);
+        outputs.add(feedForwardHOutput);
+        outputs.add(directionOfMotion);
+        outputs.add(kVRatio);
+        outputs.add(kARatio);
+        return outputs;
+    }
+
+    public ArrayList<Double> getFeedForwardPowersV2(Pose2d robotPose) {
+        double kVRatio = kVM/(kVM+kAM);
+        double kARatio = kAM/(kVM+kAM);
+        double feedForwardXYOutput = (kVRatio*PIDFRatio*nearestPoint.velocity)/maxV + (kARatio*PIDFRatio*nearestPoint.acceleration)/maxA;
+        double feedForwardHOutput = (kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA;
+//        double directionOfMotion = Math.atan2(-robotPose.getY()+target.getY(), -robotPose.getX()+target.getX());    //Returns between -pi and pi, on a standard cartesion system (north is 90)
+
+        //Returns between -pi and pi, on robot coordinate system (north is 0, left is negative)
+        double directionOfMotion = Math.atan2(target.getY()-robotPose.getY(), target.getX()-robotPose.getX()) - Math.PI/2;
+        if (directionOfMotion < -Math.PI) {
+            directionOfMotion += 2*Math.PI;
+        }
+
+        RobotLogger.dd(TAG, "directionOfMotion: " + directionOfMotion);
+        //Set the correct sign for the feedforward output using signum()
+//        double fXOutput = feedForwardXYOutput * Math.sin(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorX);
+//        double fYOutput = feedForwardXYOutput * Math.cos(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorY);
+
+        //sin and cos only function with a cartesian heading system, so we need to translate from robot heading system to cartesian by multiplying (robotCartesianHeading - directionOfMotion) by -1
+        double fXOutput = feedForwardXYOutput * Math.cos(directionOfMotion - robotPose.getHeading());
+        double fYOutput = feedForwardXYOutput * Math.sin(directionOfMotion - robotPose.getHeading());
+
+        ArrayList<Double> outputs = new ArrayList<>();
+        outputs.add(fXOutput);
+        outputs.add(fYOutput);
+        outputs.add(feedForwardHOutput);
+        outputs.add(directionOfMotion);
+        outputs.add(kVRatio);
+        outputs.add(kARatio);
+        return outputs;
     }
 
     public ArrayList<Double> vectorGlobalToLocal(double vectorX, double vectorY, double globalHeading) {
