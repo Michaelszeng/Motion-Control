@@ -40,7 +40,7 @@ public class PurePursuitMotionProfileGenerator {
         double currentDistance = 0;
 
         double prevSmallestDiff = 9999.9;
-        double prevPrevSmallestDiff = 9999.9;
+        double prevPrevSmallestDiff;
         double smallestDiff = 9998.9;
         double currentDiff;
 
@@ -648,40 +648,41 @@ public class PurePursuitMotionProfileGenerator {
         double v_0AngAReached = maxAngA*Math.signum(hF - h0) * t_0AngAReached;
 
         if (Math.abs(v_0AngAReached) > maxAngV && pathTooShortH != true) {
-            pathTooShortH = true;
-            RobotLogger.dd(TAG, "------------------------------------------PATH IS TOO SHORT FOR GIVEN HEADING CHANGE, RECALCUATING------------------------------------------");
-            PurePursuitPathPoint lastP = path.path1.get(pathLength);
-            double t_solvable = (4 * hDisplacement)/(maxAngA*Math.signum(hF - h0));  //Need a new way to solve for t_solvable
-            RobotLogger.dd(TAG, "t_solvable: " + t_solvable);
-            path.path1.add(new PurePursuitPathPoint(lastP.x, lastP.y, hF, true, lastP.velocity, lastP.acceleration, t_solvable));
-            pathLength += 1;
-
-            quad.solve(-maxAngA*Math.signum(hF-h0), maxAngA*Math.signum(hF-h0) * path.path1.get(pathLength).t, -hDisplacement);
-//            RobotLogger.dd(TAG, "a: " + (-maxAngA*Math.signum(hF-h0)));
-//            RobotLogger.dd(TAG, "b: " + maxAngA*Math.signum(hF-h0)*path.path1.get(path.path1.size()-1).t);
-//            RobotLogger.dd(TAG, "c: " + (-hDisplacement));
-//            RobotLogger.dd(TAG, "quad.x1: " + quad.x1);
-//            RobotLogger.dd(TAG, "quad.x2: " + quad.x2);
-            if (quad.nRoots == 1) {
-                t_0AngAReached = quad.x1;
-            }
-            else if (quad.nRoots == 2) {
-                if (quad.x1 >= 0.0 && quad.x2 >= 0.0) {
-                    t_0AngAReached = Math.min(quad.x1, quad.x2);
-                }
-                else {
-                    t_0AngAReached = Math.max(quad.x1, quad.x2);
-                }
-                if (t_0AccelReached < 0.0) {
-                    RobotLogger.dd(TAG, "*********************************ERROR: NO SOLUTION FOR GIVEN HEADING DISPLACEMENT*********************************");
-                }
-            }
-            else {
-                RobotLogger.dd(TAG, "*********************************ERROR: PATH IS TOO SHORT FOR GIVEN HEADING CHANGE*********************************");
-                t_0AngAReached = 0.0;
-            }
-            h_0AngAReached = 0.5 * maxAngA*Math.signum(hF - h0) * Math.pow(t_0AngAReached, 2);
-            v_0AngAReached = maxAngA*Math.signum(hF - h0) * t_0AngAReached;
+            RobotLogger.dd(TAG, "*********************************WARNING: MAX ANGULAR VELOCIY EXCEEDED*********************************");
+//            pathTooShortH = true;
+//            RobotLogger.dd(TAG, "------------------------------------------PATH IS TOO SHORT FOR GIVEN HEADING CHANGE, RECALCUATING------------------------------------------");
+//            PurePursuitPathPoint lastP = path.path1.get(pathLength);
+//            double t_solvable = (4 * hDisplacement)/(maxAngA*Math.signum(hF - h0));  //Need a new way to solve for t_solvable
+//            RobotLogger.dd(TAG, "t_solvable: " + t_solvable);
+//            path.path1.add(new PurePursuitPathPoint(lastP.x, lastP.y, hF, true, lastP.velocity, lastP.acceleration, t_solvable));
+//            pathLength += 1;
+//
+//            quad.solve(-maxAngA*Math.signum(hF-h0), maxAngA*Math.signum(hF-h0) * path.path1.get(pathLength).t, -hDisplacement);
+////            RobotLogger.dd(TAG, "a: " + (-maxAngA*Math.signum(hF-h0)));
+////            RobotLogger.dd(TAG, "b: " + maxAngA*Math.signum(hF-h0)*path.path1.get(path.path1.size()-1).t);
+////            RobotLogger.dd(TAG, "c: " + (-hDisplacement));
+////            RobotLogger.dd(TAG, "quad.x1: " + quad.x1);
+////            RobotLogger.dd(TAG, "quad.x2: " + quad.x2);
+//            if (quad.nRoots == 1) {
+//                t_0AngAReached = quad.x1;
+//            }
+//            else if (quad.nRoots == 2) {
+//                if (quad.x1 >= 0.0 && quad.x2 >= 0.0) {
+//                    t_0AngAReached = Math.min(quad.x1, quad.x2);
+//                }
+//                else {
+//                    t_0AngAReached = Math.max(quad.x1, quad.x2);
+//                }
+//                if (t_0AccelReached < 0.0) {
+//                    RobotLogger.dd(TAG, "*********************************ERROR: NO SOLUTION FOR GIVEN HEADING DISPLACEMENT*********************************");
+//                }
+//            }
+//            else {
+//                RobotLogger.dd(TAG, "*********************************ERROR: PATH IS TOO SHORT FOR GIVEN HEADING CHANGE*********************************");
+//                t_0AngAReached = 0.0;
+//            }
+//            h_0AngAReached = 0.5 * maxAngA*Math.signum(hF - h0) * Math.pow(t_0AngAReached, 2);
+//            v_0AngAReached = maxAngA*Math.signum(hF - h0) * t_0AngAReached;
         }
         RobotLogger.dd(TAG, "t_0AngAReached: " + t_0AngAReached);
         RobotLogger.dd(TAG, "h_0AngAReached: " + h_0AngAReached);

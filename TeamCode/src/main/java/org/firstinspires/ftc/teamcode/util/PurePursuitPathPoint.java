@@ -1,6 +1,12 @@
 package org.firstinspires.ftc.teamcode.util;
 
 public class PurePursuitPathPoint {
+    /*
+    IMPORTANT: velocity and acceleration are always positive; the sign is adjusted in the trig functions in PIDController.
+    angVelocity and angAcceleration have correct signs already.
+     */
+
+
     public double x;
     public double y;
     public double h;

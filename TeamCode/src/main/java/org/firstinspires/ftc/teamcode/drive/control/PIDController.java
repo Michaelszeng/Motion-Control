@@ -63,7 +63,7 @@ public class PIDController {
     double hI;
     double hD;
 
-    double PIDFRatio = 1.00;     //Percentage of power supplied by feedforward
+    double PIDFRatio = 0.35;     //Percentage of power supplied by feedforward
 
     public PIDController(Pose2d robotPose, Pose2d target,  double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
         startPose = robotPose;
@@ -359,9 +359,9 @@ public class PIDController {
         double kVRatio = feedforwardOutputs.get(4);
         double kARatio = feedforwardOutputs.get(5);
 
-        double xNetOutput = (1.0-PIDFRatio)*(pXOutput + iXOutput + dXOutput) + fXOutput;
-        double yNetOutput = (1.0-PIDFRatio)*(pYOutput + iYOutput + dYOutput) + fYOutput;
-        double hNetOutput = (1.0-PIDFRatio)*(pHOutput + iHOutput + dHOutput) + fHOutput;
+        double xNetOutput = (1.0-PIDFRatio)*(pXOutput + iXOutput + dXOutput) + fXOutput;    //PIDFRatio for feedforward output is factored in in the getFeedForwardPowers Function
+        double yNetOutput = (1.0-PIDFRatio)*(pYOutput + iYOutput + dYOutput) + fYOutput;    //PIDFRatio for feedforward output is factored in in the getFeedForwardPowers Function
+        double hNetOutput = (1.0-PIDFRatio)*(pHOutput + iHOutput + dHOutput) + fHOutput;    //PIDFRatio for feedforward output is factored in in the getFeedForwardPowers Function
 
         RobotLogger.dd(TAG, "nearestPoint: " + nearestPoint.toString());
         RobotLogger.dd(TAG, "xPIDF: " + pXOutput + ", " + iXOutput + ", " + dXOutput + ", " + fXOutput);
@@ -384,13 +384,7 @@ public class PIDController {
 //        double yNetOutput = pYOutput + iYOutput + dYOutput;
 //        double hNetOutput = pHOutput + iHOutput + dHOutput;
 
-        /*
-        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
-        double localVectorX = localVector.get(0);
-        double localVectorY = localVector.get(1);
-        */
-
-        //vectorX and vectorY are local to X and Y of robot
+        //xNet and yNet are local to X and Y of robot
         ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);    //V4 should be the latest version
 
         return powers;
@@ -550,9 +544,9 @@ public class PIDController {
         double kVRatio = kVM/(kVM+kAM);
         double kARatio = kAM/(kVM+kAM);
         double feedForwardXYOutput = (kVRatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).velocity)/maxV + (kARatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).acceleration)/maxA + kStatic;
-//        double feedForwardHOutput = (kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA;
+        double feedForwardHOutput = (kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA;
 //        double feedForwardHOutput = ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA + kStatic) * -Math.signum(startingErrorHeading);
-        double feedForwardHOutput = 0.0;
+//        double feedForwardHOutput = 0.0;
 //        double directionOfMotion = Math.atan2(-robotPose.getY()+target.getY(), -robotPose.getX()+target.getX());    //Returns between -pi and pi, on a standard cartesion system (north is 90)
 
         //Returns between -pi and pi, on robot coordinate system (north is 0, left is negative)
