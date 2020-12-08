@@ -42,7 +42,7 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reach
 /*
  * Follows a path using pure pursuit algorithm
  *
- * THIS VERSION IS UNDERGOING TESTING WITH MOTION PROFILING
+ * THIS VERSION IS UNDERGOING TESTING WITH POSITION BASED MOTION PROFILING
  */
 @TeleOp(name = "PurePursuitFollowerV3")
 public class PurePursuitFollowerV3 extends LinearOpMode {

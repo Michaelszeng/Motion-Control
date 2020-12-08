@@ -20,13 +20,12 @@ public class PurePursuitPathPoint {
     @Override
     public String toString() {
         return "{" +
-                "x=" + String.format("%.4f", x) +
+                "t=" + String.format("%.4f", t) +
+                ", x=" + String.format("%.4f", x) +
                 ", y=" + String.format("%.4f", y) +
                 ", h=" + String.format("%.4f", h) +
-                ", isVertex=" + isVertex +
                 ", velocity=" + String.format("%.4f", velocity) +
                 ", acceleration=" + String.format("%.4f", acceleration) +
-                ", t=" + String.format("%.4f", t) +
                 ", angVelocity=" + String.format("%.4f", angVelocity) +
                 ", angAcceleration=" + String.format("%.4f", angAcceleration) +
                 '}';

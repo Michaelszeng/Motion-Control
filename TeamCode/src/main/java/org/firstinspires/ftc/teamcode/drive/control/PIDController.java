@@ -42,6 +42,8 @@ public class PIDController {
     int nearestPointIndex;
     int targetIndex;
 
+    double duration;
+
     double startingErrorX;
     double startingErrorY;
     double startingErrorHeading;
@@ -63,7 +65,7 @@ public class PIDController {
     double hI;
     double hD;
 
-    double PIDFRatio = 0.35;     //Percentage of power supplied by feedforward
+    double PIDFRatio = 1.00;     //Percentage of power supplied by feedforward
 
     public PIDController(Pose2d robotPose, Pose2d target,  double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
         startPose = robotPose;
@@ -114,7 +116,34 @@ public class PIDController {
     }
 
 
-    public ArrayList<Double> update(Pose2d robotPose, int prevLoopTime) {
+    public PIDController(Pose2d robotPose, Pose2d target, int targetIndex, PurePursuitPath PPPath, double duration, double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
+        startPose = robotPose;
+        this.target = target;
+        this.xP = xP;
+        this.xI = xI;
+        this.xD = xD;
+        this.yP = yP;
+        this.yI = yI;
+        this.yD = yD;
+        this.hP = hP;
+        this.hI = hI;
+        this.hD = hD;
+        this.PPPath = PPPath;
+        this.targetIndex = targetIndex;
+        this.duration = duration;
+
+        startingErrorX = startPose.getX() - target.getX();
+        startingErrorY = startPose.getY() - target.getY();
+        startingErrorHeading = startPose.getHeading() - target.getHeading();
+        //Must ensure starting errors are not 0 to avoid NaN
+        startingErrorX = ensureNonZero(startingErrorX);
+        startingErrorY = ensureNonZero(startingErrorY);
+        startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
+        RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
+    }
+
+
+    public ArrayList<Double> update(Pose2d robotPose, int prevLoopTime, double duration) {
         poseHistoryLocal.add(robotPose);
         outputs = new ArrayList<>();
         outputs.clear();
@@ -151,23 +180,24 @@ public class PIDController {
         int smallestDiffIndex = 0;
         double diff;
         //Setting the bounds for all the points in the path to check, avoiding index out of bounds error
-        int minBound;
-        if (targetIndex - 150 < 0) {
-            minBound = 0;
-        }
-        else {
-            minBound = targetIndex - 150;
-        }
-        int maxBound;
-        if (targetIndex + 75 > PPPath.path1.size() - 1) {
-            maxBound = PPPath.path1.size() - 1;
-        }
-        else {
-            maxBound = targetIndex + 75;
-        }
+//        int minBound;
+//        if (targetIndex - 150 < 0) {
+//            minBound = 0;
+//        }
+//        else {
+//            minBound = targetIndex - 150;
+//        }
+//        int maxBound;
+//        if (targetIndex + 75 > PPPath.path1.size() - 1) {
+//            maxBound = PPPath.path1.size() - 1;
+//        }
+//        else {
+//            maxBound = targetIndex + 75;
+//        }
+        int minBound = 0;
+        int maxBound = PPPath.path1.size() - 1;
         for (int i=minBound; i<maxBound; i++) {    //Searching range of points around target to find nearestPoint
-            diff = Math.hypot(robotPose.getX() - PPPath.path1.get(i).x, robotPose.getY() - PPPath.path1.get(i).y);
-//            diff = Math.sqrt(Math.pow(robotPose.getX() - PPPath.path1.get(i).x, 2) + Math.pow(robotPose.getY() - PPPath.path1.get(i).y, 2));
+            diff = Math.abs(duration - PPPath.path1.get(i).t);
             if (diff <= smallestDiff) {
                 smallestDiff = diff;
                 smallestDiffIndex = i;
@@ -655,5 +685,204 @@ public class PIDController {
             angle -= 2 * Math.PI;
         }
         return angle;
+    }
+
+
+
+
+
+
+    public ArrayList<Double> update(Pose2d robotPose, int prevLoopTime) {
+        poseHistoryLocal.add(robotPose);
+        outputs = new ArrayList<>();
+        outputs.clear();
+//        RobotLogger.dd(TAG, "robotPose: " + robotPose.toString());
+//        RobotLogger.dd(TAG, "target: " + "(" + target.getX() + ", " + target.getY() + ", " + target.getHeading() + ")");
+        currentErrorX = robotPose.getX() - target.getX();
+        currentErrorY = robotPose.getY() - target.getY();
+        currentErrorHeading = normalizeHeading(robotPose.getHeading() - target.getHeading());
+        RobotLogger.dd(TAG, "currentErrorHeading: " + currentErrorHeading);
+        errorHistory.add(new Pose2d(currentErrorX, currentErrorY, currentErrorHeading));
+
+        //Percent errors always positive! Sign is checked later.
+        //(Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) = the larger of the two errors
+        currentErrorPercentX = Math.abs(currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
+        currentErrorPercentY = Math.abs(currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
+        //Ensure that startingErrorHeading isn't close to 0, or currentErrorPercentHeading can easily exceed 1.0
+        startingErrorHeading = Math.abs(startingErrorHeading);
+        if (Math.toDegrees(startingErrorHeading) < 15) {
+            startingErrorHeading = Math.toRadians(15.5 - ((1 * 7)/((0.6 * Math.toDegrees(startingErrorHeading)) + 1)));
+        }
+        RobotLogger.dd(TAG, "startingErrorHeading after: " + startingErrorHeading);
+        currentErrorPercentHeading = Math.abs(currentErrorHeading) / startingErrorHeading;
+        errorHistoryPercents.add(new Pose2d(currentErrorPercentX, currentErrorPercentY, currentErrorPercentHeading));
+
+//        RobotLogger.dd(TAG, "xCurrentError: " + errorHistory.get(errorHistory.size() - 1).getX());
+//        RobotLogger.dd(TAG, "yCurrentError: " + errorHistory.get(errorHistory.size() - 1).getY());
+//        RobotLogger.dd(TAG, "hCurrentError: " + errorHistory.get(errorHistory.size() - 1).getHeading());
+        RobotLogger.dd(TAG, "xPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX());
+        RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
+        RobotLogger.dd(TAG, "hPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading());
+
+
+
+        //proportional calculator: outputs present error * xP
+        double pXOutput;
+        //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
+        jerkControlMultiplier = 0.75 + 2 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX()));
+        if (jerkControlMultiplier > 1) {
+            jerkControlMultiplier = 1;
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
+            pXOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() * xP);
+        }
+        else {
+            pXOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() * xP);
+        }
+
+//        if (errorHistory.get(errorHistory.size() - 1).getX() >= 0) {
+//            pXOutput = -xP * errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX();
+//        }
+//        else {
+//            pXOutput = xP * errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX();
+//        }
+
+
+        //integral calculator: outputs integral of all previous xErrors * xI
+        Double iXOutput = 0.0;
+        for (Pose2d errorVector : errorHistoryPercents) {
+            iXOutput += errorVector.getX();
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
+            iXOutput = -iXOutput * (xI/400);    //Dividing by large number so the inputted xI value can be a comprehensibly large number
+        }
+        else {
+            iXOutput = iXOutput * (xI/400);     //Dividing by large number so the inputted xI value can be a comprehensibly large number
+        }
+
+        //derivative calculator: outputs approximate derivative (using difference quotient) * xD
+        double dXOutput;
+        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+            dXOutput = 0;
+        }
+        else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
+            if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
+                //Multiplying by a constant so the inputted yD value can be around 1.0
+                dXOutput = -(xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
+            }
+            else {
+                //Multiplying by a constant so the inputted yD value can be around 1.0
+                dXOutput = (xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
+            }
+        }
+        RobotLogger.dd(TAG, "xPID: " + pXOutput + ", " + iXOutput + ", " + dXOutput);
+
+
+
+        //proportional calculator: outputs present error * yP
+        double pYOutput;
+        //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
+        jerkControlMultiplier = 0.90 + 4 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY()));
+        if (jerkControlMultiplier > 1) {
+            jerkControlMultiplier = 1;
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
+            pYOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() * yP);
+        }
+        else {
+            pYOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() * yP);
+        }
+
+        //integral calculator: outputs integral of all previous yErrors * yi
+        double iYOutput = 0.0;
+        for (Pose2d errorVector : errorHistoryPercents) {
+            iYOutput += errorVector.getY();
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
+            iYOutput = -iYOutput * (yI/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
+        }
+        else {
+            iYOutput = iYOutput * (yI/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
+        }
+
+
+        //derivative calculator: outputs approximate derivative (using difference quotient) * yd
+        double dYOutput;
+        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+            dYOutput = 0.0;
+        }
+        else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
+            if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
+                //Multiplying by a constant so the inputted yD value can be around 1.0
+                dYOutput = -(yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
+            }
+            else {
+                //Multiplying by a constant so the inputted yD value can be around 1.0
+                dYOutput = (yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
+            }
+        }
+        RobotLogger.dd(TAG, "yPID: " + pYOutput + ", " + iYOutput + ", " + dYOutput);
+
+
+
+        //proportional calculator: outputs present error * hP
+        double pHOutput;
+        //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
+        jerkControlMultiplier = 0.3 + 6 * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading()));
+        if (jerkControlMultiplier > 0.5) {    //Set max value
+            jerkControlMultiplier = 0.5;
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+            //Multiplying by a constant so the inputted hP value can be around 1.0
+            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+        }
+        else {
+            //Multiplying by a constant so the inputted hP value can be around 1.0
+            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+        }
+
+        //integral calculator: outputs integral of all previous hErrors * hi
+        double iHOutput = 0.0;
+        for (Pose2d errorVector : errorHistoryPercents) {
+            iHOutput += errorVector.getHeading();
+        }
+        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+            iHOutput = -iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
+        }
+        else {
+            iHOutput = iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
+        }
+
+        //derivative calculator: outputs approximate derivative (using difference quotient) * hd
+        double dHOutput;
+        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+            dHOutput = 0.0;
+        }
+        else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
+            if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+                //Multiplying by a constant so the inputted hD value can be around 1.0
+                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+            }
+            else {
+                //Multiplying by a constant so the inputted hD value can be around 1.0
+                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+            }
+        }
+        RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
+
+
+
+        double xNetOutput = pXOutput + iXOutput + dXOutput;
+        double yNetOutput = pYOutput + iYOutput + dYOutput;
+        double hNetOutput = pHOutput + iHOutput + dHOutput;
+
+//        ArrayList<Double> localVector = vectorGlobalToLocal(xNetOutput, yNetOutput, robotPose.getHeading());
+//        double localVectorX = localVector.get(0);
+//        double localVectorY = localVector.get(1);
+
+        //vectorX and vectorY are local to X and Y of robot
+        //v3 is stable in the old configuration
+        ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);
+        return powers;
     }
 }

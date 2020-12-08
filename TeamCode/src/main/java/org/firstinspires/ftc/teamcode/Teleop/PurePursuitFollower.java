@@ -70,7 +70,7 @@ public class PurePursuitFollower extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogger.dd(TAG, "_______________________________________________________");
-        PurePursuitPath PPPath = new PurePursuitPath(path, "pp_path_1.xml");
+        PurePursuitPath PPPath = new PurePursuitPath(path, "pp_path_3.xml");
         RobotLogger.dd(TAG, PPPath.toString());
         hwMap = new AllHardwareMap(hardwareMap);
         dashboard = FtcDashboard.getInstance();

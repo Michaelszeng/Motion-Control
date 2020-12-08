@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.w3c.dom.DOMException;
@@ -49,17 +50,19 @@ public class PurePursuitPath {
 
     public String toString() {
         String output = "  x    y    h    isVertex\n";
+        int counterFrom0 = 0;
+        int counter = 0;
         for (PurePursuitPathPoint pt : path1) {
-            output = output + pt.x + ", " + pt.y + ", " + pt.h + ", " + pt.isVertex + "\n";
+            output = output + pt.toString() + "\n";
+            if (counter == 15 || counterFrom0 == path1.size()-1) {
+                RobotLogger.dd(TAG, output);
+                output = "";
+                counter = 0;
+            }
+            counter++;
+            counterFrom0++;
         }
         return output;
-    }
-
-    public void applyMotionProfiles(ArrayList<Double> velocities, ArrayList<Double> accelerations) {
-        for (int i=0; i<path1.size(); i++) {
-            path1.get(i).velocity = velocities.get(i);
-            path1.get(i).acceleration = accelerations.get(i);
-        }
     }
 
     public static void importXMLPath(String filename) {

@@ -502,6 +502,7 @@ public class PurePursuitMotionProfileGenerator {
                 if (i == pathLength) {   //Set the last coordinate to 0 targetV and targetA
                     v = 0.0;
                     a = 0.0;
+                    duration += 0.001;
                 }
                 else {
                     RobotLogger.dd(TAG, "t: " + t);
@@ -581,7 +582,7 @@ public class PurePursuitMotionProfileGenerator {
 //                RobotLogger.dd(TAG, "v: " + v);
                 t = (v-v0)/a;
 //                RobotLogger.dd(TAG, "t: " + t);
-                if (counter == pathLength) {
+                if (counter == pathLength || counter == pathLength - 1) {
                     v = 0.0;
                     a = 0.0;
                 }
