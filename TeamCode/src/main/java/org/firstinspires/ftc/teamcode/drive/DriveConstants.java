@@ -68,13 +68,16 @@ public class DriveConstants {
     public static double yAccel = 4.0;
     public static double hAccel = 6.0;
     public static double kStaticM = 0.045;   //Found using StaticTest.java
-    public static double kVM = 0.0628;      //Found using kVTest.java
+//    public static double kVM = 0.0628;      //Found using kVTest.java
+    public static double kVM = 0.014043;      //Found using kVTest.java
     public static double kAM = 0.000156;      //Found using kATest.java
-    public static double maxV = 62.308;  //Used to generate motion profile
-    public static double maxA = 65;      //Used to generate motion profile
-    public static double maxJ = 260;
-    public static double maxAngV = 250;      //Used to generate motion profile      = maxV/14.25 * 180/Math.PI
-    public static double maxAngA = 180;      //Used to generate motion profile
+    public static double maxV = 62.308;  //Used to generate motion profile      Calculated using 87.5% of the theoretical max (https://www.learnroadrunner.com/drive-constants.html#base-constraints)
+    public static double maxA = 70;      //Used to generate motion profile      Currently an Estimation
+    public static double maxJ = 390;     //Used to generate motion profile      Currently an Arbitrary Value
+    public static double maxAngV = Math.toRadians(225);      //Used for Rotation Control      = maxV/14.25 * 180/Math.PI
+    public static double maxAngA = Math.toRadians(225);      //Used for Rotation Control
+
+
 
     public static double ODOMETRY_TRACK_WIDTH = 14.632;
     public static double ODOMETRY_HORIZONTAL_TRACK_WIDTH = -4.4;

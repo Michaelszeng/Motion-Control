@@ -303,9 +303,4 @@ public class PurePursuitMathFunctions {
         return ReachedDestination.FALSE;
     }
 
-    public double estimateDuration(PurePursuitPath PPPath, double radius) {
-        
-        return 0.0;
-    }
-
 }
