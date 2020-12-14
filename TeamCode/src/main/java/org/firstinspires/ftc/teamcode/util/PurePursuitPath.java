@@ -37,6 +37,15 @@ public class PurePursuitPath {
         RobotLogger.dd(TAG, "Path File Name: " + fileName);
         this.path = path;
         buildPath(fileName);
+        int i=1;
+        while (i < path1.size()) {
+            if (path1.get(i).x == path1.get(i-1).x && path1.get(i).y == path1.get(i-1).y && path1.get(i).h == path1.get(i-1).h) {
+                path1.remove(i);
+            }
+            else {
+                i++;
+            }
+        }
     }
 
     public int size() {
@@ -66,6 +75,7 @@ public class PurePursuitPath {
     }
 
     public static void importXMLPath(String filename) {
+        path1.clear();
         String full_path = AppUtil.CONFIG_FILES_DIR + "/" + filename;
         try {
             File inputFile = new File(full_path);

@@ -292,7 +292,7 @@ public class PurePursuitMathFunctions {
     public static ReachedDestination reachedDestination(Pose2d robotPose, PurePursuitPathPoint pathEnd, ReachedDestination reachedDestination) {
         double headingDifference = robotPose.getHeading() - pathEnd.h;
         double locationDifference = Math.abs(Math.hypot(robotPose.getX() - pathEnd.x, robotPose.getY() - pathEnd.y));
-        if (headingDifference < 0.0523599 && locationDifference < 1.0) {
+        if (headingDifference < 0.04 && locationDifference < 0.5) {
             if (reachedDestination == ReachedDestination.CHANGE || reachedDestination == ReachedDestination.TRUE) {
                 return ReachedDestination.TRUE;
             }

@@ -23,10 +23,11 @@ public class PurePursuitMotionProfileGenerator {
 
     boolean pathTooShortXY = false;
     boolean pathTooShortH = false;
-    int pathLength = path.path1.size()-1;
+    int pathLength;
 
     public PurePursuitMotionProfileGenerator(PurePursuitPath path) {
         this.path = path;
+        pathLength = path.path1.size()-1;
     }
 
     public PurePursuitPath generateProfiles() {
@@ -185,10 +186,10 @@ public class PurePursuitMotionProfileGenerator {
         counter = index_s_InflectReached;
         while ((smallestDiff <= prevSmallestDiff|| smallestDiff <= prevPrevSmallestDiff) && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
             currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
-            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
+//            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_0AccelReached - currentDistance);
-            RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
-            RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
+//            RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
+//            RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
             prevSmallestDiff = smallestDiff;
             if (currentDiff <= prevSmallestDiff) {
                 smallestDiff = currentDiff;
@@ -291,10 +292,10 @@ public class PurePursuitMotionProfileGenerator {
             counter = index_s_Accelerate;
             while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
                 currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
-                RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
+//                RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
                 currentDiff = Math.abs(s_MaxAccelReached2 - currentDistance);
-                RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
-                RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
+//                RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
+//                RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
                 prevSmallestDiff = smallestDiff;
                 if (currentDiff <= prevSmallestDiff) {
                     smallestDiff = currentDiff;
@@ -462,11 +463,8 @@ public class PurePursuitMotionProfileGenerator {
 //            int index_s_End = counter;
 //            RobotLogger.dd(TAG, "Section 7 counter: " + counter);
 
-            int index_s_End = pathLength;
-            RobotLogger.dd(TAG, "s_End, method 2: " + index_s_End);
-
             prevdt = t;
-            for (int i=index_s_InflectReached2; i<=index_s_End; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
+            for (int i=index_s_InflectReached2; i<=pathLength; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
                 dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
                 //Equation: 0 = -dx + v0t + 1/2 at^2 + 1/6 jt^3
                 //t is the time displacement between 2 consecutive Poses
@@ -502,7 +500,6 @@ public class PurePursuitMotionProfileGenerator {
                 if (i == pathLength) {   //Set the last coordinate to 0 targetV and targetA
                     v = 0.0;
                     a = 0.0;
-                    duration += 0.001;
                 }
                 else {
                     RobotLogger.dd(TAG, "t: " + t);

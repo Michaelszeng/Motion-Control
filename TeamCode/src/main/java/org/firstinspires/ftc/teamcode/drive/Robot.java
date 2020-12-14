@@ -30,6 +30,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xPM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xIM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xDM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yPM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yIM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.yDM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hPM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hIM;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hDM;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.BASE_CONSTRAINTS;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
@@ -231,10 +240,10 @@ public class Robot extends MecanumDrive {
 //        ArrayList<Double> coordinateChange = localizer.getPoseChangeV3(leftOdoChange, rightOdoChange, horizontalOdoChange, leftOdoReading, rightOdoReading, horizontalOdoReading, headingReading, previousHeading);
 
         Pose2d prevPose = poseHistory.get(poseHistory.size() - 1);
-        RobotLogger.dd(TAG, "headingReading: " + headingReading);
+//        RobotLogger.dd(TAG, "headingReading: " + headingReading);
         Pose2d currentPose = new Pose2d(prevPose.getX() + coordinateChange.get(0), prevPose.getY() + coordinateChange.get(1), headingReading);
 //        RobotLogger.dd(TAG, "currentPose in Robot.update(): " + currentPose);
-        RobotLogger.dd(TAG, "currentPose.getHeading() in Robot.update(): " + currentPose.getHeading());
+//        RobotLogger.dd(TAG, "currentPose.getHeading() in Robot.update(): " + currentPose.getHeading());
         poseHistory.add(currentPose);
         targetHistory.add(targetPose);
 
@@ -255,7 +264,8 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath,0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath,1, 0.2, 2.0, 1, 0.2, 2.0, 0.75, 0.1, 1.0);
+            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -304,10 +314,10 @@ public class Robot extends MecanumDrive {
 //        ArrayList<Double> coordinateChange = localizer.getPoseChangeV3(leftOdoChange, rightOdoChange, horizontalOdoChange, leftOdoReading, rightOdoReading, horizontalOdoReading, headingReading, previousHeading);
 
         Pose2d prevPose = poseHistory.get(poseHistory.size() - 1);
-        RobotLogger.dd(TAG, "headingReading: " + headingReading);
+//        RobotLogger.dd(TAG, "headingReading: " + headingReading);
         Pose2d currentPose = new Pose2d(prevPose.getX() + coordinateChange.get(0), prevPose.getY() + coordinateChange.get(1), headingReading);
 //        RobotLogger.dd(TAG, "currentPose in Robot.update(): " + currentPose);
-        RobotLogger.dd(TAG, "currentPose.getHeading() in Robot.update(): " + currentPose.getHeading());
+//        RobotLogger.dd(TAG, "currentPose.getHeading() in Robot.update(): " + currentPose.getHeading());
         poseHistory.add(currentPose);
         targetHistory.add(targetPose);
 
@@ -377,12 +387,12 @@ public class Robot extends MecanumDrive {
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
-        RobotLogger.dd(TAG, "pidControllers.size(): " + pidControllers.size());
+//        RobotLogger.dd(TAG, "pidControllers.size(): " + pidControllers.size());
         return motorPowers;
     }
 
     public Pose2d getCurrentPose() {
-        RobotLogger.dd(TAG, "poseHistory.get(poseHistory.size() - 1): " + poseHistory.get(poseHistory.size() - 1));
+//        RobotLogger.dd(TAG, "poseHistory.get(poseHistory.size() - 1): " + poseHistory.get(poseHistory.size() - 1));
         return poseHistory.get(poseHistory.size() - 1);
     }
 

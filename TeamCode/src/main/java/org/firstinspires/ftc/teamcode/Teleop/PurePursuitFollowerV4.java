@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.drive.control.PurePursuitMotionProfileGenerator;
 import org.firstinspires.ftc.teamcode.drive.virtual.FieldDashboard;
@@ -33,6 +34,11 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import com.qualcomm.robotcore.util.ReadWriteFile;
+import java.io.FileWriter;
+import java.io.BufferedWriter;
+import java.io.File;  // Import the File class
+import java.io.IOException;  // Import the IOException class to handle errors
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -57,6 +63,7 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
 
     BNO055IMU imu;
 
+    double prevDuration = -999999;      //Set this to a very large number so the starting v and a turn out to be 0
     double duration = 0.0;
     Date datePrev = new Date();
     Date dateNew = new Date();
@@ -73,6 +80,14 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
 
     int prevTargetIndex = 0;
     PurePursuitMathFunctions.ReachedDestination reachedDestination = PurePursuitMathFunctions.ReachedDestination.FALSE;
+
+    ArrayList<Double> tHist = new ArrayList<>(); ArrayList<Double> xHist = new ArrayList<>(); ArrayList<Double> yHist = new ArrayList<>(); ArrayList<Double> hHist = new ArrayList<>(); ArrayList<Double> vHist = new ArrayList<>(); ArrayList<Double> aHist = new ArrayList<>(); ArrayList<Double> angVHist = new ArrayList<>(); ArrayList<Double> angAHist = new ArrayList<>();
+    double prevX = 0.0;
+    double prevY = 0.0;
+    double prevH = 0.0;
+    double prevV = 0.0;
+    double prevAngV = 0.0;
+    File logFile = AppUtil.getInstance().getSettingsFile("telemetry.txt");
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -135,6 +150,16 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
 
         Pose2d currentPose;
 
+        tHist.add(0.0);
+        xHist.add(0.0);
+        yHist.add(0.0);
+        hHist.add(0.0);
+        vHist.add(0.0);
+        aHist.add(0.0);
+        angVHist.add(0.0);
+        angAHist.add(0.0);
+
+
         waitForStart();
         startDate.setTime(new Date().getTime());
         while (opModeIsActive()) {   //put teleop code in here
@@ -161,6 +186,21 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
 
             //FL, BL, BR, FR
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));
+
+            tHist.add(duration);
+            xHist.add(currentPose.getX());
+            yHist.add(currentPose.getY());
+            hHist.add(currentPose.getHeading());
+            vHist.add(Math.hypot(currentPose.getX() - prevX, currentPose.getY() - prevY) / ((duration - prevDuration)/1000));
+            angVHist.add((currentPose.getHeading() - prevH) / ((duration - prevDuration)/1000));
+            aHist.add((vHist.get(vHist.size()-1) - prevV) / ((duration - prevDuration)/1000));
+            angAHist.add((angVHist.get(angVHist.size()-1) - prevAngV) / ((duration - prevDuration)/1000));
+            prevDuration = duration;
+            prevX = currentPose.getX();
+            prevY = currentPose.getY();
+            prevH = currentPose.getHeading();
+            prevV = vHist.get(vHist.size()-1);
+            prevAngV = vHist.get(vHist.size()-1);
 
             Log.d(TAG, "Loopcycle: " + dateDiff);
             telemetry.addData("Localizer: ", "(" + currentPose.getX() + ", " + currentPose.getY() + ", " + Math.toDegrees(currentPose.getHeading()) + ")");
@@ -209,7 +249,6 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
     }
 
     private void initHardwareMap(DcMotor right_front, DcMotor right_back, DcMotor left_front, DcMotor left_back){
-
         right_front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         right_back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         left_front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -237,7 +276,52 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
     private void detectEnd(Pose2d currentPose) {
         reachedDestination = PurePursuitMathFunctions.reachedDestination(currentPose, pathEnd, reachedDestination);
         if (reachedDestination == PurePursuitMathFunctions.ReachedDestination.TRUE) {
+            exportTelemetryData();
             this.stop();
+        }
+    }
+
+    private void exportTelemetryData() {
+        if (xHist.size() > 0) {
+            String tString = "";
+            String xString = "";
+            String yString = "";
+            String hString = "";
+            String vString = "";
+            String aString = "";
+            String angVString = "";
+            String angAString = "";
+//                BufferedWriter myWriter = new BufferedWriter(new FileWriter("telemetry.txt"));
+//                RobotLogger.dd(TAG, "xHist.size(): " + xHist.size());
+//                RobotLogger.dd(TAG, "yHist.size(): " + yHist.size());
+//                RobotLogger.dd(TAG, "hHist.size(): " + hHist.size());
+//                RobotLogger.dd(TAG, "vHist.size(): " + vHist.size());
+//                RobotLogger.dd(TAG, "aHist.size(): " + aHist.size());
+//                RobotLogger.dd(TAG, "angVHist.size(): " + angVHist.size());
+//                RobotLogger.dd(TAG, "angAHist.size(): " + angAHist.size());
+
+            for (int i=0; i<xHist.size(); i++) {
+                tString += tHist.get(i) + ",";
+                xString += xHist.get(i) + ",";
+                yString += yHist.get(i) + ",";
+                hString += hHist.get(i) + ",";
+                vString += vHist.get(i) + ",";
+                aString += aHist.get(i) + ",";
+                angVString += angVHist.get(i) + ",";
+                angAString += angAHist.get(i) + ",";
+            }
+//                myWriter.write("x:" + xString + "\n");
+//                myWriter.write("y:" + yString + "\n");
+//                myWriter.write("h:" + hString + "\n");
+//                myWriter.write("v:" + vString + "\n");
+//                myWriter.write("a:" + aString + "\n");
+//                myWriter.write("angV:" + angVString + "\n");
+//                myWriter.write("angA:" + angAString + "\n");
+//                myWriter.close();
+            String allTelemetry = "t:" + tString + "\n" + "x:" + xString + "\n" + "y:" + yString + "\n" + "h:" + hString + "\n" + "v:" + vString + "\n" + "a:" + aString + "\n" + "angV:" + angVString + "\n" + "angA:" + angAString + "\n";
+            ReadWriteFile.writeFile(logFile, allTelemetry);
+
+            System.out.println("Successfully wrote to telemetry file.");
         }
     }
 }

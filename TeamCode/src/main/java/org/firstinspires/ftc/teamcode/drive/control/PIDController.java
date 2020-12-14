@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStaticM;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.xStartPower;
@@ -55,6 +55,11 @@ public class PIDController {
     double currentErrorPercentHeading;
     double jerkControlMultiplier;
 
+    double loopTimeSec = 0.04;
+    double xIntegral = 0.0;
+    double yIntegral = 0.0;
+    double hIntegral = 0.0;
+
     double xP;
     double xI;
     double xD;
@@ -65,7 +70,7 @@ public class PIDController {
     double hI;
     double hD;
 
-    double PIDFRatio = 1.00;     //Percentage of power supplied by feedforward
+    double PIDFRatio = 0.25;     //Percentage of power supplied by feedforward
 
     public PIDController(Pose2d robotPose, Pose2d target,  double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
         startPose = robotPose;
@@ -144,6 +149,7 @@ public class PIDController {
 
 
     public ArrayList<Double> update(Pose2d robotPose, int prevLoopTime, double duration) {
+        loopTimeSec = prevLoopTime / 1000.0;
         poseHistoryLocal.add(robotPose);
         outputs = new ArrayList<>();
         outputs.clear();
@@ -196,7 +202,7 @@ public class PIDController {
 //        }
         int minBound = 0;
         int maxBound = PPPath.path1.size() - 1;
-        for (int i=minBound; i<maxBound; i++) {    //Searching range of points around target to find nearestPoint
+        for (int i=minBound; i<=maxBound; i++) {    //Searching range of points around target to find nearestPoint
             diff = Math.abs(duration - PPPath.path1.get(i).t);
             if (diff <= smallestDiff) {
                 smallestDiff = diff;
@@ -224,25 +230,23 @@ public class PIDController {
             pXOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() * xP);
         }
 
-//        if (errorHistory.get(errorHistory.size() - 1).getX() >= 0) {
-//            pXOutput = -xP * errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX();
-//        }
-//        else {
-//            pXOutput = xP * errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX();
-//        }
-
-
         //integral calculator: outputs integral of all previous xErrors * xI
         Double iXOutput = 0.0;
+        /*
         for (Pose2d errorVector : errorHistoryPercents) {
             iXOutput += errorVector.getX();
         }
         if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
-            iXOutput = -iXOutput * (xI/400);    //Dividing by large number so the inputted xI value can be a comprehensibly large number
+//            iXOutput = -iXOutput * (xI/400);    //Dividing by large number so the inputted xI value can be a comprehensibly large number
+            iXOutput = -iXOutput * xI;
         }
         else {
-            iXOutput = iXOutput * (xI/400);     //Dividing by large number so the inputted xI value can be a comprehensibly large number
+//            iXOutput = iXOutput * (xI/400);     //Dividing by large number so the inputted xI value can be a comprehensibly large number
+            iXOutput = iXOutput * xI;
         }
+        */
+        xIntegral = (xIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getX()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getX() * loopTimeSec));
+        iXOutput = xI * xIntegral;
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * xD
         double dXOutput;
@@ -252,11 +256,13 @@ public class PIDController {
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
                 //Multiplying by a constant so the inputted yD value can be around 1.0
-                dXOutput = -(xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
+//                dXOutput = -(xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
+                dXOutput = -xD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
             }
             else {
                 //Multiplying by a constant so the inputted yD value can be around 1.0
-                dXOutput = (xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
+//                dXOutput = (xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
+                dXOutput = xD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / prevLoopTime;
             }
         }
 
@@ -278,15 +284,19 @@ public class PIDController {
 
         //integral calculator: outputs integral of all previous yErrors * yi
         double iYOutput = 0.0;
-        for (Pose2d errorVector : errorHistoryPercents) {
-            iYOutput += errorVector.getY();
-        }
-        if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
-            iYOutput = -iYOutput * (yI/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
-        }
-        else {
-            iYOutput = iYOutput * (yI/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
-        }
+//        for (Pose2d errorVector : errorHistoryPercents) {
+//            iYOutput += errorVector.getY();
+//        }
+//        if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
+////            iYOutput = -iYOutput * (yI/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
+//            iYOutput = -iYOutput * yI;
+//        }
+//        else {
+////            iYOutput = iYOutput * (yI/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
+//            iYOutput = iYOutput * yI;
+//        }
+        yIntegral = (yIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getY()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getY() * loopTimeSec));
+        iYOutput = yI * yIntegral;
 
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * yd
@@ -297,11 +307,13 @@ public class PIDController {
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
                 //Multiplying by a constant so the inputted yD value can be around 1.0
-                dYOutput = -(yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
+//                dYOutput = -(yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
+                dYOutput = -yD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
             }
             else {
                 //Multiplying by a constant so the inputted yD value can be around 1.0
-                dYOutput = (yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
+//                dYOutput = (yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
+                dYOutput = yD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / prevLoopTime;
             }
         }
 
@@ -325,15 +337,19 @@ public class PIDController {
 
         //integral calculator: outputs integral of all previous hErrors * hi
         double iHOutput = 0.0;
-        for (Pose2d errorVector : errorHistoryPercents) {
-            iHOutput += errorVector.getHeading();
-        }
-        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-            iHOutput = -iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
-        }
-        else {
-            iHOutput = iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
-        }
+//        for (Pose2d errorVector : errorHistoryPercents) {
+//            iHOutput += errorVector.getHeading();
+//        }
+//        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+////            iHOutput = -iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
+//            iHOutput = -iHOutput * hI;
+//        }
+//        else {
+////            iHOutput = iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
+//            iHOutput = iHOutput * hI;
+//        }
+        hIntegral = (hIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getHeading()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getHeading() * loopTimeSec));
+        iHOutput = hI * hIntegral;
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * hd
         double dHOutput;
@@ -343,11 +359,13 @@ public class PIDController {
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
                 //Multiplying by a constant so the inputted hD value can be around 1.0
-                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+//                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+                dHOutput = -hD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
             else {
                 //Multiplying by a constant so the inputted hD value can be around 1.0
-                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+//                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+                dHOutput = hD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
             }
         }
 
@@ -416,6 +434,16 @@ public class PIDController {
 
         //xNet and yNet are local to X and Y of robot
         ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);    //V4 should be the latest version
+
+        //Add kStaticM to all powers
+        for (int i=0; i<4; i++) {
+            if (powers.get(i) > 0.0 && powers.get(i) < 1.0-kStaticM) {
+                powers.set(i, powers.get(i) + kStaticM);
+            }
+            else if (powers.get(i) < 0.0 && powers.get(i) > -1.0+kStaticM) {
+                powers.set(i, powers.get(i) - kStaticM);
+            }
+        }
 
         return powers;
     }
@@ -573,12 +601,13 @@ public class PIDController {
     public ArrayList<Double> getFeedForwardPowersV1(Pose2d robotPose) {
         double kVRatio = kVM/(kVM+kAM);
         double kARatio = kAM/(kVM+kAM);
-        double feedForwardXYOutput = (kVRatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).velocity)/maxV + (kARatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).acceleration)/maxA + kStatic;
+        double feedForwardXYOutput = (kVRatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).velocity)/maxV + (kARatio*PIDFRatio*PPPath.path1.get(nearestPointIndex).acceleration)/maxA;
         double feedForwardHOutput = (kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA;
-//        double feedForwardHOutput = ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA + kStatic) * -Math.signum(startingErrorHeading);
+//        double feedForwardHOutput = ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV + (kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA + kStaticM) * -Math.signum(startingErrorHeading);
 //        double feedForwardHOutput = 0.0;
 //        double directionOfMotion = Math.atan2(-robotPose.getY()+target.getY(), -robotPose.getX()+target.getX());    //Returns between -pi and pi, on a standard cartesion system (north is 90)
 
+        //I AM 100% SURE THIS CALCULATION IS CORRECT
         //Returns between -pi and pi, on robot coordinate system (north is 0, left is negative)
         double directionOfMotion = -Math.atan2(target.getY()-robotPose.getY(), target.getX()-robotPose.getX()) + Math.PI/2;
         if (directionOfMotion > Math.PI) {
@@ -590,6 +619,7 @@ public class PIDController {
 //        double fXOutput = feedForwardXYOutput * Math.sin(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorX);
 //        double fYOutput = feedForwardXYOutput * Math.cos(-(robotPose.getHeading() + 90) - directionOfMotion) * -Math.signum(startingErrorY);
 
+        //I AM 100% SURE THIS CALCULATION IS CORRECT
         //sin and cos only function with a cartesian heading system, so we need to translate from robot heading system to cartesian by multiplying (robotCartesianHeading - directionOfMotion) by -1
         double fXOutput = feedForwardXYOutput * Math.sin(directionOfMotion - robotPose.getHeading());
         double fYOutput = feedForwardXYOutput * Math.cos(directionOfMotion - robotPose.getHeading());
