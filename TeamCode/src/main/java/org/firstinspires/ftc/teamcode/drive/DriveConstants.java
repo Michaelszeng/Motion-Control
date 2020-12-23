@@ -62,35 +62,41 @@ public class DriveConstants {
 
     //PurePursuit PID Constants
     public static double robotSize = 17.5;
-    public static double xStartPower = 0.75;
-    public static double yStartPower = 0.90;
-    public static double hStartPower = 0.30;
+    public static double xStartPower = 0.825;
+    public static double yStartPower = 0.925;
+    public static double hStartPower = 0.50;
     public static double xAccel = 2.0;
     public static double yAccel = 4.0;
     public static double hAccel = 6.0;
     public static double Ku = 1.0;
     public static double Tu = 0.27242;      //Period of Sustained Oscillation (Sec) using Ziegler-Nichols Tuning
-    public static double xPM = 1.0;
+
+    public static double xPM = 0.85;
 //    public static double xIM = 4.405;       //Classic ZN
 //    public static double xDM = 0.02043;     //Classic ZN
-    public static double xIM = (0.4*Ku) / (Tu);     //No Overshoot ZN
-    public static double xDM = 0.0667*Ku*Tu;        //No Overshoot ZN
-    public static double yPM = 1.0;
+    public static double xIM = (0.4*Ku) / (Tu*5);     //No Overshoot ZN
+    public static double xDM = 0.067*Ku*Tu*10;        //No Overshoot ZN
+
+    public static double yPM = 0.85;
 //    public static double yIM = 4.405;       //Classic ZN
 //    public static double yDM = 0.02043;     //Classic ZN
-    public static double yIM = (0.4*Ku) / (Tu);     //No Overshoot ZN
-    public static double yDM = 0.0667*Ku*Tu;        //No Overshoot ZN
-    public static double hPM = 0.525;
+    public static double yIM = (0.4*Ku) / (Tu*5);     //No Overshoot ZN
+    public static double yDM = 0.067*Ku*Tu*10;        //No Overshoot ZN
+
+    public static double hPM = 0.2;      //No Overshoot ZN
 //    public static double hIM = 2.2025;      //Classic ZN
 //    public static double hDM = 0.04086;     //Classic ZN
     public static double hIM = (0.4*Ku) / (Tu);     //No Overshoot ZN
-    public static double hDM = 0.0667*Ku*Tu;        //No Overshoot ZN
+    public static double hDM = 0.067*Ku*Tu;        //No Overshoot ZN
+
     public static double kStaticM = 0.045;   //Found using StaticTest.java
 //    public static double kVM = 0.0628;      //Found using kVTest.java
     public static double kVM = 0.014043;      //Estimation
     public static double kAM = 0.000156;      //Found using kATest.java
-    public static double maxV = 62.308;  //Used to generate motion profile      Calculated using 87.5% of the theoretical max (https://www.learnroadrunner.com/drive-constants.html#base-constraints)
-    public static double maxA = 70;      //Used to generate motion profile      Currently an Estimation
+//    public static double maxV = 62.308;  //Used to generate motion profile      Calculated using 87.5% of the theoretical max (https://www.learnroadrunner.com/drive-constants.html#base-constraints)
+    public static double maxV = 53;  //Used to generate motion profile
+//    public static double maxA = 70;      //Used to generate motion profile      Currently an Estimation
+    public static double maxA = 56;      //Used to generate motion profile      Currently an Estimation
     public static double maxJ = 390;     //Used to generate motion profile      Currently an Arbitrary Value
     public static double maxAngV = Math.toRadians(225);      //Used for Rotation Control      = maxV/14.25 * 180/Math.PI
     public static double maxAngA = Math.toRadians(225);      //Used for Rotation Control

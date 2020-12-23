@@ -270,15 +270,15 @@ public class Robot extends MecanumDrive {
             motorPowers = controller.update(currentPose, loopTime);
         }
 
-        reachedDestination = reachedDestination(currentPose, PPPath.path1.get(PPPath.path1.size()-1), reachedDestination);
-        if (reachedDestination == PurePursuitMathFunctions.ReachedDestination.TRUE) {
-            ArrayList<Double> zeroPowers = new ArrayList<>();
-            zeroPowers.add(0.0);
-            zeroPowers.add(0.0);
-            zeroPowers.add(0.0);
-            zeroPowers.add(0.0);
-            return zeroPowers;
-        }
+//        reachedDestination = reachedDestination(currentPose, PPPath.path1.get(PPPath.path1.size()-1), reachedDestination);
+//        if (reachedDestination == PurePursuitMathFunctions.ReachedDestination.TRUE) {
+//            ArrayList<Double> zeroPowers = new ArrayList<>();
+//            zeroPowers.add(0.0);
+//            zeroPowers.add(0.0);
+//            zeroPowers.add(0.0);
+//            zeroPowers.add(0.0);
+//            return zeroPowers;
+//        }
 
 
 //        ArrayList<Double> motorPowers;  //Fl, BL, BR, FR
@@ -335,20 +335,23 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime, duration);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration,0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration,0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.15, 52, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime, duration);
         }
 
-        reachedDestination = reachedDestination(currentPose, PPPath.path1.get(PPPath.path1.size()-1), reachedDestination);
-        if (reachedDestination == PurePursuitMathFunctions.ReachedDestination.TRUE) {
-            ArrayList<Double> zeroPowers = new ArrayList<>();
-            zeroPowers.add(0.0);
-            zeroPowers.add(0.0);
-            zeroPowers.add(0.0);
-            zeroPowers.add(0.0);
-            return zeroPowers;
-        }
+//        reachedDestination = reachedDestination(currentPose, PPPath.path1.get(PPPath.path1.size()-1), reachedDestination);
+//        if (reachedDestination == PurePursuitMathFunctions.ReachedDestination.TRUE) {
+//            ArrayList<Double> zeroPowers = new ArrayList<>();
+//            zeroPowers.add(0.0);
+//            zeroPowers.add(0.0);
+//            zeroPowers.add(0.0);
+//            zeroPowers.add(0.0);
+//            return zeroPowers;
+//        }
 
         prevLeftOdoReading = leftOdoReading;
         prevRightOdoReading = rightOdoReading;

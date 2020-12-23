@@ -58,11 +58,13 @@ public class PurePursuitPath {
     }
 
     public String toString() {
-        String output = "  x    y    h    isVertex\n";
+        String netOutput = "";
+        String output = "";
         int counterFrom0 = 0;
         int counter = 0;
         for (PurePursuitPathPoint pt : path1) {
             output = output + pt.toString() + "\n";
+            netOutput = netOutput + pt.toString() + "\n";
             if (counter == 15 || counterFrom0 == path1.size()-1) {
                 RobotLogger.dd(TAG, output);
                 output = "";
@@ -71,7 +73,7 @@ public class PurePursuitPath {
             counter++;
             counterFrom0++;
         }
-        return output;
+        return netOutput;
     }
 
     public static void importXMLPath(String filename) {

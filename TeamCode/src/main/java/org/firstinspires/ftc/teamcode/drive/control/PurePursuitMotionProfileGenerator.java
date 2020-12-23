@@ -601,7 +601,7 @@ public class PurePursuitMotionProfileGenerator {
         //ALL CALCULATIONS MUST BE IN RADIANS!!!!!
         double h0 = path.path1.get(0).h;
         double hF = path.path1.get(pathLength).h;
-        double hDisplacement = hF - h0;
+        double hDisplacement = EnsureNonzero(hF - h0);
         RobotLogger.dd(TAG, "hDisplacement: " + hDisplacement);
 
         //SECTION 1
@@ -857,6 +857,13 @@ public class PurePursuitMotionProfileGenerator {
         RobotLogger.dd(TAG, "hVelocities: " + angV);
         RobotLogger.dd(TAG, "hAccelerations: " + angA);
 
+    }
+
+    public double EnsureNonzero(double d) {
+        if (Math.abs(d) < 0.001) {
+            return 0.001;
+        }
+        return d;
     }
 
 }

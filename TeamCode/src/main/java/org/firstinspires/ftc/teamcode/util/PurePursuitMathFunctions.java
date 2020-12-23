@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.w3c.dom.DOMException;
@@ -289,10 +290,12 @@ public class PurePursuitMathFunctions {
         return angle;
     }
 
-    public static ReachedDestination reachedDestination(Pose2d robotPose, PurePursuitPathPoint pathEnd, ReachedDestination reachedDestination) {
+    public static ReachedDestination reachedDestination(Pose2d robotPose, PurePursuitPathPoint pathEnd, ReachedDestination reachedDestination, double currentDuration, double pathDuration) {
         double headingDifference = robotPose.getHeading() - pathEnd.h;
         double locationDifference = Math.abs(Math.hypot(robotPose.getX() - pathEnd.x, robotPose.getY() - pathEnd.y));
-        if (headingDifference < 0.04 && locationDifference < 0.5) {
+//        RobotLogger.dd(TAG, "currentDuration: " + currentDuration);
+//        RobotLogger.dd(TAG, "pathDuration: " + pathDuration);
+        if (headingDifference < 0.04 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) {
             if (reachedDestination == ReachedDestination.CHANGE || reachedDestination == ReachedDestination.TRUE) {
                 return ReachedDestination.TRUE;
             }
