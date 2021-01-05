@@ -59,6 +59,7 @@ public class PIDController {
     double xIntegral = 0.0;
     double yIntegral = 0.0;
     double hIntegral = 0.0;
+    double pathDuration;
 
     double xP;
     double xI;
@@ -118,6 +119,11 @@ public class PIDController {
         startingErrorY = ensureNonZero(startingErrorY);
         startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
         RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
+
+        pathDuration = PPPath.path1.get(PPPath.path1.size()-1).t;
+        if (pathDuration == 0.0 || pathDuration == Double.NaN || pathDuration == Double.POSITIVE_INFINITY || pathDuration == Double.NEGATIVE_INFINITY) {
+            pathDuration = PPPath.path1.get(PPPath.path1.size()-2).t;
+        }
     }
 
 
@@ -145,6 +151,11 @@ public class PIDController {
         startingErrorY = ensureNonZero(startingErrorY);
         startingErrorHeading = ensureNonZero(normalizeHeading(startingErrorHeading));
         RobotLogger.dd(TAG, "Controller startingError: " + startingErrorX + ", " + startingErrorY + ", " + startingErrorHeading);
+
+        pathDuration = PPPath.path1.get(PPPath.path1.size()-1).t;
+        if (pathDuration == 0.0 || pathDuration == Double.NaN) {
+            pathDuration = PPPath.path1.get(PPPath.path1.size()-2).t;
+        }
     }
 
 
@@ -163,6 +174,14 @@ public class PIDController {
 
         //Percent errors always positive! Sign is checked later.
         //(Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY)) = the larger of the two errors
+        startingErrorX = Math.abs(startingErrorX);
+        if (startingErrorX < 8.5) {
+            startingErrorX = startingErrorX + (1 / (0.2*startingErrorX + 0.14) - 0.525);   //1/x curve to ensure starting error is never close to zero resulting in large percent errors
+        }
+        startingErrorY = Math.abs(startingErrorY);
+        if (startingErrorY < 8.5) {
+            startingErrorY = startingErrorY + (1 / (0.2*startingErrorY + 0.14) - 0.525);   //1/x curve to ensure starting error is never close to zero resulting in large percent errors
+        }
         currentErrorPercentX = Math.abs(currentErrorX / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         currentErrorPercentY = Math.abs(currentErrorY / (Math.max(Math.abs(startingErrorX), Math.abs(startingErrorY))));
         //Ensure that startingErrorHeading isn't close to 0, or currentErrorPercentHeading can easily exceed 1.0
@@ -231,20 +250,7 @@ public class PIDController {
         }
 
         //integral calculator: outputs integral of all previous xErrors * xI
-        Double iXOutput = 0.0;
-        /*
-        for (Pose2d errorVector : errorHistoryPercents) {
-            iXOutput += errorVector.getX();
-        }
-        if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
-//            iXOutput = -iXOutput * (xI/400);    //Dividing by large number so the inputted xI value can be a comprehensibly large number
-            iXOutput = -iXOutput * xI;
-        }
-        else {
-//            iXOutput = iXOutput * (xI/400);     //Dividing by large number so the inputted xI value can be a comprehensibly large number
-            iXOutput = iXOutput * xI;
-        }
-        */
+        Double iXOutput;
 //        xIntegral = xIntegral + (-Math.signum(errorHistory.get(errorHistory.size() - 1).getX()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getX() * loopTimeSec));
         //Square rooting the error, so that large errors (ie 100%) don't dominate the integral and small errors (ie 1%) get completely ignored. This scales the smaller errors up.
         xIntegral = xIntegral + (-Math.signum(errorHistory.get(errorHistory.size() - 1).getX()) * (Math.pow(errorHistoryPercents.get(errorHistoryPercents.size()-1).getX(), 0.5) * loopTimeSec));
@@ -279,10 +285,10 @@ public class PIDController {
 //        }
         try {
             difference = errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 3).getX();
-            RobotLogger.dd(TAG, "totalDuration: " + PPPath.path1.get(PPPath.path1.size()-2).t);
+//            RobotLogger.dd(TAG, "totalDuration: " + pathDuration);
             //Goal of time factor: make it so that the d factor has a large effect for the first fraction of the path, then a smaller effect as time goes on
-            double timeFactor = Math.pow((duration/PPPath.path1.get(PPPath.path1.size()-2).t)+1, 4);    //Factor increases with a power of 4 as time increases, and it always increases proportionately to the path's length
-            RobotLogger.dd(TAG, "timeFactor: " + timeFactor);
+            double timeFactor = Math.pow((duration/pathDuration)+1, 4);    //Factor increases with a power of 4 as time increases, and it always increases proportionately to the path's length
+//            RobotLogger.dd(TAG, "timeFactor: " + timeFactor);
             dXOutput = xD * difference * -Math.signum(errorHistory.get(errorHistory.size()-1).getX()) * (1/timeFactor);     //Multiply by 1/time factor to implement the exponentially decreasing d-weight
         } catch (Exception e) {
             RobotLogger.dd(TAG, "dXOutput failure");
@@ -307,19 +313,10 @@ public class PIDController {
         }
 
         //integral calculator: outputs integral of all previous yErrors * yi
-        double iYOutput = 0.0;
-//        for (Pose2d errorVector : errorHistoryPercents) {
-//            iYOutput += errorVector.getY();
-//        }
-//        if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
-////            iYOutput = -iYOutput * (yI/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
-//            iYOutput = -iYOutput * yI;
-//        }
-//        else {
-////            iYOutput = iYOutput * (yI/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
-//            iYOutput = iYOutput * yI;
-//        }
-        yIntegral = (yIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getY()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getY() * loopTimeSec));
+        double iYOutput;
+//        yIntegral = (yIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getY()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getY() * loopTimeSec));
+        //Square rooting the error, so that large errors (ie 100%) don't dominate the integral and small errors (ie 1%) get completely ignored. This scales the smaller errors up.
+        yIntegral = yIntegral + (-Math.signum(errorHistory.get(errorHistory.size() - 1).getY()) * (Math.pow(errorHistoryPercents.get(errorHistoryPercents.size()-1).getY(), 0.5) * loopTimeSec));
         iYOutput = yI * yIntegral;
 
 
@@ -343,10 +340,11 @@ public class PIDController {
         difference = Double.NaN;
         try {
             difference = errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 3).getY();
-            RobotLogger.dd(TAG, "totalDuration: " + PPPath.path1.get(PPPath.path1.size()-2).t);
+            RobotLogger.dd(TAG, "y pose difference: " + difference);
+//            RobotLogger.dd(TAG, "totalDuration: " + pathDuration);
             //Goal of time factor: make it so that the d factor has a large effect for the first fraction of the path, then a smaller effect as time goes on
-            double timeFactor = Math.pow((duration/PPPath.path1.get(PPPath.path1.size()-2).t)+1, 4);    //Factor increases with a power of 4 as time increases, and it always increases proportionately to the path's length
-            RobotLogger.dd(TAG, "timeFactor: " + timeFactor);
+            double timeFactor = Math.pow((duration/pathDuration)+1, 4);    //Factor increases with a power of 4 as time increases, and it always increases proportionately to the path's length
+//            RobotLogger.dd(TAG, "timeFactor: " + timeFactor);
             dYOutput = yD * difference * -Math.signum(errorHistory.get(errorHistory.size()-1).getY()) * (1/timeFactor);     //Multiply by 1/time factor to implement the exponentially decreasing d-weight
         } catch (Exception e) {
             RobotLogger.dd(TAG, "dYOutput failure");
@@ -360,50 +358,52 @@ public class PIDController {
         double pHOutput;
         //added constant = initial speed; multiplier constant = how fast it accelerates (higher = faster)
         jerkControlMultiplier = hStartPower + hAccel * (1 - (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading()));
-        if (jerkControlMultiplier > 0.5) {    //Set max value
-            jerkControlMultiplier = 0.5;
+        if (jerkControlMultiplier > hP) {    //hP is effectively the max value
+            jerkControlMultiplier = hP;
         }
         if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-            //Multiplying by a constant so the inputted hP value can be around 1.0
-            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
         }
         else {
-            //Multiplying by a constant so the inputted hP value can be around 1.0
-            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
         }
 
         //integral calculator: outputs integral of all previous hErrors * hi
-        double iHOutput = 0.0;
-//        for (Pose2d errorVector : errorHistoryPercents) {
-//            iHOutput += errorVector.getHeading();
-//        }
-//        if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-////            iHOutput = -iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
-//            iHOutput = -iHOutput * hI;
-//        }
-//        else {
-////            iHOutput = iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
-//            iHOutput = iHOutput * hI;
-//        }
-        hIntegral = (hIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getHeading()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getHeading() * loopTimeSec));
+        double iHOutput;
+//        hIntegral = (hIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getHeading()) * (errorHistoryPercents.get(errorHistoryPercents.size()-1).getHeading() * loopTimeSec));
+        //Square rooting the error, so that large errors (ie 100%) don't dominate the integral and small errors (ie 1%) get completely ignored. This scales the smaller errors up.
+        hIntegral = (hIntegral + -Math.signum(errorHistory.get(errorHistory.size() - 1).getHeading()) * (Math.pow(errorHistoryPercents.get(errorHistoryPercents.size()-1).getHeading(), 0.5) * loopTimeSec));
         iHOutput = hI * hIntegral;
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * hd
         double dHOutput;
-        if (errorHistoryPercents.size() < 4) {    //if there is not enough data points, set derivative output to 0
-            dHOutput = 0.0;
-        }
-        else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
-            if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-                //Multiplying by a constant so the inputted hD value can be around 1.0
-//                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
-                dHOutput = -hD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 4).getHeading())) / prevLoopTime;
-            }
-            else {
-                //Multiplying by a constant so the inputted hD value can be around 1.0
-//                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
-                dHOutput = hD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 4).getHeading())) / prevLoopTime;
-            }
+//        if (errorHistoryPercents.size() <= 3) {    //if there is not enough data points, set derivative output to 0
+//            dHOutput = 0.0;
+//        }
+//        else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
+//            if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
+//                //Multiplying by a constant so the inputted hD value can be around 1.0
+////                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+//                dHOutput = -hD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 3).getHeading())) / prevLoopTime;
+//            }
+//            else {
+//                //Multiplying by a constant so the inputted hD value can be around 1.0
+////                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / prevLoopTime;
+//                dHOutput = hD * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 3).getHeading())) / prevLoopTime;
+//            }
+//        }
+        difference = Double.NaN;
+        try {
+            difference = errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 3).getHeading();
+            RobotLogger.dd(TAG, "totalDuration: " + pathDuration);
+            //Goal of time factor: make it so that the d factor has a large effect for the first fraction of the path, then a smaller effect as time goes on
+            double timeFactor = Math.pow((duration/pathDuration)+1, 4);    //Factor increases with a power of 4 as time increases, and it always increases proportionately to the path's length
+            RobotLogger.dd(TAG, "timeFactor: " + timeFactor);
+            dHOutput = hD * difference * -Math.signum(errorHistory.get(errorHistory.size()-1).getHeading()) * (1/timeFactor);     //Multiply by 1/time factor to implement the exponentially decreasing d-weight
+        } catch (Exception e) {
+            RobotLogger.dd(TAG, "dHOutput failure");
+            RobotLogger.dd(TAG, "difference: " + difference);
+            dHOutput = 0;
         }
 
 
@@ -449,7 +449,6 @@ public class PIDController {
         double hNetOutput = (1.0-PIDFRatio)*(pHOutput + iHOutput + dHOutput) + fHOutput;    //PIDFRatio for feedforward output is factored in in the getFeedForwardPowers Function
 
         RobotLogger.dd(TAG, "nearestPoint: " + nearestPoint.toString());
-        RobotLogger.dd(TAG, "x kPID: " + xP + ", " + xI + ", " + xD);
         RobotLogger.dd(TAG, "xPIDF: " + pXOutput + ", " + iXOutput + ", " + dXOutput + ", " + fXOutput);
         RobotLogger.dd(TAG, "yPIDF: " + pYOutput + ", " + iYOutput + ", " + dYOutput + ", " + fYOutput);
         RobotLogger.dd(TAG, "hPIDF: " + pHOutput + ", " + iHOutput + ", " + dHOutput + ", " + fHOutput);
@@ -458,10 +457,10 @@ public class PIDController {
         RobotLogger.dd(TAG, "targetVelocity / maxV: " + PPPath.path1.get(nearestPointIndex).velocity + " / " + maxV);
 //        RobotLogger.dd(TAG, "targetXVelocity: " + targetXV);
 //        RobotLogger.dd(TAG, "targetYVelocity: " + targetYV);
-        RobotLogger.dd(TAG, "(kVRatio*PIDFRatio*nearestPoint.velocity)/maxV: " + ((kVRatio*PIDFRatio*nearestPoint.velocity)/maxV));
-        RobotLogger.dd(TAG, "(kARatio*PIDFRatio*nearestPoint.acceleration)/maxA: " + ((kARatio*PIDFRatio*nearestPoint.acceleration)/maxA));
-        RobotLogger.dd(TAG, "(kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV: " + ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV));
-        RobotLogger.dd(TAG, "(kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA: " + ((kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA));
+//        RobotLogger.dd(TAG, "(kVRatio*PIDFRatio*nearestPoint.velocity)/maxV: " + ((kVRatio*PIDFRatio*nearestPoint.velocity)/maxV));
+//        RobotLogger.dd(TAG, "(kARatio*PIDFRatio*nearestPoint.acceleration)/maxA: " + ((kARatio*PIDFRatio*nearestPoint.acceleration)/maxA));
+//        RobotLogger.dd(TAG, "(kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV: " + ((kVRatio*PIDFRatio*nearestPoint.angVelocity)/maxAngV));
+//        RobotLogger.dd(TAG, "(kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA: " + ((kARatio*PIDFRatio*nearestPoint.angAcceleration)/maxAngA));
 
 
 

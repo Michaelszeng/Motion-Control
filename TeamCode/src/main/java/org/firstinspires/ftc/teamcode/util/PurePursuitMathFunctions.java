@@ -272,8 +272,12 @@ public class PurePursuitMathFunctions {
         }
 
 //        RobotLogger.dd(TAG, "minDistRadDiffIndex: "+ minDistRadDiffIndex);
-        //If the target pose is a previous pose in the path, we know we are at the end of the path and we no longer change the target Pose
-        if (minDistRadDiffIndex < prevTargetIndex) {
+
+        //If the target pose is a previous pose in the path, we know we are at the end of the path or that the robot is stationary.
+        if (minDistRadDiffIndex <= prevTargetIndex) {
+            if (prevTargetIndex != path.path1.size()-1) {   //If not the last point in the path (the robot is stationary)
+                return (prevTargetIndex + 1);
+            }
             return prevTargetIndex;
         }
         return minDistRadDiffIndex;
@@ -291,15 +295,18 @@ public class PurePursuitMathFunctions {
     }
 
     public static ReachedDestination reachedDestination(Pose2d robotPose, PurePursuitPathPoint pathEnd, ReachedDestination reachedDestination, double currentDuration, double pathDuration) {
-        double headingDifference = robotPose.getHeading() - pathEnd.h;
+        double headingDifference = Math.abs(robotPose.getHeading() - pathEnd.h);
         double locationDifference = Math.abs(Math.hypot(robotPose.getX() - pathEnd.x, robotPose.getY() - pathEnd.y));
 //        RobotLogger.dd(TAG, "currentDuration: " + currentDuration);
 //        RobotLogger.dd(TAG, "pathDuration: " + pathDuration);
-        if (headingDifference < 0.04 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) {
+        if (headingDifference < 0.0355 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) {
             if (reachedDestination == ReachedDestination.CHANGE || reachedDestination == ReachedDestination.TRUE) {
                 return ReachedDestination.TRUE;
             }
             if (reachedDestination == ReachedDestination.FALSE) {
+                RobotLogger.dd(TAG, "pathend.h: " + pathEnd.h);
+                RobotLogger.dd(TAG, "robotPose.getHeading(): " + robotPose.getHeading());
+                RobotLogger.dd(TAG, "headingDifference" + headingDifference);
                 return ReachedDestination.CHANGE;
             }
         }

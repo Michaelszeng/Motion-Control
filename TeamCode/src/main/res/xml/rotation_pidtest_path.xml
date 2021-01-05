@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Path>
+    <Pose>
+        <x>0.0</x>
+        <y>0.0</y>
+        <heading>0.0</heading>
+        <isVertex>true</isVertex>
+    </Pose>
+    <Pose>
+        <x>0.0</x>
+        <y>0.0</y>
+        <heading>180.0</heading>
+        <isVertex>true</isVertex>
+    </Pose>
+    <Pose>
+        <x>0.0</x>
+        <y>0.0</y>
+        <heading>180.0</heading>
+        <isVertex>true</isVertex>
+    </Pose>
+    <age>0</age>
+</Path>

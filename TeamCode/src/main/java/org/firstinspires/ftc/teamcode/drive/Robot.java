@@ -202,7 +202,8 @@ public class Robot extends MecanumDrive {
             motorPowers = latestController.update(currentPose, loopTime);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 0.75, 0.2, 1.0, 0.75, 0.2, 1.0, 0.75, 0.2, 1.0);
+//            PIDController controller = new PIDController(currentPose, targetPose, 0.75, 0.2, 1.0, 0.75, 0.2, 1.0, 0.75, 0.2, 1.0);
+            PIDController controller = new PIDController(currentPose, targetPose,1.0, 0.15, 52.0, 0.9, 0.0, 25.0, 1.0, 0.02, 100.0);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime);
         }
@@ -338,7 +339,11 @@ public class Robot extends MecanumDrive {
 //            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration,0.6, 0.2, 2.0, 0.6, 0.2, 2.0, 0.2, 0.1, 1.0);
 //            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);
 //            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.0, 6.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
-            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.15, 52, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.15, 52.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.15, 52.0, 0.9, 0.0, 25.0, 0.875, 0.0, 7.5);
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.85, 0.02, 1.0);
+
+            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime, duration);
         }

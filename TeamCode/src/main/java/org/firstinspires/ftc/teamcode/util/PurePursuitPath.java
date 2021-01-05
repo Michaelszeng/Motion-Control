@@ -25,6 +25,10 @@ public class PurePursuitPath {
     public ArrayList<Pose2d> path;
     public static ArrayList<PurePursuitPathPoint> path1 = new ArrayList<>();
 
+    public PurePursuitPath(PurePursuitPathPoint p) {
+        path1.add(p);
+    }
+
     public PurePursuitPath(ArrayList<Pose2d> path) {
         this.path = path;
     }
@@ -46,6 +50,10 @@ public class PurePursuitPath {
                 i++;
             }
         }
+    }
+
+    public void addPoint(PurePursuitPathPoint p) {
+        path1.add(p);
     }
 
     public int size() {

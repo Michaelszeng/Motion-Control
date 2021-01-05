@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.qualcomm.robotcore.util.ReadWriteFile;
+import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.File;  // Import the File class
@@ -94,7 +96,7 @@ public class PurePursuitFollowerV4_5 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogger.dd(TAG, "_______________________________________________________");
-        PPPath = new PurePursuitPath(path, "horizontal_pidtest_short_path.xml");
+        PPPath = new PurePursuitPath(path, "pid_plottingtest_y_2ft_path.xml");
         RobotLogger.dd(TAG, "PPPath.size(): " + PPPath.path1.size());
 //        for (PurePursuitPathPoint p : PPPath.path1) {
 //            p.toString();
@@ -294,13 +296,13 @@ public class PurePursuitFollowerV4_5 extends LinearOpMode {
             String angVString = "";
             String angAString = "";
 //                BufferedWriter myWriter = new BufferedWriter(new FileWriter("telemetry.txt"));
-//                RobotLogger.dd(TAG, "xHist.size(): " + xHist.size());
-//                RobotLogger.dd(TAG, "yHist.size(): " + yHist.size());
-//                RobotLogger.dd(TAG, "hHist.size(): " + hHist.size());
-//                RobotLogger.dd(TAG, "vHist.size(): " + vHist.size());
-//                RobotLogger.dd(TAG, "aHist.size(): " + aHist.size());
-//                RobotLogger.dd(TAG, "angVHist.size(): " + angVHist.size());
-//                RobotLogger.dd(TAG, "angAHist.size(): " + angAHist.size());
+            RobotLogger.dd(TAG, "xHist.size(): " + xHist.size());
+            RobotLogger.dd(TAG, "yHist.size(): " + yHist.size());
+            RobotLogger.dd(TAG, "hHist.size(): " + hHist.size());
+            RobotLogger.dd(TAG, "vHist.size(): " + vHist.size());
+            RobotLogger.dd(TAG, "aHist.size(): " + aHist.size());
+            RobotLogger.dd(TAG, "angVHist.size(): " + angVHist.size());
+            RobotLogger.dd(TAG, "angAHist.size(): " + angAHist.size());
 
             for (int i=0; i<xHist.size(); i++) {
                 tString += tHist.get(i) + ",";
@@ -321,13 +323,15 @@ public class PurePursuitFollowerV4_5 extends LinearOpMode {
 //                myWriter.write("angA:" + angAString + "\n");
 //                myWriter.close();
             String allTelemetry = "t:" + tString + "\n" + "x:" + xString + "\n" + "y:" + yString + "\n" + "h:" + hString + "\n" + "v:" + vString + "\n" + "a:" + aString + "\n" + "angV:" + angVString + "\n" + "angA:" + angAString + "\n";
-            ReadWriteFile.writeFile(logFile, allTelemetry);
 
-            String separator = "*";
-            ReadWriteFile.writeFile(logFile, separator);  //* char defines the split between target data and real data
-            ReadWriteFile.writeFile(logFile, MPString);
+            String fullOutput = MPString + "\n\n" + "*" + "\n\n" + allTelemetry;
+            ReadWriteFile.writeFile(logFile, fullOutput);
 
-            System.out.println("Successfully wrote to telemetry file.");
+//            String separator = "*";
+//            ReadWriteFile.writeFile(logFile, separator);  //* char defines the split between target data and real data
+//            ReadWriteFile.writeFile(logFile, MPString);
+
+            RobotLogger.dd(TAG, "Successfully wrote to telemetry file.");
         }
     }
 }

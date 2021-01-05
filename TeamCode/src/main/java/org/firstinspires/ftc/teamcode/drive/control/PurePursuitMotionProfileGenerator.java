@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 import org.firstinspires.ftc.teamcode.util.MathFunctions.Cubic;
 
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.hD;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxAngV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.maxV;
@@ -31,6 +32,10 @@ public class PurePursuitMotionProfileGenerator {
     }
 
     public PurePursuitPath generateProfiles() {
+        if (path.path1.get(0).x == path.path1.get(pathLength).x && path.path1.get(0).y == path.path1.get(pathLength).y) {
+
+        }
+
         //XY
         //SECTION 1
         double t_MaxAccelReached = (maxA - 0) / maxJ;
@@ -117,7 +122,7 @@ public class PurePursuitMotionProfileGenerator {
         prevSmallestDiff = 9999.9;
         smallestDiff = 9998.9;
         counter = index_s_MaxAccelReached;
-        while (smallestDiff <= prevSmallestDiff && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max velocity with constant accel should be reached
+        while (smallestDiff <= prevSmallestDiff && counter < pathLength-1) { //This loop finds the index of the PurePursuitPathPose where max velocity with constant accel should be reached
             currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
 //            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_InflectReached - currentDistance);
@@ -135,7 +140,7 @@ public class PurePursuitMotionProfileGenerator {
         int index_s_InflectReached = counter;
         RobotLogger.dd(TAG, "counter: " + counter);
 
-        for (int i=index_s_MaxAccelReached; i<=index_s_InflectReached; i++) {     //This loop sets the targetV and targetA for all points between reaching max accel and reaching max velocity
+        for (int i=index_s_MaxAccelReached; i<index_s_InflectReached; i++) {     //This loop sets the targetV and targetA for all points between reaching max accel and reaching max velocity
             dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
 //            dx = Math.hypot(path.path1.get(i).x, path.path1.get(i).y);
             //Equation: 0 = -dx + v0t + 1/2 at^2
@@ -184,7 +189,7 @@ public class PurePursuitMotionProfileGenerator {
         smallestDiff = 9998.9;
 
         counter = index_s_InflectReached;
-        while ((smallestDiff <= prevSmallestDiff|| smallestDiff <= prevPrevSmallestDiff) && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
+        while ((smallestDiff <= prevSmallestDiff|| smallestDiff <= prevPrevSmallestDiff) && counter < pathLength-1) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
             currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
 //            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
             currentDiff = Math.abs(s_0AccelReached - currentDistance);
@@ -213,7 +218,7 @@ public class PurePursuitMotionProfileGenerator {
             double diff2;
             double diff3;
             double minDiff;
-            for (int i=index_s_InflectReached+1; i<index_s_0AccelReached; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
+            for (int i=index_s_InflectReached; i<index_s_0AccelReached; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
                 dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
                 //Equation: 0 = -dx + v0t + 1/2 at^2 + 1/6 jt^3
                 //t is the time displacement between 2 consecutive Poses
@@ -290,7 +295,7 @@ public class PurePursuitMotionProfileGenerator {
             smallestDiff = 9998.9;
 
             counter = index_s_Accelerate;
-            while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
+            while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength-1) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
                 currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
 //                RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
                 currentDiff = Math.abs(s_MaxAccelReached2 - currentDistance);
@@ -373,7 +378,7 @@ public class PurePursuitMotionProfileGenerator {
             prevSmallestDiff = 9999.9;
             smallestDiff = 9998.9;
             counter = index_s_MaxAccelReached2;
-            while (smallestDiff <= prevSmallestDiff && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max velocity with constant accel should be reached
+            while (smallestDiff <= prevSmallestDiff && counter < pathLength-1) { //This loop finds the index of the PurePursuitPathPose where max velocity with constant accel should be reached
                 currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
     //            RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
                 currentDiff = Math.abs(s_InflectReached2 - currentDistance);
@@ -444,7 +449,7 @@ public class PurePursuitMotionProfileGenerator {
             smallestDiff = 9998.9;
 
             counter = index_s_InflectReached2;
-            while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
+            while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength-1) { //This loop finds the index of the PurePursuitPathPose where max acceleration should be reached
                 currentDistance += Math.hypot(path.path1.get(counter).x - path.path1.get(counter-1).x, path.path1.get(counter).y - path.path1.get(counter-1).y);
 //                RobotLogger.dd(TAG, "currentDistance: " + currentDistance);
                 currentDiff = Math.abs(s_End - currentDistance);
@@ -473,20 +478,20 @@ public class PurePursuitMotionProfileGenerator {
                 if (cubic.nRoots == 1) {
                     t = cubic.x1;
                 }
-                else {  //There are 3 solutiosn to the cubic; I find the correct one below
+                else {  //There are 3 solutions to the cubic; I find the correct one below
                     diff1 = Math.abs(cubic.x1 - prevdt);
                     diff2 = Math.abs(cubic.x2 - prevdt);
                     diff3 = Math.abs(cubic.x3 - prevdt);
                     minDiff = Math.min(diff1, Math.min(diff2, diff3));
-                    if (minDiff == diff1 && cubic.x1 >= 0.0) {
+                    if (minDiff == diff1 && cubic.x1 >= 0.0 && cubic.x1 < 999999) {
     //                    RobotLogger.dd(TAG, "t (x1): " + cubic.x1);
                         t = cubic.x1;
                     }
-                    else if (minDiff == diff2  && cubic.x2 >= 0.0) {
+                    else if (minDiff == diff2  && cubic.x2 >= 0.0 && cubic.x2 < 999999) {
     //                    RobotLogger.dd(TAG, "t (x2): " + cubic.x2);
                         t = cubic.x2;
                     }
-                    else if (minDiff == diff3  && cubic.x3 >= 0.0) {
+                    else if (minDiff == diff3  && cubic.x3 >= 0.0 && cubic.x3 < 999999) {
     //                    RobotLogger.dd(TAG, "t (x3): " + cubic.x3);
                         t = cubic.x3;
                     }
@@ -494,14 +499,18 @@ public class PurePursuitMotionProfileGenerator {
                         RobotLogger.dd(TAG, "---------------------------------TIME CALCULATION FAILURE---------------------------------");
                     }
                 }
-                prevdt = t;
-                duration += t;
 
-                if (i == pathLength) {   //Set the last coordinate to 0 targetV and targetA
+
+                if (i >= pathLength) {   //Set the last coordinate to 0 targetV and targetA
                     v = 0.0;
                     a = 0.0;
+                    duration = path.path1.get(i-1).t;
+//                    RobotLogger.dd(TAG, "end of path duration: " + duration);
+//                    RobotLogger.dd(TAG, "end of path t: " + t);
                 }
                 else {
+                    prevdt = t;
+                    duration += t;
                     RobotLogger.dd(TAG, "t: " + t);
                     RobotLogger.dd(TAG, "v0: " + v0);
                     RobotLogger.dd(TAG, "a0: " + a0);
@@ -577,9 +586,11 @@ public class PurePursuitMotionProfileGenerator {
                     v = 0.0;
                 }
 //                RobotLogger.dd(TAG, "v: " + v);
-                t = (v-v0)/a;
+                if (a != 0) {
+                    t = (v-v0)/a;
+                }
 //                RobotLogger.dd(TAG, "t: " + t);
-                if (counter == pathLength || counter == pathLength - 1) {
+                if (counter == pathLength) {
                     v = 0.0;
                     a = 0.0;
                 }
@@ -593,11 +604,17 @@ public class PurePursuitMotionProfileGenerator {
             }
             //END SECTION 6
         }
-
+//        int i = 0;
+//        for (PurePursuitPathPoint p : path.path1) {
+//            if (p.t == 0.0 && i != 0) {
+//                p.t = path.path1.get(i-1).t;
+//            }
+//        }
 
 
 
         //HEADING
+        RobotLogger.dd(TAG, "*******************BEGINNING HEADING CALCULATIONS*******************");
         //ALL CALCULATIONS MUST BE IN RADIANS!!!!!
         double h0 = path.path1.get(0).h;
         double hF = path.path1.get(pathLength).h;
@@ -606,20 +623,20 @@ public class PurePursuitMotionProfileGenerator {
 
         //SECTION 1
         double t_0AngAReached;
-        if (Math.pow(path.path1.get(pathLength).t, 2) < ((4 * hDisplacement)/(maxAngA*Math.signum(hF-h0)))) {
+        if (Math.pow(path.path1.get(pathLength).t, 2) < ((4 * hDisplacement)/(maxAngA*Math.signum(hDisplacement)))) {
             pathTooShortH = true;
             RobotLogger.dd(TAG, "------------------------------------------PATH IS TOO SHORT FOR GIVEN HEADING CHANGE, RECALCUATING------------------------------------------");
             PurePursuitPathPoint lastP = path.path1.get(pathLength);
-            double t_solvable = (4 * hDisplacement)/(maxAngA*Math.signum(hF - h0));
+            double t_solvable = (4 * hDisplacement)/(maxAngA*Math.signum(hDisplacement));
             RobotLogger.dd(TAG, "t_solvable: " + t_solvable);
             path.path1.add(new PurePursuitPathPoint(lastP.x, lastP.y, hF, true, lastP.velocity, lastP.acceleration, t_solvable));
             pathLength += 1;
         }
 //        quad.solve(-maxAngA, maxAngA*path.path1.get(path.path1.size()-1).t, -hDisplacement);      //Before 12/4
 //        quad.solve(-maxAngA, -maxAngA*path.path1.get(path.path1.size()-1).t, -hDisplacement);     //12/4 Afternoon
-        quad.solve(-maxAngA*Math.signum(hF-h0), maxAngA*Math.signum(hF-h0) * path.path1.get(path.path1.size()-1).t, -hDisplacement);   //12/4 Evening
-        RobotLogger.dd(TAG, "a: " + (-maxAngA*Math.signum(hF-h0)));
-        RobotLogger.dd(TAG, "b: " + maxAngA*Math.signum(hF-h0)*path.path1.get(pathLength).t);
+        quad.solve(-maxAngA*Math.signum(hDisplacement), maxAngA*Math.signum(hDisplacement) * path.path1.get(path.path1.size()-1).t, -hDisplacement);   //12/4 Evening
+        RobotLogger.dd(TAG, "a: " + (-maxAngA*Math.signum(hDisplacement)));
+        RobotLogger.dd(TAG, "b: " + maxAngA*Math.signum(hDisplacement)*path.path1.get(pathLength).t);
         RobotLogger.dd(TAG, "c: " + (-hDisplacement));
         RobotLogger.dd(TAG, "quad.x1: " + quad.x1);
         RobotLogger.dd(TAG, "quad.x2: " + quad.x2);
@@ -642,8 +659,8 @@ public class PurePursuitMotionProfileGenerator {
             t_0AngAReached = 0.0;
         }
 
-        double h_0AngAReached = 0.5 * maxAngA*Math.signum(hF - h0) * Math.pow(t_0AngAReached, 2);
-        double v_0AngAReached = maxAngA*Math.signum(hF - h0) * t_0AngAReached;
+        double h_0AngAReached = 0.5 * maxAngA*Math.signum(hDisplacement) * Math.pow(t_0AngAReached, 2);
+        double v_0AngAReached = maxAngA*Math.signum(hDisplacement) * t_0AngAReached;
 
         if (Math.abs(v_0AngAReached) > maxAngV && pathTooShortH != true) {
             RobotLogger.dd(TAG, "*********************************WARNING: MAX ANGULAR VELOCIY EXCEEDED*********************************");
@@ -700,7 +717,6 @@ public class PurePursuitMotionProfileGenerator {
                 smallestDiff = currentDiff;
             }
             else {
-                counter++;
                 break;
             }
             prevPrevSmallestDiff = prevSmallestDiff;
@@ -722,7 +738,7 @@ public class PurePursuitMotionProfileGenerator {
             duration += t;
 
             //Equation: v = v0 + a0t
-            angV = angV0 + maxAngA*Math.signum(hF - h0) * t;
+            angV = angV0 + maxAngA*Math.signum(hDisplacement) * t;
             if (hDisplacement < 0.0) {  //The limits need to be different based on turning left vs right
                 if (angV < v_0AngAReached) {
                     angV = v_0AngAReached;
@@ -734,8 +750,8 @@ public class PurePursuitMotionProfileGenerator {
                 }
             }
             //Equation: h = v0t + at^2
-            h += angV0*t + 0.5 * maxAngA*Math.signum(hF - h0) * Math.pow(t, 2);
-            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, angV, maxAngA * Math.signum(hF-h0)));
+            h += angV0*t + 0.5 * maxAngA*Math.signum(hDisplacement) * Math.pow(t, 2);
+            path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, angV, maxAngA * Math.signum(hDisplacement)));
             angV0 = angV;
         }
         //END SECTION 1
@@ -754,7 +770,7 @@ public class PurePursuitMotionProfileGenerator {
             smallestDiff = 9998.9;
 
             counter = index_0AngAReached;
-            while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength) { //Exit the loop at reaching halfway of the path, or the final heading will never be reached
+            while ((smallestDiff <= prevSmallestDiff || smallestDiff <= prevPrevSmallestDiff) && counter < pathLength-1) { //Exit the loop at reaching halfway of the path, or the final heading will never be reached
                 currentDiff = Math.abs(t_AngAccelerate - path.path1.get(counter).t);
 //            RobotLogger.dd(TAG, "currentDiff: " + currentDiff);
 //            RobotLogger.dd(TAG, "smallestDiff: " + smallestDiff);
@@ -787,13 +803,13 @@ public class PurePursuitMotionProfileGenerator {
         //SECTION 3
         if (!pathTooShortH) {   //Section 3 doesn't happen if the path is too short
             angV0 = v_0AngAReached;
-            a = -maxAngA*Math.signum(hF - h0);
+            a = -maxAngA*Math.signum(hDisplacement);
             for (int i=index_AngAccelerate; i<=pathLength; i++) {
                 t = path.path1.get(i).t - path.path1.get(i-1).t;
                 //Equation: v = v0 + a0t
-                angV = angV0 - maxAngA*Math.signum(hF - h0) * t;
+                angV = angV0 - maxAngA*Math.signum(hDisplacement) * t;
                 //Equation: h = v0t + at^2
-                h += angV0*t - 0.5 * maxAngA*Math.signum(hF - h0) * Math.pow(t, 2);
+                h += angV0*t - 0.5 * maxAngA*Math.signum(hDisplacement) * Math.pow(t, 2);
                 if (hDisplacement < 0.0) {
                     if (angV > 0.0) {
                         angV = 0.0;

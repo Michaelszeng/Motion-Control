@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.firstinspires.ftc.teamcode.util.AllHardwareMap;
+import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
+import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
 
 import java.util.ArrayList;
@@ -31,6 +33,8 @@ public class PIDTest extends LinearOpMode {
 
     Date datePrev = new Date();
     Date dateNew = new Date();
+    Date startDate = new Date();
+    double duration = 0.0;
     double dateDiff;
 
     FtcDashboard dashboard;
@@ -78,11 +82,15 @@ public class PIDTest extends LinearOpMode {
             dateDiff = dateNew.getTime() - datePrev.getTime();
             datePrev.setTime(dateNew.getTime());
             RobotLogger.dd(TAG, String.valueOf(dateDiff));
+            duration = dateNew.getTime() - startDate.getTime();
 
             double imuReading = -imu.getAngularOrientation().firstAngle;
 
-            currentTarget = new Pose2d(0, 24, 0);
-            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
+            currentTarget = new Pose2d(0, 0, Math.PI);
+            PurePursuitPath PPPath = new PurePursuitPath(new PurePursuitPathPoint(0, 0, 0, true, 0, 0, 0, 0, 0));
+            PPPath.addPoint(new PurePursuitPathPoint(0, 0, 0, true, 0, 0, 1.5, 0, 0));
+            PPPath.addPoint(new PurePursuitPathPoint(0, 0, 0, true, 0, 0, 1.5, 0, 0));
+            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, 0, PPPath, (int) dateDiff, duration/1000);
             currentPose = robot.getCurrentPose();
 
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));
