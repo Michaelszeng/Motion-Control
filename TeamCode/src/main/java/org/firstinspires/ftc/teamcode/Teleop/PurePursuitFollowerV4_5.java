@@ -50,7 +50,7 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reach
 /*
  * Follows a path using pure pursuit algorithm
  *
- * THIS VERSION IS UNDERGOING TESTING WITH TIME BASED MOTION PROFILING
+ * STABLE WITH TIME-BASED MOTION PROFILE AND PID
  */
 @TeleOp(name = "PurePursuitFollowerV4_5")
 public class PurePursuitFollowerV4_5 extends LinearOpMode {
@@ -96,7 +96,7 @@ public class PurePursuitFollowerV4_5 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogger.dd(TAG, "_______________________________________________________");
-        PPPath = new PurePursuitPath(path, "pid_plottingtest_y_2ft_path.xml");
+        PPPath = new PurePursuitPath(path, "path_splice_test3_path_3.xml");
         RobotLogger.dd(TAG, "PPPath.size(): " + PPPath.path1.size());
 //        for (PurePursuitPathPoint p : PPPath.path1) {
 //            p.toString();
@@ -191,6 +191,7 @@ public class PurePursuitFollowerV4_5 extends LinearOpMode {
             //FL, BL, BR, FR
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));
 
+            //Adding Telemetry Data
             tHist.add(duration);
             xHist.add(currentPose.getX());
             yHist.add(currentPose.getY());

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.control;
 
 import org.firstinspires.ftc.teamcode.util.MathFunctions.Quadratic;
+import org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions;
 import org.firstinspires.ftc.teamcode.util.PurePursuitPath;
 import org.firstinspires.ftc.teamcode.util.PurePursuitPathPoint;
 import org.firstinspires.ftc.teamcode.util.RobotLogger;
@@ -82,7 +83,8 @@ public class PurePursuitMotionProfileGenerator {
         double t=0;   //Time increment; duration is the total time elasped to the pose
         for (int i=0; i<index_s_MaxAccelReached; i++) {     //This loop sets the targetV and targetA for all points between t=0 and the max acceleration pose
             if (i == 0) {
-                dx = Math.abs(Math.hypot(path.path1.get(i).x, path.path1.get(i).y));
+//                dx = Math.abs(Math.hypot(path.path1.get(i).x, path.path1.get(i).y));  //Issue: this code only works when the path starts at (0,0)
+                dx = 0.0;
             }
             else {
                 dx = Math.abs(Math.hypot(path.path1.get(i).x - path.path1.get(i-1).x, path.path1.get(i).y - path.path1.get(i-1).y));
@@ -108,6 +110,7 @@ public class PurePursuitMotionProfileGenerator {
             v0 = v;
             a0 = a;
         }
+        RobotLogger.dd(TAG, "Section 1 Duration: " + path.path1.get(index_s_MaxAccelReached-1).t);
         //END SECTION 1
 
 
@@ -162,6 +165,7 @@ public class PurePursuitMotionProfileGenerator {
             path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, v, maxA, duration));
             v0 = v;
         }
+        RobotLogger.dd(TAG, "Section 2 Duration: " + path.path1.get(index_s_InflectReached-1).t);
         //END SECTION 2
 
 
@@ -265,6 +269,7 @@ public class PurePursuitMotionProfileGenerator {
                 v0 = v;
                 a0 = a;
             }
+            RobotLogger.dd(TAG, "Section 3 Duration: " + path.path1.get(index_s_0AccelReached-1).t);
             //END SECTION 3
 
 
@@ -278,6 +283,7 @@ public class PurePursuitMotionProfileGenerator {
                 duration += t;
                 path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, maxV, 0.0, duration));
             }
+            RobotLogger.dd(TAG, "Section 4 Duration: " + path.path1.get(index_s_Accelerate-1).t);
             //END SECTION 4
 
 
@@ -363,6 +369,7 @@ public class PurePursuitMotionProfileGenerator {
                 v0 = v;
                 a0 = a;
             }
+            RobotLogger.dd(TAG, "Section 5 Duration: " + path.path1.get(index_s_MaxAccelReached2-1).t);
             //END SECTION 5
 
 
@@ -432,6 +439,7 @@ public class PurePursuitMotionProfileGenerator {
                 path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, path.path1.get(i).h, path.path1.get(i).isVertex, v, -maxA, duration));
                 v0 = v;
             }
+            RobotLogger.dd(TAG, "Section 6 Duration: " + path.path1.get(index_s_InflectReached2-1).t);
             //END SECTION 6
 
 
@@ -511,9 +519,9 @@ public class PurePursuitMotionProfileGenerator {
                 else {
                     prevdt = t;
                     duration += t;
-                    RobotLogger.dd(TAG, "t: " + t);
-                    RobotLogger.dd(TAG, "v0: " + v0);
-                    RobotLogger.dd(TAG, "a0: " + a0);
+//                    RobotLogger.dd(TAG, "t: " + t);
+//                    RobotLogger.dd(TAG, "v0: " + v0);
+//                    RobotLogger.dd(TAG, "a0: " + a0);
                     //Equation: v = v0 + a0t + 1/2 jt^2
                     v = v0 + a0*t + 0.5*maxJ*Math.pow(t, 2);
                     a = a0 + maxJ*t;
@@ -529,6 +537,7 @@ public class PurePursuitMotionProfileGenerator {
                 v0 = v;
                 a0 = a;
             }
+            RobotLogger.dd(TAG, "Section 7 Duration: " + path.path1.get(pathLength).t);
             //END SECTION 7
         }
         else {  //If the path is too short
@@ -618,7 +627,7 @@ public class PurePursuitMotionProfileGenerator {
         //ALL CALCULATIONS MUST BE IN RADIANS!!!!!
         double h0 = path.path1.get(0).h;
         double hF = path.path1.get(pathLength).h;
-        double hDisplacement = EnsureNonzero(hF - h0);
+        double hDisplacement = EnsureNonzero(PurePursuitMathFunctions.AngleWrap(hF - h0));
         RobotLogger.dd(TAG, "hDisplacement: " + hDisplacement);
 
         //SECTION 1
@@ -730,7 +739,8 @@ public class PurePursuitMotionProfileGenerator {
         double h = h0;
         for (int i=0; i<index_0AngAReached; i++) {
             if (i == 0) {
-                t = path.path1.get(i).t;
+//                t = path.path1.get(i).t;    //Issue: this only works when the path starts at 0 heading
+                t = 0.0;
             }
             else {
                 t = path.path1.get(i).t - path.path1.get(i-1).t;
@@ -754,6 +764,7 @@ public class PurePursuitMotionProfileGenerator {
             path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, angV, maxAngA * Math.signum(hDisplacement)));
             angV0 = angV;
         }
+        RobotLogger.dd(TAG, "Section 1 Heading Duration: " + path.path1.get(index_0AngAReached-1).t);
         //END SECTION 1
 
         //SECTION 2
@@ -798,6 +809,7 @@ public class PurePursuitMotionProfileGenerator {
             }
             path.path1.set(i, new PurePursuitPathPoint(path.path1.get(i).x, path.path1.get(i).y, h, path.path1.get(i).isVertex, path.path1.get(i).velocity, path.path1.get(i).acceleration, path.path1.get(i).t, v, 0.0));
         }
+        RobotLogger.dd(TAG, "Section 2 Heading Duration: " + path.path1.get(index_AngAccelerate-1).t);
         //END SECTION 2
 
         //SECTION 3
@@ -829,6 +841,7 @@ public class PurePursuitMotionProfileGenerator {
                 angV0 = angV;
             }
         }
+        RobotLogger.dd(TAG, "Section 3 Heading Duration: " + path.path1.get(pathLength).t);
         //END SECTION 3
 
         return null;
@@ -848,7 +861,7 @@ public class PurePursuitMotionProfileGenerator {
 
             }
             else {
-                if (counter % 5 == 0 || counter == pathLength) {
+                if (counter % 5 == 0 || counter == pathLength) {    //Need to do this weird thing because there is a limit to the length of a single print in cmd and Logcat
     //                RobotLogger.dd(TAG, "Appending: " + String.valueOf(p.t) + ", " + String.valueOf(p.velocity)+ ", " + String.valueOf(p.acceleration));
                     times = times + String.format("%.4f", p.t);
                     times = times + ",";

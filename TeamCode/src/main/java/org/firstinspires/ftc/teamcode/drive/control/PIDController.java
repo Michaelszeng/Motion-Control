@@ -395,7 +395,7 @@ public class PIDController {
         difference = Double.NaN;
         try {
             difference = errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 3).getHeading();
-            RobotLogger.dd(TAG, "totalDuration: " + pathDuration);
+            RobotLogger.dd(TAG, "expectedDuration: " + pathDuration);
             //Goal of time factor: make it so that the d factor has a large effect for the first fraction of the path, then a smaller effect as time goes on
             double timeFactor = Math.pow((duration/pathDuration)+1, 4);    //Factor increases with a power of 4 as time increases, and it always increases proportionately to the path's length
             RobotLogger.dd(TAG, "timeFactor: " + timeFactor);

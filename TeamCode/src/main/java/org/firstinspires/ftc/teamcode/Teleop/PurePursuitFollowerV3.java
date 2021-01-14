@@ -11,6 +11,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -44,6 +45,7 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reach
  *
  * THIS VERSION IS UNDERGOING TESTING WITH POSITION BASED MOTION PROFILING
  */
+@Disabled
 @TeleOp(name = "PurePursuitFollowerV3")
 public class PurePursuitFollowerV3 extends LinearOpMode {
     String TAG = "PurePursuitFollowerV3";

@@ -96,7 +96,7 @@ public class DriveConstants {
 
     //PID Constants as of 1/2
     public static double xPM = 1.0;
-    public static double xIM = 0.15;
+    public static double xIM = 0.18;
     public static double xDM = 52.0;
     public static double yPM = 1.0;
     public static double yIM = 0.0;
@@ -107,8 +107,8 @@ public class DriveConstants {
 
 
 
-//    public static double kStaticM = 0.045;   //Found using StaticTest.java
-    public static double kStaticM = 0.035;   //Estimate based on StaticTest.java
+    public static double kStaticM = 0.045;   //Found using StaticTest.java
+//    public static double kStaticM = 0.035;   //Estimate based on StaticTest.java
 //    public static double kVM = 0.0628;      //Found using kVTest.java
     public static double kVM = 0.014043;      //Estimation
     public static double kAM = 0.000156;      //Found using kATest.java

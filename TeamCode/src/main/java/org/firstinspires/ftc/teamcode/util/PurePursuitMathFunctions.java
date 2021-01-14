@@ -286,9 +286,11 @@ public class PurePursuitMathFunctions {
     public static double AngleWrap(double angle) {
         //Ensures angle turn is between 180 and -180
         while(angle < -Math.PI) {
+            RobotLogger.dd(TAG, "Wrapping Angle: +2PI");
             angle += 2 * Math.PI;
         }
         while (angle > Math.PI) {
+            RobotLogger.dd(TAG, "Wrapping Angle: -2PI");
             angle -= 2 * Math.PI;
         }
         return angle;

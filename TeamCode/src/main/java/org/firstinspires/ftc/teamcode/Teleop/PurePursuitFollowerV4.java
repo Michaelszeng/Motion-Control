@@ -48,7 +48,7 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reach
 /*
  * Follows a path using pure pursuit algorithm
  *
- * THIS VERSION IS UNDERGOING TESTING WITH TIME BASED MOTION PROFILING
+ * STABLE WITH TIME-BASED MOTION PROFILE AND PID
  */
 @TeleOp(name = "PurePursuitFollowerV4")
 public class PurePursuitFollowerV4 extends LinearOpMode {
@@ -189,6 +189,7 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
             //FL, BL, BR, FR
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));
 
+            //Adding Telemetry Data
             tHist.add(duration);
             xHist.add(currentPose.getX());
             yHist.add(currentPose.getY());

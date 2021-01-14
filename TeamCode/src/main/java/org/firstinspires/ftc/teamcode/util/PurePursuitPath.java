@@ -23,7 +23,7 @@ public class PurePursuitPath {
     public static String TAG = "PurePursuitPath";
 
     public ArrayList<Pose2d> path;
-    public static ArrayList<PurePursuitPathPoint> path1 = new ArrayList<>();
+    public ArrayList<PurePursuitPathPoint> path1 = new ArrayList<>();
 
     public PurePursuitPath(PurePursuitPathPoint p) {
         path1.add(p);
@@ -65,6 +65,14 @@ public class PurePursuitPath {
         return path1;
     }
 
+    public String toString1() {
+        String output = "";
+        output += path1.get(0).toString();
+        output += "\n";
+        output += path1.get(path1.size()-1).toString();
+        return output;
+    }
+
     public String toString() {
         String netOutput = "";
         String output = "";
@@ -84,7 +92,7 @@ public class PurePursuitPath {
         return netOutput;
     }
 
-    public static void importXMLPath(String filename) {
+    public void importXMLPath(String filename) {
         path1.clear();
         String full_path = AppUtil.CONFIG_FILES_DIR + "/" + filename;
         try {
