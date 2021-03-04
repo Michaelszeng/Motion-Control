@@ -27,6 +27,9 @@ public class PurePursuitMathFunctions {
     public enum ReachedDestination {
         FALSE,
         CHANGE,
+        CHANGE1,
+        CHANGE2,
+        CHANGE3,
         TRUE
     }
 
@@ -301,16 +304,25 @@ public class PurePursuitMathFunctions {
         double locationDifference = Math.abs(Math.hypot(robotPose.getX() - pathEnd.x, robotPose.getY() - pathEnd.y));
 //        RobotLogger.dd(TAG, "currentDuration: " + currentDuration);
 //        RobotLogger.dd(TAG, "pathDuration: " + pathDuration);
-        if (headingDifference < 0.0355 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) {
-            if (reachedDestination == ReachedDestination.CHANGE || reachedDestination == ReachedDestination.TRUE) {
-                return ReachedDestination.TRUE;
-            }
-            if (reachedDestination == ReachedDestination.FALSE) {
-                RobotLogger.dd(TAG, "pathend.h: " + pathEnd.h);
-                RobotLogger.dd(TAG, "robotPose.getHeading(): " + robotPose.getHeading());
-                RobotLogger.dd(TAG, "headingDifference" + headingDifference);
-                return ReachedDestination.CHANGE;
-            }
+//        if (headingDifference < 0.0355 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) {
+        if (headingDifference < 0.01309 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) { //0.75 degrees
+//            RobotLogger.dd(TAG, "headingDifference: " + headingDifference);
+//            if (reachedDestination == ReachedDestination.CHANGE2 || reachedDestination == ReachedDestination.TRUE) {
+//                return ReachedDestination.TRUE;
+//            }
+//            if (reachedDestination == ReachedDestination.FALSE) {
+//                RobotLogger.dd(TAG, "pathend.h: " + pathEnd.h);
+//                RobotLogger.dd(TAG, "robotPose.getHeading(): " + robotPose.getHeading());
+//                RobotLogger.dd(TAG, "headingDifference" + headingDifference);
+//                return ReachedDestination.CHANGE;
+//            }
+//            if (reachedDestination == ReachedDestination.CHANGE) {
+//                return ReachedDestination.CHANGE1;
+//            }
+//            if (reachedDestination == ReachedDestination.CHANGE1) {
+//                return ReachedDestination.CHANGE2;
+//            }
+            return ReachedDestination.TRUE;
         }
         return ReachedDestination.FALSE;
     }

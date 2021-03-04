@@ -61,7 +61,6 @@ public class DriveConstants {
     public static double hD = 0.00001;
 
     //PurePursuit PID Constants
-    public static double robotSize = 17.5;
     public static double xStartPower = 0.825;
     public static double yStartPower = 0.925;
     public static double hStartPower = 0.9;

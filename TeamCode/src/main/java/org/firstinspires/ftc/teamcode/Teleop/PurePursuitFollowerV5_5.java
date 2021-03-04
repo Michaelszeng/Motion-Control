@@ -104,9 +104,9 @@ public class PurePursuitFollowerV5_5 extends LinearOpMode {
         RobotLogger.dd(TAG, "_______________________________________________________");
 //        allPaths.add(new PurePursuitPath(path, "pp_path_1.xml"));
 //        allPaths.add(new PurePursuitPath(path, "pp_path_2.xml"));
-        allPaths.add(new PurePursuitPath(new ArrayList<>(), "path_splice_test3_path_1.xml"));
-        allPaths.add(new PurePursuitPath(new ArrayList<>(), "path_splice_test3_path_2.xml"));
-        allPaths.add(new PurePursuitPath(new ArrayList<>(), "path_splice_test3_path_3.xml"));
+        allPaths.add(new PurePursuitPath(new ArrayList<>(), "splice_navigation_1.xml"));
+        allPaths.add(new PurePursuitPath(new ArrayList<>(), "splice_navigation_2.xml"));
+        allPaths.add(new PurePursuitPath(new ArrayList<>(), "splice_navigation_3.xml"));
 
         RobotLogger.dd(TAG, "allPaths:");
         for (PurePursuitPath path : allPaths) {
@@ -186,6 +186,9 @@ public class PurePursuitFollowerV5_5 extends LinearOpMode {
                 allMPGs.get(pathIndex).exportProfiles();
 
                 MPString = PPPath.toString();
+
+                robot.setMotorPowers(0, 0, 0, 0);
+                SafeSleep.sleep_milliseconds(this, 2000);
 
                 pathInitialized = true;
                 pathStartDate.setTime(new Date().getTime());

@@ -35,6 +35,8 @@ import java.util.Date;
 import java.util.List;
 
 import com.qualcomm.robotcore.util.ReadWriteFile;
+import com.qualcomm.robotcore.util.RobotLog;
+
 import java.io.FileWriter;
 import java.io.BufferedWriter;
 import java.io.File;  // Import the File class
@@ -50,9 +52,9 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reach
  *
  * STABLE WITH TIME-BASED MOTION PROFILE AND PID
  */
-@TeleOp(name = "PurePursuitFollowerV4")
-public class PurePursuitFollowerV4 extends LinearOpMode {
-    String TAG = "PurePursuitFollowerV4";
+@TeleOp(name = "PurePursuitFollowerV4_6")
+public class PurePursuitFollowerV4_6_Traditional_PID_Testing extends LinearOpMode {
+    String TAG = "PurePursuitFollowerV4_6";
 
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer
@@ -71,7 +73,6 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
     double dateDiff;
 
     FtcDashboard dashboard;
-    TelemetryPacket packet = new TelemetryPacket();
 
     double radius = 12;
 
@@ -95,7 +96,7 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
         RobotLogger.dd(TAG, "_______________________________________________________");
-        PPPath = new PurePursuitPath(path, "corridor_nagivation.xml");
+        PPPath = new PurePursuitPath(path, "pid_test_y_4ft_path.xml");
         RobotLogger.dd(TAG, "PPPath.size(): " + PPPath.path1.size());
 //        for (PurePursuitPathPoint p : PPPath.path1) {
 //            p.toString();
@@ -183,8 +184,11 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
             double imuReading = -imu.getAngularOrientation().firstAngle;
 //            imuReading = getHeading(targetIndex, PPPath);
 //            RobotLogger.dd(TAG, "Corrected imuReading: " + imuReading);
-//            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
-            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, targetIndex, PPPath, (int) dateDiff, duration/1000);
+//            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, targetIndex, PPPath, (int) dateDiff, duration/1000);
+
+            //For PID Data Collection:
+            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
+
             detectEnd(currentPose);
 
             //FL, BL, BR, FR
@@ -209,9 +213,6 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
             Log.d(TAG, "Loopcycle: " + dateDiff);
             telemetry.addData("Localizer: ", "(" + currentPose.getX() + ", " + currentPose.getY() + ", " + Math.toDegrees(currentPose.getHeading()) + ")");
             telemetry.update();
-            packet.put("x", currentPose.getX());
-            packet.put("y", currentPose.getY());
-            packet.put("heading", currentPose.getHeading());
             fieldDashboard.updateDashboard();
 //            SafeSleep.sleep_milliseconds(this, 20);
             idle();
@@ -299,13 +300,13 @@ public class PurePursuitFollowerV4 extends LinearOpMode {
             String angVString = "";
             String angAString = "";
 //                BufferedWriter myWriter = new BufferedWriter(new FileWriter("telemetry.txt"));
-                RobotLogger.dd(TAG, "xHist.size(): " + xHist.size());
-                RobotLogger.dd(TAG, "yHist.size(): " + yHist.size());
-                RobotLogger.dd(TAG, "hHist.size(): " + hHist.size());
-                RobotLogger.dd(TAG, "vHist.size(): " + vHist.size());
-                RobotLogger.dd(TAG, "aHist.size(): " + aHist.size());
-                RobotLogger.dd(TAG, "angVHist.size(): " + angVHist.size());
-                RobotLogger.dd(TAG, "angAHist.size(): " + angAHist.size());
+            RobotLogger.dd(TAG, "xHist.size(): " + xHist.size());
+            RobotLogger.dd(TAG, "yHist.size(): " + yHist.size());
+            RobotLogger.dd(TAG, "hHist.size(): " + hHist.size());
+            RobotLogger.dd(TAG, "vHist.size(): " + vHist.size());
+            RobotLogger.dd(TAG, "aHist.size(): " + aHist.size());
+            RobotLogger.dd(TAG, "angVHist.size(): " + angVHist.size());
+            RobotLogger.dd(TAG, "angAHist.size(): " + angAHist.size());
 
             for (int i=0; i<xHist.size(); i++) {
                 tString += tHist.get(i) + ",";

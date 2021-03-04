@@ -861,7 +861,7 @@ public class PurePursuitMotionProfileGenerator {
 
             }
             else {
-                if (counter % 5 == 0 || counter == pathLength) {    //Need to do this weird thing because there is a limit to the length of a single print in cmd and Logcat
+                if (counter % 3 == 0 || counter == pathLength) {    //Need to do this weird thing because there is a limit to the length of a single print in cmd and Logcat
     //                RobotLogger.dd(TAG, "Appending: " + String.valueOf(p.t) + ", " + String.valueOf(p.velocity)+ ", " + String.valueOf(p.acceleration));
                     times = times + String.format("%.4f", p.t);
                     times = times + ",";
