@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
+import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -18,19 +20,21 @@ import java.util.Date;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.odoTicksPerRevRight;
 
 /*
-This class slowly increases the power to the wheels until the robot is able to move (Detected by
-odometry wheels). This find the minimum power required for movement.
+This class slowly increases the power to the wheels until the robot is able to strafe (Detected by
+odometry wheels). This find the minimum power required for horizontal movement.
  */
-@TeleOp(name = "StaticTest")
+@TeleOp(name = "StaticStrafeTest")
 //@Disabled
-public class StaticTest extends LinearOpMode {
-    String TAG = "StaticTest";
+public class StaticStrafeTest extends LinearOpMode {
+    String TAG = "StaticStrafeTest";
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer
     //backRight: vertical right odometer
     //frontLeft: front left motor
     //backLeft: vertical Left odometer
     DcMotor frontRight, backRight, frontLeft, backLeft;
+
+    FtcDashboard dashboard;
 
     BNO055IMU imu;
     double power;
@@ -42,13 +46,16 @@ public class StaticTest extends LinearOpMode {
 
     double currentSpeed;
     double currentSpeedIn;
-    double prevBackRight=0;
-    double PrevBackLeft=0;
+    double prevOdo=0;
     final double revsPerIn = 1/7.42107;
 
     @Override
     public void runOpMode() throws InterruptedException {
         hwMap = new AllHardwareMap(hardwareMap);
+
+        dashboard = FtcDashboard.getInstance();
+        dashboard.setTelemetryTransmissionInterval(20);
+        TelemetryPacket packet = new TelemetryPacket();
 
         frontRight = hwMap.frontRight;
         backRight = hwMap.backRight;
@@ -72,7 +79,7 @@ public class StaticTest extends LinearOpMode {
 
         Robot robot = new Robot(hardwareMap, false, 0.0, 0.0, 0.0);
 
-        power = 0.02;
+        power = 0.08;
         minPower = 0.0;
 
         waitForStart();
@@ -82,16 +89,15 @@ public class StaticTest extends LinearOpMode {
             dateDiff = dateNew.getTime() - datePrev.getTime();
             datePrev.setTime(dateNew.getTime());
 
-            robot.setMotorPowers(power, power, power, power);
+            robot.setMotorPowers(power, -power, power, -power);
 
-            currentSpeed = ((Math.abs(backRight.getCurrentPosition()-prevBackRight)/(dateDiff/1000)) + (Math.abs(backLeft.getCurrentPosition()-PrevBackLeft)/(dateDiff/1000)))/2;
+            currentSpeed = Math.abs(frontRight.getCurrentPosition()-prevOdo)/(dateDiff/1000);
             currentSpeedIn = currentSpeed / (odoTicksPerRevRight * revsPerIn);
             RobotLogger.dd(TAG, "current speed ticks: " + currentSpeed);
             RobotLogger.dd(TAG, "current speed inches: " + currentSpeedIn);
 
-//            if ((Math.abs(backRight.getCurrentPosition()) < 100) && Math.abs(backLeft.getCurrentPosition()) < 100) {
             if (currentSpeedIn < 0.1) {
-                power += 0.004;
+                power += 0.005;
             }
             else {
                 minPower = power;
@@ -99,20 +105,20 @@ public class StaticTest extends LinearOpMode {
 
             telemetry.addData("Current Power: ", power);
             telemetry.addData("Min Power: ", minPower);
-            telemetry.addData("Right Odometer", backRight.getCurrentPosition());
-            telemetry.addData("Left Odometer", backLeft.getCurrentPosition());
             telemetry.addData("Horizontal Odometer", frontRight.getCurrentPosition());
             telemetry.update();
 
+            packet.put("speed", currentSpeedIn);
+            dashboard.sendTelemetryPacket(packet);
+
             try {
-                Thread.sleep(1250);
+                Thread.sleep(1000);
             }
             catch (Exception e) {
 
             }
 
-            prevBackRight = backRight.getCurrentPosition();
-            PrevBackLeft = backLeft.getCurrentPosition();
+            prevOdo = frontRight.getCurrentPosition();
 
             idle();
         }

@@ -54,9 +54,9 @@ import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reach
  * STABLE WITH TIME-BASED MOTION PROFILE AND PID
  */
 @Config
-@TeleOp(name = "PurePursuitFollowerV4_6")
-public class PurePursuitFollowerV4_6_Traditional_PID_Testing extends LinearOpMode {
-    String TAG = "PurePursuitFollowerV4_6";
+@TeleOp(name = "PurePursuitFollowerV4_7")
+public class PurePursuitFollowerV4_7_Traditional_PID_Testing extends LinearOpMode {
+    String TAG = "PurePursuitFollowerV4_7";
 
     AllHardwareMap hwMap;
     //frontRight: horizontal odometer
@@ -97,9 +97,9 @@ public class PurePursuitFollowerV4_6_Traditional_PID_Testing extends LinearOpMod
     public static double prevAngV = 0.0;
 
     ArrayList<Double> errorHist = new ArrayList<>();
-    File logFileErrors = AppUtil.getInstance().getSettingsFile("errorHistory_V4_6.txt");
+    File logFileErrors = AppUtil.getInstance().getSettingsFile("errorHistory_V4_7.txt");
 
-    File logFile = AppUtil.getInstance().getSettingsFile("telemetryV_6.txt");
+    File logFile = AppUtil.getInstance().getSettingsFile("telemetryV_7.txt");
     String MPString;
 
     @Override

@@ -59,6 +59,8 @@ public class PurePursuitFollower extends LinearOpMode {
     Date datePrev = new Date();
     Date dateNew = new Date();
     double dateDiff;
+    Date startDate = new Date();
+    double duration;
 
     FtcDashboard dashboard;
 
@@ -118,10 +120,12 @@ public class PurePursuitFollower extends LinearOpMode {
         Pose2d currentPose = robot.getPoseEstimate();
 
         waitForStart();
+        startDate.setTime(new Date().getTime());
         while (opModeIsActive()) {   //put teleop code in here
             dateNew.setTime(new Date().getTime());
             dateDiff = dateNew.getTime() - datePrev.getTime();
             datePrev.setTime(dateNew.getTime());
+            duration = (dateNew.getTime() - startDate.getTime())/1000;
 
             currentPose = robot.getCurrentPose();
             RobotLogger.dd(TAG, "localizer: (" + currentPose.getX() + ", " + currentPose.getY() + ", " + currentPose.getHeading() + ")");
@@ -134,7 +138,7 @@ public class PurePursuitFollower extends LinearOpMode {
             double imuReading = -imu.getAngularOrientation().firstAngle;
 //            imuReading = getHeading(targetIndex, PPPath);
 //            RobotLogger.dd(TAG, "Corrected imuReading: " + imuReading);
-            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff);
+            motorPowers = robot.update(backRight.getCurrentPosition(), backLeft.getCurrentPosition(), frontRight.getCurrentPosition(), imuReading, currentTarget, (int) dateDiff, duration);
 
             //FL, BL, BR, FR
             robot.setMotorPowers(motorPowers.get(0), motorPowers.get(1), motorPowers.get(2), motorPowers.get(3));

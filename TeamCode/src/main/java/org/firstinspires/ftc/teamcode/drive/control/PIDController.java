@@ -55,7 +55,8 @@ public class PIDController {
     double currentErrorPercentHeading;
     double jerkControlMultiplier;
 
-    double loopTimeSec = 0.04;
+//    double loopTimeSec = 0.04;
+    double loopTimeSec;
     double xIntegral = 0.0;
     double yIntegral = 0.0;
     double hIntegral = 0.0;
@@ -73,6 +74,7 @@ public class PIDController {
 
     double PIDFRatio = 0.01;     //Percentage of power supplied by feedforward
 
+    //Traditional PID Constructor
     public PIDController(Pose2d robotPose, Pose2d target,  double xP, double xI, double xD, double yP, double yI, double yD, double hP, double hI, double hD) {
         startPose = robotPose;
         this.target = target;
@@ -759,7 +761,7 @@ public class PIDController {
 
 
 
-    public ArrayList<Double> update(Pose2d robotPose, int prevLoopTime) {
+    public ArrayList<Double> update(Pose2d robotPose, int loopTimeSec, double duration, boolean dummy) {
         poseHistoryLocal.add(robotPose);
         outputs = new ArrayList<>();
         outputs.clear();
@@ -791,7 +793,9 @@ public class PIDController {
         RobotLogger.dd(TAG, "yPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY());
         RobotLogger.dd(TAG, "hPercentError: " + errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading());
 
-
+        double dt = (double) loopTimeSec/1000;
+//        RobotLogger.dd(TAG, "dt: " + dt);
+        double avg_dt = duration/errorHistoryPercents.size();
 
         //proportional calculator: outputs present error * xP
         double pXOutput;
@@ -821,25 +825,23 @@ public class PIDController {
             iXOutput += errorVector.getX();
         }
         if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
-            iXOutput = -iXOutput * (xI/400);    //Dividing by large number so the inputted xI value can be a comprehensibly large number
+            iXOutput = -iXOutput * xI * avg_dt * 0.001;
         }
         else {
-            iXOutput = iXOutput * (xI/400);     //Dividing by large number so the inputted xI value can be a comprehensibly large number
+            iXOutput = iXOutput * xI * avg_dt * 0.001;
         }
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * xD
         double dXOutput;
-        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+        if (errorHistoryPercents.size() <= 2) {    //if there only 1 data point, set derivative output to 0
             dXOutput = 0;
         }
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getX() >= 0.0) {
-                //Multiplying by a constant so the inputted yD value can be around 1.0
-                dXOutput = -(xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / loopTimeSec;
+                dXOutput = -(xD) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / dt;
             }
             else {
-                //Multiplying by a constant so the inputted yD value can be around 1.0
-                dXOutput = (xD * 40) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / loopTimeSec;
+                dXOutput = (xD) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getX() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getX())) / dt;
             }
         }
         RobotLogger.dd(TAG, "xPID: " + pXOutput + ", " + iXOutput + ", " + dXOutput);
@@ -866,26 +868,24 @@ public class PIDController {
             iYOutput += errorVector.getY();
         }
         if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
-            iYOutput = -iYOutput * (yI/500);    //Dividing by large number so the inputted yI value can be a comprehensibly large number
+            iYOutput = -iYOutput * yI * avg_dt * 0.001;
         }
         else {
-            iYOutput = iYOutput * (yI/500);     //Dividing by large number so the inputted yI value can be a comprehensibly large number
+            iYOutput = iYOutput * yI * avg_dt * 0.001;
         }
 
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * yd
         double dYOutput;
-        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+        if (errorHistoryPercents.size() <= 2) {    //if there only 1 data point, set derivative output to 0
             dYOutput = 0.0;
         }
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getY() >= 0.0) {
-                //Multiplying by a constant so the inputted yD value can be around 1.0
-                dYOutput = -(yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / loopTimeSec;
+                dYOutput = -(yD) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / dt;
             }
             else {
-                //Multiplying by a constant so the inputted yD value can be around 1.0
-                dYOutput = (yD * 50) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / loopTimeSec;
+                dYOutput = (yD) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getY() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getY())) / dt;
             }
         }
         RobotLogger.dd(TAG, "yPID: " + pYOutput + ", " + iYOutput + ", " + dYOutput);
@@ -900,12 +900,10 @@ public class PIDController {
             jerkControlMultiplier = 0.5;
         }
         if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-            //Multiplying by a constant so the inputted hP value can be around 1.0
-            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+            pHOutput = -jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
         }
         else {
-            //Multiplying by a constant so the inputted hP value can be around 1.0
-            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * 5 * hP);
+            pHOutput = jerkControlMultiplier * (errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() * hP);
         }
 
         //integral calculator: outputs integral of all previous hErrors * hi
@@ -914,25 +912,23 @@ public class PIDController {
             iHOutput += errorVector.getHeading();
         }
         if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-            iHOutput = -iHOutput * (hI/300);    //Dividing by large number so the inputted hI value can be a comprehensibly large number
+            iHOutput = -iHOutput * hI * avg_dt * 0.001;
         }
         else {
-            iHOutput = iHOutput * (hI/300);     //Dividing by large number so the inputted hI value can be a comprehensibly large number
+            iHOutput = iHOutput * hI * avg_dt * 0.001;
         }
 
         //derivative calculator: outputs approximate derivative (using difference quotient) * hd
         double dHOutput;
-        if (errorHistoryPercents.size() < 2) {    //if there only 1 data point, set derivative output to 0
+        if (errorHistoryPercents.size() <= 2) {    //if there only 1 data point, set derivative output to 0
             dHOutput = 0.0;
         }
         else {      //if there are 2 or more data points, calculate a derivative over the 1st and 2nd
             if (errorHistory.get(errorHistory.size() - 1).getHeading() >= 0.0) {
-                //Multiplying by a constant so the inputted hD value can be around 1.0
-                dHOutput = -(hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / loopTimeSec;
+                dHOutput = -(hD) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / dt;
             }
             else {
-                //Multiplying by a constant so the inputted hD value can be around 1.0
-                dHOutput = (hD * 18) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / loopTimeSec;
+                dHOutput = (hD) * ((errorHistoryPercents.get(errorHistoryPercents.size() - 1).getHeading() - errorHistoryPercents.get(errorHistoryPercents.size() - 2).getHeading())) / dt;
             }
         }
         RobotLogger.dd(TAG, "hPID: " + pHOutput + ", " + iHOutput + ", " + dHOutput);
@@ -950,6 +946,18 @@ public class PIDController {
         //vectorX and vectorY are local to X and Y of robot
         //v3 is stable in the old configuration
         ArrayList<Double> powers = vectorToPowersV4(xNetOutput, yNetOutput, hNetOutput);
+
+        //Add kStaticM to all powers
+        double kStat = 0.061; //good value for forward/backward movement
+//        double kStat = 0.065;    //good value for strafing
+        for (int i=0; i<4; i++) {
+            if (powers.get(i) > 0.0 && powers.get(i) < 1.0-kStat) {
+                powers.set(i, powers.get(i) + kStat);
+            }
+            else if (powers.get(i) < 0.0 && powers.get(i) > -1.0+kStat) {
+                powers.set(i, powers.get(i) - kStat);
+            }
+        }
         return powers;
     }
 }

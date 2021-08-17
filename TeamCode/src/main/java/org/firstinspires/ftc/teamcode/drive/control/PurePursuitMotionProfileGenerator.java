@@ -231,7 +231,7 @@ public class PurePursuitMotionProfileGenerator {
                 if (cubic.nRoots == 1) {
                     t = cubic.x1;
                 }
-                else {  //There are 3 solutiosn to the cubic; I find the correct one below
+                else {  //There are 3 solutions to the cubic; I find the correct one below
                     diff1 = Math.abs(cubic.x1 - prevdt);
                     diff2 = Math.abs(cubic.x2 - prevdt);
                     diff3 = Math.abs(cubic.x3 - prevdt);
@@ -331,7 +331,7 @@ public class PurePursuitMotionProfileGenerator {
                 if (cubic.nRoots == 1) {
                     t = cubic.x1;
                 }
-                else {  //There are 3 solutiosn to the cubic; I find the correct one below
+                else {  //There are 3 solutions to the cubic; I find the correct one below
                     diff1 = Math.abs(cubic.x1 - prevdt);
                     diff2 = Math.abs(cubic.x2 - prevdt);
                     diff3 = Math.abs(cubic.x3 - prevdt);

@@ -4,6 +4,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.drive.Robot;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -246,8 +247,8 @@ public class PurePursuitMathFunctions {
         double minDistRadDiff = 9999.9;
         int minDistRadDiffIndex = 0;
 
-        //Setting the bounds for all the points in the path to check (maximum bounds is +/- 50 points of the previous target
-        int minBound = prevTargetIndex - 1;
+        //Setting the bounds for all the points in the path to check (maximum bounds is +150, -0 points of the previous target)
+        int minBound;
         if (prevTargetIndex - 1 < 0) {
             minBound = 0;
         }
@@ -299,13 +300,39 @@ public class PurePursuitMathFunctions {
         return angle;
     }
 
+    public static double getError(int lookAheadIndex, PurePursuitPath PPPath, Pose2d currentPose) {
+        /*
+        This function is used very loop cycle to calculate the error (remaining distance to target point).
+         */
+        double total_remaining_path_length = 0.0;
+        if (lookAheadIndex < PPPath.path1.size()-1) {
+//            RobotLogger.dd(TAG, "PPPath.path.size()-1: " + (PPPath.path1.size()-1));
+            for (int i = lookAheadIndex; i < PPPath.path1.size() - 1; i++) {
+//                RobotLogger.dd(TAG, "i: " + i);
+                total_remaining_path_length += Math.hypot(PPPath.path1.get(i + 1).x - PPPath.path1.get(i).x, PPPath.path1.get(i + 1).y - PPPath.path1.get(i).y);
+                RobotLogger.dd(TAG, "total_remaining_path_length: " + total_remaining_path_length);
+            }
+        }
+        else {
+//            RobotLogger.dd(TAG, "look ahead point end of path");
+            total_remaining_path_length = 0;
+        }
+
+        double distance_from_look_ahead = Math.hypot(currentPose.getX()-PPPath.path1.get(lookAheadIndex).x, currentPose.getY()-PPPath.path1.get(lookAheadIndex).y);
+        RobotLogger.dd(TAG, "distance_from_look_ahead: " + distance_from_look_ahead);
+        total_remaining_path_length += distance_from_look_ahead;
+        return total_remaining_path_length;
+    }
+
     public static ReachedDestination reachedDestination(Pose2d robotPose, PurePursuitPathPoint pathEnd, ReachedDestination reachedDestination, double currentDuration, double pathDuration) {
         double headingDifference = Math.abs(robotPose.getHeading() - pathEnd.h);
         double locationDifference = Math.abs(Math.hypot(robotPose.getX() - pathEnd.x, robotPose.getY() - pathEnd.y));
+        RobotLogger.dd(TAG, "headingDifference: " + headingDifference);
+        RobotLogger.dd(TAG, "locationDifference: " + locationDifference);
 //        RobotLogger.dd(TAG, "currentDuration: " + currentDuration);
 //        RobotLogger.dd(TAG, "pathDuration: " + pathDuration);
-//        if (headingDifference < 0.0355 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) {
-        if (headingDifference < 0.01309 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) { //0.75 degrees
+        if (headingDifference < 0.01745 && locationDifference < 1.0 && currentDuration > (0.5*pathDuration*1000)) { //1 degree
+//        if (headingDifference < 0.01309 && locationDifference < 0.5 && currentDuration > (0.5*pathDuration*1000)) { //0.75 degrees
 //            RobotLogger.dd(TAG, "headingDifference: " + headingDifference);
 //            if (reachedDestination == ReachedDestination.CHANGE2 || reachedDestination == ReachedDestination.TRUE) {
 //                return ReachedDestination.TRUE;

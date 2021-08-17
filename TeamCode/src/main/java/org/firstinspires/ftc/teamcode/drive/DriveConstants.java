@@ -93,20 +93,26 @@ public class DriveConstants {
 */
 
 
-    //PID Constants as of 1/2
+    //PID Constants as of 1/2/21  (updated 7/23/21)
     public static double xPM = 1.0;
-    public static double xIM = 0.18;
+//    public static double xIM = 0.18;
+    public static double xIM = 0.0001;
     public static double xDM = 52.0;
     public static double yPM = 1.0;
     public static double yIM = 0.0;
     public static double yDM = 27.5;
-    public static double hPM = 0.875;
+    public static double hPM = 0.875; //Standard
+//    public static double hPM = 0.4;   //For forward/backward PID tests
     public static double hIM = 0.0;
     public static double hDM = 7.5;
 
+    public static double znFreq = 4.398;
+    public static double znFreqStrafe = 5.792;
 
 
-    public static double kStaticM = 0.045;   //Found using StaticTest.java
+
+//    public static double kStaticM = 0.045;   //Found using StaticTest.java
+    public static double kStaticM = 0.06;   //Estimate
 //    public static double kStaticM = 0.035;   //Estimate based on StaticTest.java
 //    public static double kVM = 0.0628;      //Found using kVTest.java
     public static double kVM = 0.014043;      //Estimation

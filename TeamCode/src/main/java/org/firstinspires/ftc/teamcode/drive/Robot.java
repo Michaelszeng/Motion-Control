@@ -16,6 +16,8 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.VoltageUnit;
 
 import org.firstinspires.ftc.teamcode.drive.control.PIDController;
 import org.firstinspires.ftc.teamcode.drive.virtual.DriveTrain;
@@ -48,6 +50,8 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.VirtualizeDrive;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.znFreq;
+import static org.firstinspires.ftc.teamcode.drive.DriveConstants.znFreqStrafe;
 import static org.firstinspires.ftc.teamcode.util.PurePursuitMathFunctions.reachedDestination;
 
 //import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
@@ -165,8 +169,8 @@ public class Robot extends MecanumDrive {
         prevHorizontalOdoReading = horizontalOdoReading;
     }
 
-    //Physical Robot: Follow Point      STABLE      NO MOTION PROFILING
-    public ArrayList<Double> update(double rightOdoReading, double leftOdoReading, double horizontalOdoReading, double headingReading, Pose2d targetPose, int loopTime) {
+    //Physical Robot: Follow Point      STABLE      NO MOTION PROFILING, USES TRADITIONAL PID CONTROLLER
+    public ArrayList<Double> update(double rightOdoReading, double leftOdoReading, double horizontalOdoReading, double headingReading, Pose2d targetPose, int loopTime, double duration) {
         double leftOdoChange = leftOdoReading - prevLeftOdoReading;
         double rightOdoChange = rightOdoReading - prevRightOdoReading;
         double horizontalOdoChange = horizontalOdoReading - prevHorizontalOdoReading;
@@ -199,13 +203,17 @@ public class Robot extends MecanumDrive {
 
         if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
             PIDController latestController = pidControllers.get(pidControllers.size() - 1);
-            motorPowers = latestController.update(currentPose, loopTime);
+            motorPowers = latestController.update(currentPose, loopTime, duration, true);
         }
         else {
-            PIDController controller = new PIDController(currentPose, targetPose, 0.75, 0.0, 0.025, 0.75, 0.0, 0.0, 0.2, 0.0, 0.0);   //classic PID tuned
+            //Assuming that X and Y axes perform exactly the same (so kstatic, and oscillation freq are the same)
+//            PIDController controller = new PIDController(currentPose, targetPose, 0.6, 2.0*znFreqStrafe, 0.125/znFreqStrafe, 0.6, 2.0*znFreq, 0.125/znFreq, 0.1, 0.0, 0.0);   //classic PID ZN-tuned
+            PIDController controller = new PIDController(currentPose, targetPose, 0.6, 2.0*znFreqStrafe, 0.125/znFreqStrafe, 0.6, 2.0*znFreq, 0.125/znFreq, 0.6, 2.0*znFreqStrafe, 0.125/znFreqStrafe);   //classic PID ZN-tuned
+//            PIDController controller = new PIDController(currentPose, targetPose, 1.0, 0.0, 0.0, 0.07, 0, 0, 0.01, 0.0, 0.0);   //FORMERLY USED FOR STRAFE TUNING
+//            PIDController controller = new PIDController(currentPose, targetPose, 0.09, 0.0, 0.0, 0.07, 0, 0, 0.5, 0.0, 0.0);   //FORMERLY USED FOR ROTATION TUNING
 //            PIDController controller = new PIDController(currentPose, targetPose,1.0, 0.15, 52.0, 0.9, 0.0, 25.0, 1.0, 0.02, 100.0);
             pidControllers.add(controller);
-            motorPowers = controller.update(currentPose, loopTime);
+            motorPowers = controller.update(currentPose, loopTime, duration, true);
         }
 
 
@@ -262,13 +270,13 @@ public class Robot extends MecanumDrive {
 
         if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
             PIDController latestController = pidControllers.get(pidControllers.size() - 1);
-            motorPowers = latestController.update(currentPose, loopTime);
+            motorPowers = latestController.update(currentPose, loopTime, duration, true); //NOTE: THIS WILL NOT WORK RIGHT NOW BECAUSE DURATION IS A NEW FEATURE AND THIS FUNCTION IS OUT OF DATE
         }
         else {
 //            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath,1, 0.2, 2.0, 1, 0.2, 2.0, 0.75, 0.1, 1.0);
             PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);
             pidControllers.add(controller);
-            motorPowers = controller.update(currentPose, loopTime);
+            motorPowers = controller.update(currentPose, loopTime, duration, true);   //NOTE: THIS WILL NOT WORK RIGHT NOW BECAUSE DURATION IS A NEW FEATURE AND THIS FUNCTION IS OUT OF DATE
         }
 
 //        reachedDestination = reachedDestination(currentPose, PPPath.path1.get(PPPath.path1.size()-1), reachedDestination);
@@ -343,7 +351,8 @@ public class Robot extends MecanumDrive {
 //            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 1.0, 0.15, 52.0, 0.9, 0.0, 25.0, 0.875, 0.0, 7.5);
 //            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.85, 0.02, 1.0);
 
-            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);
+            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, xPM, xIM, xDM, yPM, yIM, yDM, hPM, hIM, hDM);  //STANDARD
+//            PIDController controller = new PIDController(currentPose, targetPose, targetIndex, PPPath, duration, 0.75, 0.1, xDM, yPM, yIM, yDM, 0.4, hIM, hDM);  //For PID Testing
             pidControllers.add(controller);
             motorPowers = controller.update(currentPose, loopTime, duration);
         }
@@ -367,7 +376,7 @@ public class Robot extends MecanumDrive {
 
 
 
-    //Virtual Robot: Follow Point
+    //Virtual Robot: Follow Point     NO LONGER STABLE DUE TO TRADITIONAL PID update() FUNCTION BEING UPDATED
     public ArrayList<Double> update(Pose2d currentPose, Pose2d targetPose, int loopTime) {
         //The old pose's heading sometimes has an extra 2Pi added
         poseHistory.add(currentPose);
@@ -388,12 +397,12 @@ public class Robot extends MecanumDrive {
 
         if (pidControllers.size() > 0 && targetPose.getX() == prevTargetPose.getX() && targetPose.getY() == prevTargetPose.getY() && targetPose.getHeading() == prevTargetPose.getHeading()) {
             PIDController latestController = pidControllers.get(pidControllers.size() - 1);
-            motorPowers = latestController.update(currentPose, loopTime);
+            motorPowers = latestController.update(currentPose, loopTime, duration, true); //NOTE: THIS WILL NOT WORK RIGHT NOW BECAUSE DURATION IS A NEW FEATURE AND THIS FUNCTION IS OUT OF DATE
         }
         else {
             PIDController controller = new PIDController(currentPose, targetPose, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0);
             pidControllers.add(controller);
-            motorPowers = controller.update(currentPose, loopTime);
+            motorPowers = controller.update(currentPose, loopTime, duration, true);   //NOTE: THIS WILL NOT WORK RIGHT NOW BECAUSE DURATION IS A NEW FEATURE AND THIS FUNCTION IS OUT OF DATE
         }
 //        RobotLogger.dd(TAG, "pidControllers.size(): " + pidControllers.size());
         return motorPowers;
@@ -462,6 +471,7 @@ public class Robot extends MecanumDrive {
 
     @Override
     public void setMotorPowers(double v, double v1, double v2, double v3) {
+        //leftFront, leftRear, rightRear, rightFront
         if (VirtualizeDrive == false) {
             double vReal = v;
             double v1Real = -v1;
@@ -486,6 +496,21 @@ public class Robot extends MecanumDrive {
 //        RobotLogger.dd(TAG,"setMotorPowers");
 
 
+    }
+
+    public ArrayList<Double> getCurrentDraws() {
+        double lf = leftFront.getCurrent(CurrentUnit.AMPS);
+        double lb = leftRear.getCurrent(CurrentUnit.AMPS);
+        double rf = rightFront.getCurrent(CurrentUnit.AMPS);
+        double rb = rightRear.getCurrent(CurrentUnit.AMPS);
+
+        ArrayList<Double> currents = new ArrayList<>();
+        currents.add(lf);
+        currents.add(lb);
+        currents.add(rf);
+        currents.add(rb);
+
+        return currents;
     }
 
     @Override

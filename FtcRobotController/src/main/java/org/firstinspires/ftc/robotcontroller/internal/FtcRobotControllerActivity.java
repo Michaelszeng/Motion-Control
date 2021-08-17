@@ -175,6 +175,8 @@ public class FtcRobotControllerActivity extends Activity
 
   private WifiDirectChannelChanger wifiDirectChannelChanger;
 
+  public static UsbManager manager;
+
   protected class RobotRestarter implements Restarter {
 
     public void requestRestart() {
@@ -379,6 +381,8 @@ public class FtcRobotControllerActivity extends Activity
     if (preferencesHelper.readBoolean(getString(R.string.pref_wifi_automute), false)) {
       initWifiMute(true);
     }
+
+    manager = (UsbManager) getSystemService(Context.USB_SERVICE);
 
     FtcAboutActivity.setBuildTimeFromBuildConfig(BuildConfig.BUILD_TIME);
 
